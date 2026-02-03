@@ -1,8 +1,20 @@
 {
 	"name": "chromikoffsetdruck",
-	"private": true,
 	"version": "0.0.1",
+	"private": true,
+	"description": "website",
+	"homepage": "https://github.com/kuchromik/chromikoffsetdruck#readme",
+	"bugs": {
+		"url": "https://github.com/kuchromik/chromikoffsetdruck/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kuchromik/chromikoffsetdruck.git"
+	},
+	"license": "ISC",
+	"author": "Kai-Uwe Chromik",
 	"type": "module",
+	"main": "eslint.config.js",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
