@@ -2,86 +2,184 @@
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 
-	// Konfigurierbare Optionen
-	const produkte = ['Visitenkarten', 'Flyer', 'Folder'];
-	
-	// Materialien mit Zuordnung zu Produkten
-	const materialien = [
-		{
-			name: 'Opalkarten 308 g/m²',
-			fuerProdukte: {
-				'Visitenkarten': true,
-				'Flyer': true,
-				'Folder': true
-			}
-		},
-		{
-			name: 'Soporset 350 g/m²',
-			fuerProdukte: {
-				'Visitenkarten': true,
-				'Flyer': true,
-				'Folder': true
-			}
-		},
-		{
-			name: 'Bilderdruck matt 300 g/m²',
-			fuerProdukte: {
-				'Visitenkarten': true,
-				'Flyer': true,
-				'Folder': true
-			}
-		},
-		{
-			name: 'Bilderdruck matt 135 g/m²',
-			fuerProdukte: {
-				'Visitenkarten': false,
-				'Flyer': true,
-				'Folder': true
-			}
-		}
+	// Produktliste
+	const produkte = [
+		{ name: 'Visitenkarten', id: 'visitenkarten' },
+		{ name: 'Flyer', id: 'flyer' },
+		{ name: 'Folder', id: 'folder' },
+		{ name: 'Karten', id: 'karten' },
+		{ name: 'Klappkarten', id: 'klappkarten' },
+		{ name: 'Plakate', id: 'plakate' }
 	];
 
+	// Alle verfügbaren Formate
+	const alleFormate = [
+		'8,5 x 5,5 cm',
+		'DIN A6',
+		'DIN A5',
+		'DIN lang',
+		'21 x 21cm',
+		'DIN A4',
+		'DIN A3'
+	];
+
+	// Alle verfügbaren Materialien
+	const alleMaterialien = [
+		'Opalkarten 308 g/m²',
+		'Soporset 350 g/m²',
+		'Bilderdruck matt 300 g/m²',
+		'Bilderdruck matt 135 g/m²'
+	];
+
+	// Produktzentrische Konfiguration
+	const produktKonfiguration = {
+		visitenkarten: {
+			formate: ['8,5 x 5,5 cm'],
+			materialien: ['Opalkarten 308 g/m²', 'Soporset 350 g/m²', 'Bilderdruck matt 300 g/m²']
+		},
+		flyer: {
+			formate: ['DIN A6', 'DIN A5', 'DIN lang', '21 x 21cm', 'DIN A4', 'DIN A3'],
+			materialien: ['Bilderdruck matt 135 g/m²']
+		},
+		folder: {
+			formate: ['DIN A6', 'DIN A5', 'DIN lang', '21 x 21cm', 'DIN A4'],
+			materialien: ['Bilderdruck matt 135 g/m²'],
+			umfaenge: {
+				'4-seitig': true, // für alle Formate verfügbar
+				'6-seitig': ['DIN A6', 'DIN A5', 'DIN lang'] // nur für diese Formate
+			}
+		},
+		karten: {
+			formate: ['DIN A6', 'DIN A5', 'DIN lang', '21 x 21cm', 'DIN A4', 'DIN A3'],
+			materialien: ['Opalkarten 308 g/m²', 'Soporset 350 g/m²', 'Bilderdruck matt 300 g/m²', 'Bilderdruck matt 135 g/m²']
+		},
+		klappkarten: {
+			formate: ['DIN A6', 'DIN A5', 'DIN lang', '21 x 21cm', 'DIN A4', 'DIN A3'],
+			materialien: ['Opalkarten 308 g/m²', 'Soporset 350 g/m²', 'Bilderdruck matt 300 g/m²', 'Bilderdruck matt 135 g/m²']
+		},
+		plakate: {
+			formate: ['DIN A4', 'DIN A3'],
+			materialien: ['Bilderdruck matt 135 g/m²']
+		}
+	};
+
 	// Eingabewerte
-	let produkt = $state('');
+	let produktId = $state('');
 	let auflage = $state('');
 	let material = $state('');
+	let format = $state('');
+	let umfang = $state('');
 	let ergebnis = $state('');
 	let zeigErgebnis = $state(false);
 
-	// Gefilterte Materialien basierend auf gewähltem Produkt
+	// Gefilterte Optionen basierend auf gewähltem Produkt
 	let verfuegbareMaterialien = $derived(
-		produkt ? materialien.filter(m => m.fuerProdukte[produkt]) : []
+		produktId && produktKonfiguration[produktId] 
+			? produktKonfiguration[produktId].materialien 
+			: []
 	);
 
-	// Material zurücksetzen, wenn es für neues Produkt nicht verfügbar ist
+	let verfuegbareFormate = $derived(
+		produktId && produktKonfiguration[produktId] 
+			? produktKonfiguration[produktId].formate 
+			: []
+	);
+
+	let verfuegbareUmfaenge = $derived(() => {
+		if (!produktId || !produktKonfiguration[produktId]?.umfaenge) return [];
+		
+		const umfaengeConfig = produktKonfiguration[produktId].umfaenge;
+		const verfuegbar = [];
+		
+		for (const [umfangName, wert] of Object.entries(umfaengeConfig)) {
+			// Wenn wert === true, ist Umfang für alle Formate verfügbar
+			if (wert === true) {
+				verfuegbar.push(umfangName);
+			} 
+			// Wenn wert ein Array ist, nur für diese Formate verfügbar
+			else if (Array.isArray(wert)) {
+				if (!format || wert.includes(format)) {
+					verfuegbar.push(umfangName);
+				}
+			}
+		}
+		
+		return verfuegbar;
+	});
+
+	// Prüfen ob Umfang-Feld angezeigt werden soll
+	let zeigeUmfang = $derived(
+		produktId && produktKonfiguration[produktId]?.umfaenge !== undefined
+	);
+
+	// Produktname für Anzeige
+	let produktName = $derived(
+		produktId ? produkte.find(p => p.id === produktId)?.name || '' : ''
+	);
+
+	// Werte zurücksetzen, wenn sie für neues Produkt nicht verfügbar sind
 	$effect(() => {
-		if (produkt && material) {
-			const materialObj = materialien.find(m => m.name === material);
-			if (materialObj && !materialObj.fuerProdukte[produkt]) {
-				material = '';
+		if (produktId) {
+			// Material prüfen
+			if (material) {
+				const materialObj = materialien.find(m => m.name === material);
+				if (materialObj && !materialObj.fuerProdukte[produktId]) {
+					material = '';
+				}
+			}
+			// Format prüfen
+			if (format) {
+				const formatObj = formate.find(f => f.name === format);
+				if (formatObj && !formatObj.fuerProdukte[produktId]) {
+					format = '';
+				}
+			}
+			// Umfang zurücksetzen wenn Format sich ändert und nicht mehr gültig
+			if (umfang && format) {
+				const umfangObj = umfaenge.find(u => u.name === umfang);
+				if (umfangObj && Object.keys(umfangObj.fuerFormate).length > 0 && !umfangObj.fuerFormate[format]) {
+					umfang = '';
+				}
 			}
 		}
 	});
 
+	function waehleProdukt(id) {
+		produktId = id;
+		zeigErgebnis = false;
+	}
+
 	function berechneErgebnis(e) {
 		e.preventDefault();
-		if (!produkt || !auflage || !material) {
+		// Prüfe ob alle Pflichtfelder ausgefüllt sind
+		const pflichtfelderAusgefuellt = produktId && auflage && material && format && (!zeigeUmfang || umfang);
+		
+		if (!pflichtfelderAusgefuellt) {
 			ergebnis = 'Bitte füllen Sie alle Felder aus.';
 		} else {
-			ergebnis = `
+			let ergebnisText = `
 				<strong>Ihre Auswahl:</strong><br>
-				<strong>Produkt:</strong> ${produkt}<br>
+				<strong>Produkt:</strong> ${produktName}<br>
+				<strong>Format:</strong> ${format}<br>`;
+			
+			if (zeigeUmfang) {
+				ergebnisText += `<strong>Umfang:</strong> ${umfang}<br>`;
+			}
+			
+			ergebnisText += `
 				<strong>Auflage:</strong> ${auflage} Stück<br>
 				<strong>Material:</strong> ${material}
 			`;
+			ergebnis = ergebnisText;
 		}
 		zeigErgebnis = true;
 	}
 
 	function zurücksetzen() {
-		produkt = '';
 		auflage = '';
 		material = '';
+		format = '';
+		umfang = '';
 		ergebnis = '';
 		zeigErgebnis = false;
 	}
@@ -98,52 +196,89 @@
 	<main class="container">
 		<section class="form-section">
 			<h1>Fix&günstig</h1>
-			<p class="intro">Schnelle und preiswerte Lösungen ohne Kompromisse bei der Qualität. Konfigurieren Sie Ihr Produkt:</p>
+			<p class="intro">Schnelle und preiswerte Lösungen im 4-farbigen Digitaldruck:</p>
 
-			<form class="calculator-form" onsubmit={berechneErgebnis}>
-				<div class="form-group">
-					<label for="produkt">Produkt</label>
-					<select id="produkt" bind:value={produkt} required>
-						<option value="">Bitte wählen...</option>
+			{#if !produktId}
+				<!-- Produktauswahl -->
+				<div class="product-selection">
+					<h2>Produkt wählen</h2>
+					<div class="product-grid">
 						{#each produkte as prod}
-							<option value={prod}>{prod}</option>
+							<button 
+								class="product-button" 
+								onclick={() => waehleProdukt(prod.id)}
+							>
+								{prod.name}
+							</button>
 						{/each}
-					</select>
+					</div>
+				</div>
+			{:else}
+				<!-- Konfigurationsformular -->
+				<div class="product-header">
+					<h2>{produktName}</h2>
+					<button class="btn-back" onclick={() => { produktId = ''; zeigErgebnis = false; }}>
+						← Anderes Produkt wählen
+					</button>
 				</div>
 
-				<div class="form-group">
-					<label for="auflage">Auflage (Stück)</label>
-					<input 
-						type="number" 
-						id="auflage" 
-						bind:value={auflage} 
-						min="1" 
-						step="1"
-						placeholder="z.B. 500"
-						required
-					/>
-				</div>
+				<form class="calculator-form" onsubmit={berechneErgebnis}>
+					<div class="form-group">
+						<label for="format">Format</label>
+						<select id="format" bind:value={format} required>
+							<option value="">Bitte wählen...</option>
+							{#each verfuegbareFormate as fmt}
+								<option value={fmt}>{fmt}</option>
+							{/each}
+						</select>
+					</div>
 
-				<div class="form-group">
-					<label for="material">Material</label>
-					<select id="material" bind:value={material} required disabled={!produkt}>
-						<option value="">{produkt ? 'Bitte wählen...' : 'Zuerst Produkt wählen'}</option>
-						{#each verfuegbareMaterialien as mat}
-							<option value={mat.name}>{mat.name}</option>
-						{/each}
-					</select>
-				</div>
+					{#if zeigeUmfang}
+						<div class="form-group">
+							<label for="umfang">Umfang</label>
+							<select id="umfang" bind:value={umfang} required disabled={!format}>
+								<option value="">{format ? 'Bitte wählen...' : 'Zuerst Format wählen'}</option>
+								{#each verfuegbareUmfaenge as umf}
+									<option value={umf}>{umf}</option>
+								{/each}
+							</select>
+						</div>
+					{/if}
 
-				<div class="button-group">
-					<button type="submit" class="btn btn-primary">Ergebnis</button>
-					<button type="button" class="btn btn-secondary" onclick={zurücksetzen}>Zurücksetzen</button>
-				</div>
-			</form>
+					<div class="form-group">
+						<label for="auflage">Auflage (Stück)</label>
+						<input 
+							type="number" 
+							id="auflage" 
+							bind:value={auflage} 
+							min="1" 
+							step="1"
+							placeholder="z.B. 500"
+							required
+						/>
+					</div>
 
-			{#if zeigErgebnis}
-				<div class="result-box">
-					{@html ergebnis}
-				</div>
+					<div class="form-group">
+						<label for="material">Material</label>
+						<select id="material" bind:value={material} required>
+							<option value="">Bitte wählen...</option>
+							{#each verfuegbareMaterialien as mat}
+								<option value={mat}>{mat}</option>
+							{/each}
+						</select>
+					</div>
+
+					<div class="button-group">
+						<button type="submit" class="btn btn-primary">Ergebnis</button>
+						<button type="button" class="btn btn-secondary" onclick={zurücksetzen}>Zurücksetzen</button>
+					</div>
+				</form>
+
+				{#if zeigErgebnis}
+					<div class="result-box">
+						{@html ergebnis}
+					</div>
+				{/if}
 			{/if}
 		</section>
 	</main>
@@ -182,6 +317,76 @@
 		color: var(--text-secondary);
 		margin-bottom: 3rem;
 		line-height: 1.6;
+	}
+
+	/* Produktauswahl */
+	.product-selection {
+		text-align: center;
+	}
+
+	.product-selection h2 {
+		font-size: 1.8rem;
+		margin-bottom: 2rem;
+		color: var(--text-primary);
+	}
+
+	.product-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 1.5rem;
+		margin-bottom: 2rem;
+	}
+
+	.product-button {
+		padding: 2rem 1.5rem;
+		background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--hover-bg) 100%);
+		border: 2px solid var(--border);
+		border-radius: 16px;
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: var(--text-primary);
+		cursor: pointer;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 15px var(--shadow);
+	}
+
+	.product-button:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 8px 25px var(--shadow);
+		border-color: #6b7280;
+		background: linear-gradient(135deg, var(--hover-bg) 0%, var(--bg-secondary) 100%);
+	}
+
+	/* Produkt-Header */
+	.product-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+		padding-bottom: 1rem;
+		border-bottom: 2px solid var(--border);
+	}
+
+	.product-header h2 {
+		font-size: 1.8rem;
+		color: var(--text-primary);
+		margin: 0;
+	}
+
+	.btn-back {
+		padding: 0.5rem 1rem;
+		background: transparent;
+		border: 2px solid var(--border);
+		border-radius: 8px;
+		color: var(--text-primary);
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.btn-back:hover {
+		background: var(--hover-bg);
+		border-color: var(--text-secondary);
 	}
 
 	.calculator-form {
@@ -319,6 +524,16 @@
 
 		h1 {
 			font-size: 2rem;
+		}
+
+		.product-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.product-header {
+			flex-direction: column;
+			gap: 1rem;
+			align-items: flex-start;
 		}
 
 		.calculator-form {
