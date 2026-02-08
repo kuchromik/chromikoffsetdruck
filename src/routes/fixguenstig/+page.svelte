@@ -1172,12 +1172,13 @@
 
 	main {
 		flex: 1;
-		padding: 4rem 0;
+		padding: 4rem 1rem;
 	}
 
 	.form-section {
 		max-width: 700px;
 		margin: 0 auto;
+		padding: 0 1rem;
 	}
 
 	h1 {
@@ -1272,6 +1273,13 @@
 		border-radius: 16px;
 		border: 1px solid var(--border);
 		box-shadow: 0 4px 20px var(--shadow);
+	}
+
+	@media (max-width: 640px) {
+		.calculator-form {
+			padding: 1.25rem;
+			border-radius: 12px;
+		}
 	}
 
 	.form-group {
@@ -1435,6 +1443,13 @@
 
 		.btn {
 			width: 100%;
+		}
+	}
+
+	/* Alle Formularfelder untereinander auf schmalen Viewports */
+	@media (max-width: 640px) {
+		.form-row {
+			grid-template-columns: 1fr !important;
 		}
 	}
 </style>

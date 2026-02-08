@@ -106,14 +106,25 @@
 	}
 
 	.logo img {
-		height: 70px;
+		height: 50px;
 		width: auto;
 		object-fit: contain;
 		transition: all 0.4s ease;
 	}
 
 	.header.scrolled .logo img {
-		height: 50px;
+		height: 40px;
+	}
+
+	/* Logo größer auf Desktop */
+	@media (min-width: 768px) {
+		.logo img {
+			height: 70px;
+		}
+
+		.header.scrolled .logo img {
+			height: 50px;
+		}
 	}
 
 	.logo:hover img {

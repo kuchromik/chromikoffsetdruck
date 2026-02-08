@@ -62,7 +62,7 @@
 	.footer {
 		background-color: var(--bg-secondary);
 		border-top: 1px solid var(--border);
-		padding: 4rem 0 2rem;
+		padding: 4rem 1rem 2rem;
 		margin-top: 4rem;
 	}
 
