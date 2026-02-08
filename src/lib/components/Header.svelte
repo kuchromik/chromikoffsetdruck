@@ -5,14 +5,14 @@
 	let scrolled = $state(false);
 	
 	const menuItems = [
-		{ id: 1, label: 'Qualität seit 1990', href: '#thema1' },
-		{ id: 2, label: 'Heißfolienprägung', href: '#thema2' },
-		{ id: 3, label: 'Blindprägung', href: '#thema3' },
-		{ id: 4, label: 'Stanzungen', href: '#thema4' },
-		{ id: 5, label: 'Pantone & HKS', href: '#thema5' },
-		{ id: 6, label: 'Besondere Materialien', href: '#thema6' },
-		{ id: 7, label: 'Extraladen', href: '#thema7' },
-		{ id: 8, label: 'Fix&günstig', href: '#thema8' },
+		{ id: 1, label: 'Qualität seit 1990', href: '/#thema1' },
+		{ id: 2, label: 'Heißfolienprägung', href: '/#thema2' },
+		{ id: 3, label: 'Blindprägung', href: '/#thema3' },
+		{ id: 4, label: 'Stanzungen', href: '/#thema4' },
+		{ id: 5, label: 'Pantone & HKS', href: '/#thema5' },
+		{ id: 6, label: 'Besondere Materialien', href: '/#thema6' },
+		{ id: 7, label: 'Extraladen', href: '/#thema7' },
+		{ id: 8, label: 'Fix&günstig', href: '/#thema8' },
 		{ id: 9, label: 'Impressum', href: '/impressum' },
 		{ id: 10, label: 'Datenschutz', href: '/datenschutz' }
 	];
