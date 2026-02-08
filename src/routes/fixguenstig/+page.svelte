@@ -1392,13 +1392,6 @@
 		animation: slideIn 0.4s ease;
 	}
 
-	@media (prefers-color-scheme: dark) {
-		.result-box {
-			background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-			border-color: #4b5563;
-		}
-	}
-
 	.result-box :global(strong) {
 		color: var(--text-primary);
 	}
