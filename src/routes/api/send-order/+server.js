@@ -37,7 +37,12 @@ export async function POST({ request }) {
 			auth: {
 				user: EMAIL_USER,
 				pass: EMAIL_PASS
-			}
+			},
+			connectionTimeout: 10000, // 10 Sekunden
+			greetingTimeout: 10000,
+			socketTimeout: 20000, // 20 Sekunden
+			logger: true, // Debug-Logging aktivieren
+			debug: true
 		});
 
 		const emailText = `
