@@ -714,7 +714,7 @@
 <div class="page-wrapper">
 	<Header />
 	
-	<main class="container">
+	<main id="main-content" class="container">
 		<section class="form-section">
 			<h1>Fix&günstig</h1>
 			<p class="intro">Schnelle und preiswerte Lösungen im 4-farbigen Digitaldruck:</p>

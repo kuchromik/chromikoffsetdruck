@@ -16,7 +16,7 @@
 				<h3>Über uns</h3>
 				<p>Bewährte Lösungen für Ihre Anforderungen. Qualität und Präzision seit über 35 Jahren.</p>
 				<div class="logo-footer">
-					<img src="/logo.png" alt="Logo" />
+					<img src="/logo.png" alt="Chromik Offsetdruck Logo" />
 				</div>
 			</div>
 

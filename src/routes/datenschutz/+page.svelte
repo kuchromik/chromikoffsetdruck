@@ -12,7 +12,7 @@
 <div class="page-wrapper">
 	<Header />
 	
-	<main>
+	<main id="main-content">
 		<Datenschutz />
 	</main>
 

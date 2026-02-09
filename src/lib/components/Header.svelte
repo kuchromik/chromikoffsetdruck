@@ -22,9 +22,19 @@
 			scrolled = window.scrollY > 50;
 		};
 
+		const handleKeyDown = (e) => {
+			if (e.key === 'Escape' && mobileMenuOpen) {
+				closeMobileMenu();
+			}
+		};
+
 		if (typeof window !== 'undefined') {
 			window.addEventListener('scroll', handleScroll);
-			return () => window.removeEventListener('scroll', handleScroll);
+			window.addEventListener('keydown', handleKeyDown);
+			return () => {
+				window.removeEventListener('scroll', handleScroll);
+				window.removeEventListener('keydown', handleKeyDown);
+			};
 		}
 	});
 
@@ -39,9 +49,9 @@
 
 <header class="header" class:scrolled>
 	<div class="container">
-		<nav class="nav">
+		<nav class="nav" aria-label="Hauptnavigation">
 			<a href="/" class="logo">
-				<img src="/logo.png" alt="Logo" />
+				<img src="/logo.png" alt="Chromik Offsetdruck - Startseite" />
 			</a>
 
 			<!-- Desktop Menu -->
@@ -54,18 +64,36 @@
 			</ul> -->
 
 			<!-- Mobile Menu Button -->
-			<button class="menu-toggle" onclick={toggleMobileMenu} aria-label="Toggle menu">
-				<span></span>
-				<span></span>
-				<span></span>
+			<button 
+				class="menu-toggle" 
+				onclick={toggleMobileMenu} 
+				aria-label={mobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
+				aria-expanded={mobileMenuOpen}
+				aria-controls="mobile-menu"
+			>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
+				<span aria-hidden="true"></span>
 			</button>
 		</nav>
 	</div>
 
 	<!-- Mobile Menu -->
 	{#if mobileMenuOpen}
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div class="mobile-menu-overlay" onclick={closeMobileMenu} transition:fade={{ duration: 200 }}>
-			<div class="mobile-menu" onclick={(e) => e.stopPropagation()} transition:fly={{ x: 300, duration: 300 }}>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<div 
+				id="mobile-menu"
+				class="mobile-menu" 
+				onclick={(e) => e.stopPropagation()} 
+				transition:fly={{ x: 300, duration: 300 }}
+				role="dialog"
+				aria-modal="true"
+				aria-label="Navigationsmenü"
+				tabindex="-1"
+			>
 				<ul>
 					{#each menuItems as item}
 						<li>

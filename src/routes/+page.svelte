@@ -85,7 +85,7 @@
 <div class="page-wrapper">
 	<Header />
 	
-	<main>
+	<main id="main-content">
 		<!-- <Slider /> -->
 		
 		{#each sections as section}

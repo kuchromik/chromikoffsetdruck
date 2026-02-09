@@ -68,6 +68,61 @@ a:hover {
 	}
 }
 
+/* Accessibility */
+.skip-link {
+	position: absolute;
+	left: -9999px;
+	z-index: 999;
+	padding: 1em;
+	background-color: #000;
+	color: #fff;
+	text-decoration: none;
+}
+
+.skip-link:focus {
+	left: 50%;
+	top: 0;
+	transform: translateX(-50%);
+	outline: 2px solid #0066cc;
+}
+
+/* Screen reader only */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Focus styles */
+*:focus {
+	outline: 2px solid #0066cc;
+	outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+	outline: none;
+}
+
+*:focus-visible {
+	outline: 2px solid #0066cc;
+	outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+	outline: 2px solid #0066cc;
+	outline-offset: 2px;
+}
+
 /* Utility classes */
 .section {
 	padding: 4rem 0;
