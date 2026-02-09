@@ -133,6 +133,30 @@ EMAIL_FROM=deine-email@domain.de
 EMAIL_TO=empfaenger@domain.de
 ```
 
+**✅ Bestätigt funktionsfähig** (Stand: Feb 2026)
+
+---
+
+### T-Online (Deutsche Telekom)
+```env
+EMAIL_HOST=securesmtp.t-online.de
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=deine-email@t-online.de
+EMAIL_PASS=dein-passwort
+EMAIL_FROM=deine-email@t-online.de
+EMAIL_TO=empfaenger@domain.de
+```
+
+**Alternative:**
+```env
+EMAIL_HOST=smtp.magenta.de
+EMAIL_PORT=587
+EMAIL_SECURE=false
+```
+
+**⚠️ Hinweis:** T-Online kann problematisch sein. Bei Problemen alternative Provider verwenden (z.B. 1&1, Gmail).
+
 ---
 
 ### ALL-INKL
