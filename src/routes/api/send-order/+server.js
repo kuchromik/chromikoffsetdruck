@@ -30,14 +30,26 @@ export async function POST({ request }) {
 		}
 		
 		// Nodemailer mit Umgebungsvariablen konfigurieren
+		const port = Number(EMAIL_PORT);
+		const secure = EMAIL_SECURE === 'true';
+		
 		const transporter = nodemailer.createTransport({
 			host: EMAIL_HOST,
-			port: Number(EMAIL_PORT),
-			secure: EMAIL_SECURE === 'true',
+			port: port,
+			secure: secure, // true für Port 465, false für andere Ports (587, 25)
 			auth: {
 				user: EMAIL_USER,
 				pass: EMAIL_PASS
 			},
+			// TLS-Optionen für bessere Kompatibilität
+			tls: {
+				// Nicht SSL-Zertifikat-Fehler ignorieren in Produktion
+				rejectUnauthorized: true,
+				// Mindest-TLS-Version
+				minVersion: 'TLSv1.2'
+			},
+			// Bei Port 587: STARTTLS erzwingen
+			requireTLS: !secure,
 			connectionTimeout: 10000, // 10 Sekunden
 			greetingTimeout: 10000,
 			socketTimeout: 20000, // 20 Sekunden
