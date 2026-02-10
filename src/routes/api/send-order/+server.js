@@ -160,8 +160,8 @@ LIEFERUNG:
 ----------
 ${data.lieferung.art === 'abholung' ? `Abholung bei:
 Chromik Offsetdruck
-Kastanienweg 8
-15295 Groß Lindow
+Marie-Curie-Straße 8
+15236 Frankfurt (Oder)
 
 Abholzeiten: Montag bis Donnerstag, 9:00 - 15:00 Uhr oder nach Absprache` :
 `Versand per DPD an:
