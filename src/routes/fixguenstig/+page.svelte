@@ -27,7 +27,9 @@
 	// Alle verfügbaren Materialien mit IDs und Materialfaktoren
 	// Der Materialfaktor gibt den Preis je Bogen A3+ an
 	const alleMaterialien = [
-		{ id: 'mat-opal308', name: 'Opalkarten 308 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger weißer Karton mit glatter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
+		{ id: 'mat-senglatt308', name: 'Senator glatt 308 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger weißer Karton mit glatter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
+		{ id: 'mat-senlein246', name: 'Senator leinen 246 g/m²', materialfaktor: 0.20, beschreibung: 'Hochwertiger weißer Karton mit feiner Leinenstruktur, ideal für edle Visitenkarten und Einladungen.' },
+		{ id: 'mat-conqwovewhite300', name: 'Conqueror naturweiß 300 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger naturweißer Karton mit matter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
 		{ id: 'mat-sopor350', name: 'Soporset 350 g/m²', materialfaktor: 0.14, beschreibung: 'Fester hochweißer Karton mit leicht rauer Oberfläche.' },
 		{ id: 'mat-bild300', name: 'Bilderdruck matt 300 g/m²', materialfaktor: 0.11, beschreibung: 'Klassischer matter Bilderdruckkarton, vielseitig einsetzbar mit sehr guter Farbwiedergabe.' },
 		{ id: 'mat-bild350', name: 'Bilderdruck matt 350 g/m²', materialfaktor: 0.13, beschreibung: 'Stärkerer Bilderdruckkarton mit matter Oberfläche, besonders stabil und hochwertig.' },
@@ -55,7 +57,7 @@
 	const produktKonfiguration = {
 		visitenkarten: {
 			formate: ['format-85x55'],
-			materialien: ['mat-opal308', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
+			materialien: ['mat-senglatt308','mat-senlein246', 'mat-conqwovewhite300', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
 			umfaenge: {
 				'1-seitig': true, // für alle Formate verfügbar
 				'2-seitig': true // für alle Formate verfügbar
@@ -79,7 +81,7 @@
 		},
 		karten: {
 			formate: ['format-a6', 'format-a5', 'format-lang', 'format-21x21', 'format-a4', 'format-a3'],
-			materialien: ['mat-opal308', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
+			materialien: ['mat-senglatt308','mat-senlein246', 'mat-conqwovewhite300', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
 			umfaenge: {
 				'1-seitig': true, // für alle Formate verfügbar
 				'2-seitig': true // für alle Formate verfügbar
@@ -87,7 +89,7 @@
 		},
 		klappkarten: {
 			formate: ['format-a6', 'format-a5', 'format-lang', 'format-21x21', 'format-a4', 'format-a3'],
-			materialien: ['mat-opal308', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
+			materialien: ['mat-senglatt308','mat-senlein246', 'mat-conqwovewhite300', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
 			umfaenge: {
 				'4-seitig': true, // für alle Formate verfügbar
 				'6-seitig': ['format-a6', 'format-a5', 'format-lang'] // nur für diese Formate
@@ -242,6 +244,7 @@
 	let material = $state('');
 	let format = $state('');
 	let umfang = $state('');
+	let falzart = $state('');
 	let ergebnis = $state('');
 	let zeigErgebnis = $state(false);
 
@@ -281,6 +284,9 @@
 	// Versandkosten
 	const versandkostenNetto = 5.90;
 	const versandkostenBrutto = versandkostenNetto * (1 + mehrwertsteuer);
+
+	// Verfügbare Falzarten
+	const alleFalzarten = ['Wickelfalz', 'Zickzackfalz'];
 
 	// Gefilterte Optionen basierend auf gewähltem Produkt (gibt Objekte zurück)
 	let verfuegbareMaterialien = $derived(
@@ -330,6 +336,11 @@
 	// Prüfen ob Umfang-Feld angezeigt werden soll
 	let zeigeUmfang = $derived(
 		produktId && produktKonfiguration[produktId]?.umfaenge !== undefined
+	);
+
+	// Prüfen ob Falzart-Feld angezeigt werden soll (nur bei folder/klappkarten mit 6-seitigem Umfang)
+	let zeigeFalzart = $derived(
+		(produktId === 'folder' || produktId === 'klappkarten') && umfang === '6-seitig'
 	);
 
 	// Produktname für Anzeige
@@ -383,6 +394,10 @@
 			if (umfang && format && verfuegbareUmfaenge.length > 0 && !verfuegbareUmfaenge.includes(umfang)) {
 				umfang = '';
 			}
+			// Falzart zurücksetzen wenn sie nicht mehr angezeigt werden soll
+			if (falzart && !zeigeFalzart) {
+				falzart = '';
+			}
 		}
 	});
 
@@ -394,7 +409,7 @@
 	function berechneErgebnis(e) {
 		e.preventDefault();
 		// Prüfe ob alle Pflichtfelder ausgefüllt sind
-		const pflichtfelderAusgefuellt = produktId && auflage && material && format && (!zeigeUmfang || umfang);
+		const pflichtfelderAusgefuellt = produktId && auflage && material && format && (!zeigeUmfang || umfang) && (!zeigeFalzart || falzart);
 		
 		if (!pflichtfelderAusgefuellt) {
 			ergebnis = 'Bitte füllen Sie alle Felder aus.';
@@ -483,6 +498,7 @@
 		material = '';
 		format = '';
 		umfang = '';
+		falzart = '';
 		ergebnis = '';
 		zeigErgebnis = false;
 		zeigeBestellformular = false;
@@ -507,6 +523,7 @@
 		material = '';
 		format = '';
 		umfang = '';
+		falzart = '';
 		ergebnis = '';
 		zeigErgebnis = false;
 		zeigeBestellformular = false;
@@ -649,6 +666,7 @@
 					produkt: produktName,
 					format: format,
 					umfang: umfang || '-',
+					falzart: falzart || '-',
 					auflage: auflage,
 					material: material
 				},
@@ -743,6 +761,7 @@
 						format = '';
 						material = '';
 						umfang = '';
+						falzart = '';
 						auflage = '';
 						zeigErgebnis = false; 
 					}}>
@@ -768,6 +787,18 @@
 								<option value="">{format ? 'Bitte wählen...' : 'Zuerst Format wählen'}</option>
 								{#each verfuegbareUmfaenge as umf}
 									<option value={umf}>{umf}</option>
+								{/each}
+							</select>
+						</div>
+					{/if}
+
+					{#if zeigeFalzart}
+						<div class="form-group">
+							<label for="falzart">Falzart</label>
+							<select id="falzart" bind:value={falzart} required>
+								<option value="">Bitte wählen...</option>
+								{#each alleFalzarten as fz}
+									<option value={fz}>{fz}</option>
 								{/each}
 							</select>
 						</div>
@@ -851,6 +882,9 @@
 						<p><strong>Format:</strong> {format}</p>
 						{#if umfang}
 							<p><strong>Umfang:</strong> {umfang}</p>
+						{/if}
+						{#if falzart}
+							<p><strong>Falzart:</strong> {falzart}</p>
 						{/if}
 						<p><strong>Auflage:</strong> {auflage} Stück</p>
 						<p><strong>Material:</strong> {material}</p>
