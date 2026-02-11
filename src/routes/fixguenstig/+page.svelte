@@ -706,8 +706,8 @@
 				formData.append(`pdf${index}`, file);
 			});
 
-			// API-Route aufrufen
-			const response = await fetch('/api/send-order', {
+			// API-Route aufrufen (sendet Verifizierungs-Mail)
+			const response = await fetch('/api/send-verification', {
 				method: 'POST',
 				body: formData // Kein Content-Type Header - wird automatisch gesetzt
 			});
@@ -801,6 +801,23 @@
 									<option value={fz}>{fz}</option>
 								{/each}
 							</select>
+							{#if falzart === 'Wickelfalz'}
+								<div class="material-info" style="margin-top: 0.75rem;">
+									<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+										<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+										<path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+									</svg>
+									<strong>Hinweis zu den Falzlängen:</strong> 2 x 100 mm + Einklapper 97 mm
+								</div>
+							{:else if falzart === 'Zickzackfalz'}
+								<div class="material-info" style="margin-top: 0.75rem;">
+									<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+										<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+										<path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+									</svg>
+									<strong>Hinweis zu den Falzlängen:</strong> 3 x 99 mm
+								</div>
+							{/if}
 						</div>
 					{/if}
 
@@ -901,8 +918,9 @@
 
 					{#if bestellStatus === 'success'}
 						<div class="success-message" style="padding: 1.5rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; margin-bottom: 1.5rem;">
-							<h4 style="color: #155724; margin-bottom: 0.5rem;">✓ Bestellung erfolgreich gesendet!</h4>
-							<p style="color: #155724; margin: 0;">Vielen Dank für Ihre Bestellung. Wir werden uns in Kürze bei Ihnen melden.</p>
+							<h4 style="color: #155724; margin-bottom: 0.5rem;">✓ E-Mail versendet!</h4>
+							<p style="color: #155724; margin: 0;">Wir haben Ihnen eine Bestätigungsmail gesendet.</p>
+							<p style="color: #155724; margin: 0.5rem 0 0;"><strong>Bitte überprüfen Sie Ihr E-Mail-Postfach und klicken Sie auf den Bestätigungslink, um Ihre Bestellung abzuschließen.</strong></p>
 						</div>
 						<button class="btn btn-secondary" onclick={abbrechenBestellung}>Neue Bestellung</button>
 					{:else if bestellStatus === 'error'}
@@ -965,7 +983,7 @@
 							</div>
 
 							<div class="form-group" style="margin-top: 1.5rem;">
-								<label for="pdf-upload">Druckdaten-PDF hochladen (optional, max. 10MB)</label>
+								<label for="pdf-upload">Druckdaten-PDF hochladen (optional, max. 20 MB)</label>
 								<input 
 									type="file" 
 									id="pdf-upload" 
@@ -1008,6 +1026,19 @@
 									<strong>Wichtig:</strong> Für <strong>1-seitige Produkte</strong> muss die PDF <strong>1 Seite</strong> enthalten (nur Vorderseite).<br>
 									Für <strong>mehrseitige Produkte</strong> muss die PDF <strong>2 Seiten</strong> enthalten (Vorder- und Rückseite) bzw. (Außen- und Innenseiten).
 								</p>
+								{#if pdfDateien.length === 0}
+									<div style="
+										margin-top: 1rem; 
+										padding: 1rem 1.25rem; 
+										background-color: #f8d7da; 
+										border-left: 4px solid #dc3545; 
+										border-radius: 4px;
+										color: #721c24;
+										font-weight: 500;
+									">
+									 Beschnittzugabe von mind. zwei Millimetern nicht vergessen!
+									</div>
+								{/if}
 							</div>
 
 							<div class="form-group" style="margin-top: 1.5rem;">

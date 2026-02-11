@@ -1,33 +1,35 @@
 import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TO, EMAIL_FROM } from '$env/static/private';
+import { getPendingOrder, deletePendingOrder, cleanupExpiredOrders } from '$lib/pendingOrders.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	try {
-		// FormData verarbeiten
-		const formData = await request.formData();
-		const dataString = formData.get('data');
-		const data = JSON.parse(dataString);
+		// Token aus Request holen
+		const { token } = await request.json();
 		
-		// PDF-Dateien extrahieren
-		const attachments = [];
-		let fileIndex = 0;
-		while (formData.has(`pdf${fileIndex}`)) {
-			const file = formData.get(`pdf${fileIndex}`);
-			if (file && file.size > 0) {
-				// Datei in Buffer konvertieren
-				const arrayBuffer = await file.arrayBuffer();
-				const buffer = Buffer.from(arrayBuffer);
-				
-				attachments.push({
-					filename: file.name,
-					content: buffer,
-					contentType: 'application/pdf'
-				});
-			}
-			fileIndex++;
+		if (!token) {
+			return json(
+				{ success: false, error: 'Kein Token angegeben' },
+				{ status: 400 }
+			);
 		}
+		
+		// Bereinige zuerst abgelaufene Bestellungen
+		cleanupExpiredOrders();
+		
+		// Hole ausstehende Bestellung
+		const pendingOrder = getPendingOrder(token);
+		
+		if (!pendingOrder) {
+			return json(
+				{ success: false, error: 'Bestellung nicht gefunden oder bereits abgelaufen. Der Link ist nur 24 Stunden gültig.' },
+				{ status: 404 }
+			);
+		}
+		
+		const { data, attachments } = pendingOrder;
 		
 		// Nodemailer mit Umgebungsvariablen konfigurieren
 		const port = Number(EMAIL_PORT);
@@ -36,29 +38,26 @@ export async function POST({ request }) {
 		const transporter = nodemailer.createTransport({
 			host: EMAIL_HOST,
 			port: port,
-			secure: secure, // true für Port 465, false für andere Ports (587, 25)
+			secure: secure,
 			auth: {
 				user: EMAIL_USER,
 				pass: EMAIL_PASS
 			},
-			// TLS-Optionen für bessere Kompatibilität
 			tls: {
-				// Nicht SSL-Zertifikat-Fehler ignorieren in Produktion
 				rejectUnauthorized: true,
-				// Mindest-TLS-Version
 				minVersion: 'TLSv1.2'
 			},
-			// Bei Port 587: STARTTLS erzwingen
 			requireTLS: !secure,
-			connectionTimeout: 10000, // 10 Sekunden
+			connectionTimeout: 10000,
 			greetingTimeout: 10000,
-			socketTimeout: 20000, // 20 Sekunden
+			socketTimeout: 20000,
 			logger: false,
 			debug: false
 		});
 
+		// E-Mail-Text für den Betreiber
 		const emailText = `
-Neue Bestellung über Fix&günstig
+Neue BESTÄTIGTE Bestellung über Fix&günstig
 
 AUFTRAGSNAME: ${data.auftragsname}
 ========================================
@@ -119,19 +118,14 @@ ${data.lieferung.rechnungsadresse.plz} ${data.lieferung.rechnungsadresse.ort}`}`
 
 Datenschutz akzeptiert: ${data.kunde.datenschutz ? 'Ja' : 'Nein'}
 ${attachments.length > 0 ? `\nAnhang: ${attachments.map(a => a.filename).join(', ')}` : ''}
+
+HINWEIS: Diese Bestellung wurde vom Kunden per E-Mail-Bestätigungslink verifiziert.
 		`;
 
-		// E-Mail an Sie (mit Anhängen)
-		await transporter.sendMail({
-			from: EMAIL_FROM,
-			to: EMAIL_TO,
-			replyTo: data.kunde.email,
-			subject: `Neue Bestellung: ${data.auftragsname} - ${data.kunde.nachname}`,
-			text: emailText,
-			attachments: attachments // PDF-Anhänge hinzufügen
-		});
+		// Bestellung sofort aus temporärem Speicher löschen
+		deletePendingOrder(token);
 		
-		// Bestätigungsmail an den Kunden (ohne Anhänge)
+		// E-Mails ASYNCHRON im Hintergrund versenden (blockiert nicht die Antwort)
 		const kundenEmailText = `
 Guten Tag ${data.kunde.vorname} ${data.kunde.nachname},
 
@@ -191,29 +185,54 @@ E-Mail: ${EMAIL_FROM}
 Web: www.chromikoffsetdruck.de
 		`;
 
-		await transporter.sendMail({
-			from: EMAIL_FROM,
-			to: data.kunde.email,
-			subject: 'Ihre Bestellung bei Chromik Offsetdruck',
-			text: kundenEmailText
-		});
-		
-		// Logge erfolgreichen Versand
-		console.log('✓ Bestellung erfolgreich per E-Mail versendet an:', EMAIL_TO);
-		console.log('✓ Bestätigungsmail an Kunden gesendet:', data.kunde.email);
-		if (attachments.length > 0) {
-			console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
-		}
-		
-		return json({ 
+		// Sofort Erfolgsantwort zurückgeben (bevor E-Mails versendet werden)
+		// Dies verhindert lange Wartezeiten bei großen PDF-Anhängen
+		const responsePromise = json({ 
 			success: true,
-			message: 'Bestellung erfolgreich versendet'
+			message: 'Bestellung erfolgreich bestätigt'
 		});
+		
+		// E-Mails ASYNCHRON im Hintergrund versenden (fire-and-forget)
+		// Dies blockiert nicht die HTTP-Antwort an den Client
+		(async () => {
+			try {
+				// E-Mail an Betreiber (mit Anhängen)
+				await transporter.sendMail({
+					from: EMAIL_FROM,
+					to: EMAIL_TO,
+					replyTo: data.kunde.email,
+					subject: `Neue Bestellung: ${data.auftragsname} - ${data.kunde.nachname}`,
+					text: emailText,
+					attachments: attachments
+				});
+				
+				// Bestätigungsmail an den Kunden (ohne Anhänge)
+				await transporter.sendMail({
+					from: EMAIL_FROM,
+					to: data.kunde.email,
+					subject: 'Ihre Bestellung bei Chromik Offsetdruck',
+					text: kundenEmailText
+				});
+				
+				// Logge erfolgreichen Versand
+				console.log('✓ Bestellung erfolgreich per E-Mail versendet an:', EMAIL_TO);
+				console.log('✓ Bestätigungsmail an Kunden gesendet:', data.kunde.email);
+				if (attachments.length > 0) {
+					console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
+				}
+			} catch (error) {
+				console.error('✗ Fehler beim Versenden der E-Mails (asynchron):', error);
+				// Hinweis: Der Benutzer hat bereits eine Erfolgsbestätigung erhalten
+				// In einer produktiven Umgebung sollte hier ggf. eine Benachrichtigung erfolgen
+			}
+		})();
+		
+		return responsePromise;
 
 	} catch (error) {
-		console.error('Fehler beim Verarbeiten der Bestellung:', error);
+		console.error('Fehler beim Bestätigen der Bestellung:', error);
 		return json(
-			{ success: false, error: 'Fehler beim Senden der Bestellung' },
+			{ success: false, error: 'Fehler beim Verarbeiten der Bestellung' },
 			{ status: 500 }
 		);
 	}
