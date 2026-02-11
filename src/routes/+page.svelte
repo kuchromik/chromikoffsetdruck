@@ -13,8 +13,8 @@
 			useSlider: true,
 			sliderFolder: 'heroSlider',
 			buttons: [
-				{ text: 'Zum Extraladen', link: '#thema7' },
-				{ text: 'Zu Fix&günstig', link: '#thema8', variant: 'gray' }
+			{ text: 'Zum Extraladen', link: '/extraladen', tooltip: 'Exklusive Premium-Produkte & Veredelungen entdecken' },
+			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', tooltip: 'Standardprodukte online kalkulieren & direkt bestellen' }
 			]
 		},
 		{
@@ -54,29 +54,9 @@
 			title: 'Besondere Materialien',
 			description: 'Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus.',
 			reverse: true
-		},
-		{
-			id: 'thema7',
-			title: 'Extraladen',
-			description: 'Entdecken Sie unsere exklusiven Zusatzleistungen und Spezialanfertigungen. Hier finden Sie besondere Drucklösungen, die über das Standardangebot hinausgehen – maßgeschneidert für Ihre individuellen Anforderungen.',
-			reverse: false,
-			imagePath: '/foeger.jpg',
-			buttonText: 'Zum Extraladen',
-			buttonLink: '/extraladen'
-		},
-		{
-			id: 'thema8',
-			title: 'Fix&günstig',
-			description: 'Schnelle und preiswerte Lösungen ohne Kompromisse bei der Qualität. Unsere Standardprodukte überzeugen durch ein hervorragendes Preis-Leistungs-Verhältnis und kurze Lieferzeiten.',
-			reverse: true,
-			imagePath: '/fixguenstig.jpg',
-			buttonText: 'Zu Fix&günstig',
-			buttonLink: '/fixguenstig',
-			buttonVariant: 'gray'
 		}
 	];
 </script>
-
 <svelte:head>
 	<title>Chromik Offsetdruck - Moderne Drucklösungen</title>
 	<meta name="description" content="Professionelle Drucklösungen mit modernster Technologie" />

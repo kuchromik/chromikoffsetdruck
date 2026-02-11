@@ -11,8 +11,6 @@
 		{ id: 4, label: 'Stanzungen', href: '/#thema4' },
 		{ id: 5, label: 'Pantone & HKS', href: '/#thema5' },
 		{ id: 6, label: 'Besondere Materialien', href: '/#thema6' },
-		{ id: 7, label: 'Extraladen', href: '/#thema7' },
-		{ id: 8, label: 'Fix&günstig', href: '/#thema8' },
 		{ id: 9, label: 'Impressum', href: '/impressum' },
 		{ id: 10, label: 'Datenschutz', href: '/datenschutz' }
 	];

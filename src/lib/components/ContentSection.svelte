@@ -57,7 +57,12 @@
 					{#if buttons && buttons.length > 0}
 						<div class="button-group">
 							{#each buttons as btn}
-								<a href={btn.link} class="cta-button cta-button-small" class:cta-button-gray={btn.variant === 'gray'}>{btn.text}</a>
+								<a 
+									href={btn.link} 
+									class="cta-button cta-button-small" 
+									class:cta-button-gray={btn.variant === 'gray'}
+									title={btn.tooltip || ''}
+								>{btn.text}</a>
 							{/each}
 						</div>
 					{/if}
