@@ -24,3 +24,6 @@ pending-orders.json
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Firebase
+codutb-38c1e-firebase-adminsdk-346mp-2afb925ee4.json

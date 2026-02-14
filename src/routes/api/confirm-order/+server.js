@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TO, EMAIL_FROM } from '$env/static/private';
 import { getPendingOrder, deletePendingOrder, cleanupExpiredOrders } from '$lib/pendingOrders.js';
+import { createJob, formatCustomerName, formatJobDetails } from '$lib/firebaseService.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -220,6 +221,24 @@ Web: www.chromikoffsetdruck.de
 				if (attachments.length > 0) {
 					console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
 				}
+				
+				// Job in Firebase speichern (nach erfolgreichem E-Mail-Versand)
+				const jobResult = await createJob({
+					jobname: data.auftragsname,
+					amount: data.preise.gesamtpreisNetto,
+					customer: formatCustomerName(data.kunde),
+					details: formatJobDetails(data.produktInfo),
+					quantity: data.produktInfo.auflage,
+					producer: 'doe' // Digitaldruck
+				});
+				
+				if (jobResult.success) {
+					console.log('✓ Job erfolgreich in Firebase gespeichert. Job-ID:', jobResult.jobId);
+				} else {
+					console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
+					// E-Mails wurden bereits versendet, Job-Speicherung ist optional
+				}
+				
 			} catch (error) {
 				console.error('✗ Fehler beim Versenden der E-Mails (asynchron):', error);
 				// Hinweis: Der Benutzer hat bereits eine Erfolgsbestätigung erhalten
