@@ -98,7 +98,7 @@ Jeder Job in Firestore hat folgende Struktur:
   FixGuenstig: true,      // immer true (boolean)
   
   // Timestamp
-  jobstart: 1708765800000 // Unix timestamp in Millisekunden (number)
+  jobstart: 1708765800 // Unix timestamp in Sekunden (number)
 }
 ```
 

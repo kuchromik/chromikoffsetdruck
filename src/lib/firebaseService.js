@@ -69,11 +69,8 @@ export async function createJob(jobData) {
 			// FixGuenstig-Markierung
 			FixGuenstig: true,
 			
-			// Timestamp wird von Firestore automatisch gesetzt
-			jobstart: Date.now()
-		};
-
-		// Job in Firestore speichern
+		// Timestamp in Sekunden (Unix-Timestamp)
+		jobstart: Math.floor(Date.now() / 1000)
 	const docRef = await db.collection('Jobs').add(jobDoc);
 	
 	console.log(`Job erfolgreich in Firebase gespeichert: ${docRef.id}`);
