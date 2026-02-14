@@ -39,10 +39,10 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...IHR KEY...\n-----END PRIVA
 
 ### Collection erstellen
 
-Die Collection `jobs` wird automatisch beim ersten Speichern erstellt. Falls Sie sie manuell anlegen möchten:
+Die Collection `Jobs` wird automatisch beim ersten Speichern erstellt. Falls Sie sie manuell anlegen möchten:
 
 1. Klicken Sie auf **Start collection**
-2. Collection ID: `jobs`
+2. Collection ID: `Jobs`
 3. Fügen Sie ein Test-Dokument hinzu (kann später gelöscht werden)
 
 ## 5. Firestore Sicherheitsregeln
@@ -54,7 +54,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Nur Server-seitige Authentifizierung erlauben
-    match /jobs/{jobId} {
+    match /Jobs/{jobId} {
       // Kein öffentlicher Zugriff - nur über Firebase Admin SDK
       allow read, write: if false;
     }

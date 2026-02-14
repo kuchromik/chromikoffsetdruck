@@ -74,11 +74,7 @@ export async function createJob(jobData) {
 		};
 
 		// Job in Firestore speichern
-		const docRef = await db.collection('jobs').add(jobDoc);
-		
-		console.log(`Job erfolgreich in Firebase gespeichert: ${docRef.id}`);
-		
-		return {
+	const docRef = await db.collection('Jobs').add(jobDoc);
 			success: true,
 			jobId: docRef.id
 		};
