@@ -69,24 +69,27 @@ export async function createJob(jobData) {
 			// FixGuenstig-Markierung
 			FixGuenstig: true,
 			
-		// Timestamp in Sekunden (Unix-Timestamp)
-		jobstart: Math.floor(Date.now() / 1000)
-	const docRef = await db.collection('Jobs').add(jobDoc);
-	
-	console.log(`Job erfolgreich in Firebase gespeichert: ${docRef.id}`);
-	
-	return {
-		success: true,
-		jobId: docRef.id
-	};
-	
-} catch (error) {
-	console.error('Fehler beim Speichern des Jobs in Firebase:', error);
-	return {
-		success: false,
-		error: error.message
-	};
-}
+			// Timestamp in Sekunden (Unix-Timestamp)
+			jobstart: Math.floor(Date.now() / 1000)
+		};
+
+		// Job in Firestore speichern
+		const docRef = await db.collection('Jobs').add(jobDoc);
+		
+		console.log(`Job erfolgreich in Firebase gespeichert: ${docRef.id}`);
+		
+		return {
+			success: true,
+			jobId: docRef.id
+		};
+		
+	} catch (error) {
+		console.error('Fehler beim Speichern des Jobs in Firebase:', error);
+		return {
+			success: false,
+			error: error.message
+		};
+	}
 }
 
 /**
