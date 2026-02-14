@@ -75,17 +75,21 @@ export async function createJob(jobData) {
 
 		// Job in Firestore speichern
 	const docRef = await db.collection('Jobs').add(jobDoc);
-			success: true,
-			jobId: docRef.id
-		};
-		
-	} catch (error) {
-		console.error('Fehler beim Speichern des Jobs in Firebase:', error);
-		return {
-			success: false,
-			error: error.message
-		};
-	}
+	
+	console.log(`Job erfolgreich in Firebase gespeichert: ${docRef.id}`);
+	
+	return {
+		success: true,
+		jobId: docRef.id
+	};
+	
+} catch (error) {
+	console.error('Fehler beim Speichern des Jobs in Firebase:', error);
+	return {
+		success: false,
+		error: error.message
+	};
+}
 }
 
 /**
