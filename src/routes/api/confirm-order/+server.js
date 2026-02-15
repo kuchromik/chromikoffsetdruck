@@ -157,7 +157,8 @@ ${data.lieferung.lieferadresse ?
 `${data.lieferung.lieferadresse.name}
 ${data.lieferung.lieferadresse.strasse}
 ${data.lieferung.lieferadresse.plz} ${data.lieferung.lieferadresse.ort}` :
-`${data.lieferung.rechnungsadresse.strasse}
+`${data.kunde.firma ? data.kunde.firma + '\n' : ''}${data.kunde.vorname} ${data.kunde.nachname}
+${data.lieferung.rechnungsadresse.strasse}
 ${data.lieferung.rechnungsadresse.plz} ${data.lieferung.rechnungsadresse.ort}`}`}
 
 IHRE KONTAKTDATEN:
