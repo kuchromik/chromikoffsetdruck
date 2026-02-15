@@ -434,46 +434,6 @@
 			ergebnisText += `
 				<strong>Auflage:</strong> ${auflage} Stück<br>
 				<strong>Material:</strong> ${material}<br><br>
-				<strong style="font-size: 1.1em;">Detaillierte Preisberechnung:</strong><br>
-				<div style="margin-left: 1rem; margin-top: 0.5rem; line-height: 1.6;">				<strong>Anzahl Druckbogen:</strong> ${preisBerechnung.anzahlDruckbogen}<br>
-				<span style="color: #666; font-size: 0.9em;">
-					= (Auflage (${preisBerechnung.faktoren.auflage}) × 
-					Formatfaktor (${preisBerechnung.faktoren.formatfaktor}) × 
-					Flächenfaktor (${preisBerechnung.faktoren.flaechenfaktor})) / 2, aufgerundet
-				</span><br>
-				<br>					<strong>Klickanzahl:</strong> ${preisBerechnung.klickanzahl}<br>
-					<span style="color: #666; font-size: 0.9em;">
-						= Auflage (${preisBerechnung.faktoren.auflage}) × 
-					Formatfaktor (${preisBerechnung.faktoren.formatfaktor}) × 
-						Flächenfaktor (${preisBerechnung.faktoren.flaechenfaktor}), aufgerundet
-					</span><br>
-					<br>
-					<strong>Grundpreis:</strong> ${preisBerechnung.grundpreis.toFixed(2)} €<br>
-					<br>
-					<strong>Druckkosten:</strong> ${preisBerechnung.druckkosten.toFixed(2)} €<br>
-					<span style="color: #666; font-size: 0.9em;">
-					= Klickanzahl (${preisBerechnung.klickanzahl}) × 
-					Klickkosten (${preisBerechnung.faktoren.klickkosten})
-					</span><br>
-					<br>
-					<strong>Materialkosten:</strong> ${preisBerechnung.materialkosten.toFixed(2)} €<br>
-					<span style="color: #666; font-size: 0.9em;">
-					= Anzahl Druckbogen (${preisBerechnung.anzahlDruckbogen}) × 
-					Materialfaktor (${preisBerechnung.faktoren.materialfaktor})
-					</span><br>
-					<br>
-					<strong>Schneidekosten:</strong> ${preisBerechnung.schneidekosten.toFixed(2)} €<br>
-					<span style="color: #666; font-size: 0.9em;">
-						= Kosten je Schnitt (${preisBerechnung.faktoren.kostenJeSchnitt}) × 
-						Schneideaufwandsfaktor (${preisBerechnung.faktoren.schneideaufwandsfaktor})
-					</span><br>`;
-			
-			if (preisBerechnung.zusatzkosten > 0) {
-				ergebnisText += `		<br><strong>${preisBerechnung.zusatzkostenName}:</strong> ${preisBerechnung.zusatzkosten.toFixed(2)} €<br>`;
-			}
-			
-			ergebnisText += `
-				</div>
 				<div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid currentColor;">
 					<div style="margin-bottom: 0.5rem;">Gesamtpreis (netto): ${preisBerechnung.gesamtpreisNetto.toFixed(2)} €</div>
 					<div style="margin-bottom: 0.75rem; font-size: 0.95em;">zzgl. 19% MwSt.: ${preisBerechnung.mwstBetrag.toFixed(2)} €</div>

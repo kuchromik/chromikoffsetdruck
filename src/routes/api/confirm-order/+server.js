@@ -73,13 +73,6 @@ Material: ${data.produktInfo.material}
 
 PREISBERECHNUNG:
 ----------------
-Anzahl Druckbogen: ${data.preise.anzahlDruckbogen}
-Klickanzahl: ${data.preise.klickanzahl}
-Grundpreis: ${data.preise.grundpreis.toFixed(2)} €
-Druckkosten: ${data.preise.druckkosten.toFixed(2)} €
-Materialkosten: ${data.preise.materialkosten.toFixed(2)} €
-Schneidekosten: ${data.preise.schneidekosten.toFixed(2)} €
-${data.preise.zusatzkosten > 0 ? `${data.preise.zusatzkostenName}: ${data.preise.zusatzkosten.toFixed(2)} €\n` : ''}
 Gesamtpreis (netto): ${data.preise.gesamtpreisNetto.toFixed(2)} €
 MwSt. (19%): ${data.preise.mwstBetrag.toFixed(2)} €
 GESAMTPREIS (brutto): ${data.preise.gesamtpreisBrutto.toFixed(2)} €
