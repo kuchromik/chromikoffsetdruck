@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TO, EMAIL_FROM } from '$env/static/private';
 import { getPendingOrder, deletePendingOrder, cleanupExpiredOrders } from '$lib/pendingOrders.js';
-import { createJob, formatCustomerName, formatJobDetails } from '$lib/firebaseService.js';
+import { createJob, createCustomer, formatCustomerName, formatJobDetails } from '$lib/firebaseService.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -231,6 +231,24 @@ Web: www.chromikoffsetdruck.de
 				} else {
 					console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
 					// E-Mails wurden bereits versendet, Job-Speicherung ist optional
+				}
+				
+				// Kundendaten in Firebase speichern
+				const customerResult = await createCustomer({
+					firstName: data.kunde.vorname,
+					lastName: data.kunde.nachname,
+					email: data.kunde.email,
+					address: data.kunde.strasse,
+					zip: data.kunde.plz,
+					city: data.kunde.ort,
+					company: data.kunde.firma || '',
+					countryCode: 'DE'
+				});
+				
+				if (customerResult.success) {
+					console.log('✓ Kunde erfolgreich in Firebase gespeichert. Kunden-ID:', customerResult.customerId);
+				} else {
+					console.error('✗ Fehler beim Speichern des Kunden in Firebase:', customerResult.error);
 				}
 				
 			} catch (error) {

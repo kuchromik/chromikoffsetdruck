@@ -134,3 +134,52 @@ export function formatJobDetails(produktInfo) {
 	
 	return parts.join(', ');
 }
+
+/**
+ * Erstellt einen neuen Kunden in der Firestore-Datenbank (customer Collection)
+ * 
+ * @param {Object} customerData - Die Kundendaten
+ * @param {string} customerData.firstName - Vorname
+ * @param {string} customerData.lastName - Nachname
+ * @param {string} customerData.email - E-Mail-Adresse
+ * @param {string} customerData.address - Straße und Hausnummer
+ * @param {string} customerData.zip - Postleitzahl
+ * @param {string} customerData.city - Ort
+ * @param {string} [customerData.company] - Firma (optional)
+ * @param {string} [customerData.countryCode='DE'] - Ländercode (default: 'DE')
+ * @returns {Promise<{success: boolean, customerId?: string, error?: string}>}
+ */
+export async function createCustomer(customerData) {
+	try {
+		const db = getDb();
+		
+		// Kunden-Dokument erstellen
+		const customerDoc = {
+			firstName: customerData.firstName,
+			lastName: customerData.lastName,
+			email: customerData.email,
+			address: customerData.address,
+			zip: customerData.zip,
+			city: customerData.city,
+			company: customerData.company || '',
+			countryCode: customerData.countryCode || 'DE'
+		};
+
+		// Kunde in Firestore speichern
+		const docRef = await db.collection('customer').add(customerDoc);
+		
+		console.log(`Kunde erfolgreich in Firebase gespeichert: ${docRef.id}`);
+		
+		return {
+			success: true,
+			customerId: docRef.id
+		};
+		
+	} catch (error) {
+		console.error('Fehler beim Speichern des Kunden in Firebase:', error);
+		return {
+			success: false,
+			error: error.message
+		};
+	}
+}
