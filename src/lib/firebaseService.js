@@ -136,6 +136,89 @@ export function formatJobDetails(produktInfo) {
 }
 
 /**
+ * Sucht einen Kunden in der Firestore-Datenbank anhand der E-Mail-Adresse
+ * 
+ * @param {string} email - Die E-Mail-Adresse des Kunden
+ * @returns {Promise<{success: boolean, customer?: Object, customerId?: string, error?: string}>}
+ */
+export async function getCustomerByEmail(email) {
+	try {
+		const db = getDb();
+		
+		// Suche nach Kunde mit dieser E-Mail
+		const snapshot = await db.collection('customer')
+			.where('email', '==', email)
+			.limit(1)
+			.get();
+		
+		if (snapshot.empty) {
+			return {
+				success: true,
+				customer: null // Kein Kunde gefunden
+			};
+		}
+		
+		// Ersten (und einzigen) Treffer zurückgeben
+		const doc = snapshot.docs[0];
+		
+		console.log(`Kunde gefunden: ${doc.id}`);
+		
+		return {
+			success: true,
+			customer: doc.data(),
+			customerId: doc.id
+		};
+		
+	} catch (error) {
+		console.error('Fehler beim Suchen des Kunden in Firebase:', error);
+		return {
+			success: false,
+			error: error.message
+		};
+	}
+}
+
+/**
+ * Aktualisiert einen existierenden Kunden in der Firestore-Datenbank
+ * 
+ * @param {string} customerId - Die ID des Kunden
+ * @param {Object} customerData - Die aktualisierten Kundendaten
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateCustomer(customerId, customerData) {
+	try {
+		const db = getDb();
+		
+		// Kunden-Dokument aktualisieren
+		const customerDoc = {
+			firstName: customerData.firstName,
+			lastName: customerData.lastName,
+			email: customerData.email,
+			address: customerData.address,
+			zip: customerData.zip,
+			city: customerData.city,
+			company: customerData.company || '',
+			countryCode: customerData.countryCode || 'DE'
+		};
+
+		await db.collection('customer').doc(customerId).update(customerDoc);
+		
+		console.log(`Kunde erfolgreich aktualisiert: ${customerId}`);
+		
+		return {
+			success: true
+		};
+		
+	} catch (error) {
+		console.error('Fehler beim Aktualisieren des Kunden in Firebase:', error);
+		return {
+			success: false,
+			error: error.message
+		};
+	}
+}
+
+/**
  * Erstellt einen neuen Kunden in der Firestore-Datenbank (customer Collection)
  * 
  * @param {Object} customerData - Die Kundendaten

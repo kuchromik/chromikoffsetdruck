@@ -3,6 +3,7 @@ import { join } from 'path';
 import crypto from 'crypto';
 
 const PENDING_ORDERS_FILE = join(process.cwd(), 'pending-orders.json');
+const PENDING_EMAIL_VERIFICATIONS_FILE = join(process.cwd(), 'pending-email-verifications.json');
 const TOKEN_EXPIRY_HOURS = 24; // Token läuft nach 24 Stunden ab
 
 /**
@@ -133,6 +134,117 @@ export function cleanupExpiredOrders() {
 	if (deletedCount > 0) {
 		savePendingOrders(orders);
 		console.log(`✓ ${deletedCount} abgelaufene Bestellung(en) bereinigt`);
+	}
+	
+	return deletedCount;
+}
+
+// ====================================
+// E-Mail-Verifizierungs-Funktionen
+// ====================================
+
+/**
+ * Lädt alle ausstehenden E-Mail-Verifizierungen aus der JSON-Datei
+ */
+function loadPendingEmailVerifications() {
+	if (!existsSync(PENDING_EMAIL_VERIFICATIONS_FILE)) {
+		return {};
+	}
+	try {
+		const data = readFileSync(PENDING_EMAIL_VERIFICATIONS_FILE, 'utf-8');
+		return JSON.parse(data);
+	} catch (error) {
+		console.error('Fehler beim Laden der E-Mail-Verifizierungen:', error);
+		return {};
+	}
+}
+
+/**
+ * Speichert alle ausstehenden E-Mail-Verifizierungen in die JSON-Datei
+ */
+function savePendingEmailVerifications(verifications) {
+	try {
+		writeFileSync(PENDING_EMAIL_VERIFICATIONS_FILE, JSON.stringify(verifications, null, 2));
+	} catch (error) {
+		console.error('Fehler beim Speichern der E-Mail-Verifizierungen:', error);
+		throw error;
+	}
+}
+
+/**
+ * Speichert eine neue E-Mail-Verifizierung
+ * @param {string} email - Die zu verifizierende E-Mail-Adresse
+ * @returns {string} Der generierte Token
+ */
+export function saveEmailVerification(email) {
+	const token = generateToken();
+	const verifications = loadPendingEmailVerifications();
+	
+	verifications[token] = {
+		email: email,
+		timestamp: new Date().toISOString(),
+		expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toISOString()
+	};
+	
+	savePendingEmailVerifications(verifications);
+	console.log(`✓ E-Mail-Verifizierung gespeichert mit Token: ${token}`);
+	
+	return token;
+}
+
+/**
+ * Holt eine E-Mail-Verifizierung anhand des Tokens
+ * @param {string} token - Der Verifizierungs-Token
+ * @returns {string|null} Die E-Mail-Adresse oder null wenn nicht gefunden/abgelaufen
+ */
+export function getEmailFromVerification(token) {
+	const verifications = loadPendingEmailVerifications();
+	const verification = verifications[token];
+	
+	if (!verification) {
+		console.log(`✗ Keine E-Mail-Verifizierung gefunden für Token: ${token}`);
+		return null;
+	}
+	
+	// Prüfe ob Token abgelaufen ist
+	if (new Date(verification.expiresAt) < new Date()) {
+		console.log(`✗ E-Mail-Verifizierungs-Token abgelaufen: ${token}`);
+		deleteEmailVerification(token);
+		return null;
+	}
+	
+	return verification.email;
+}
+
+/**
+ * Löscht eine E-Mail-Verifizierung
+ * @param {string} token - Der Verifizierungs-Token
+ */
+export function deleteEmailVerification(token) {
+	const verifications = loadPendingEmailVerifications();
+	delete verifications[token];
+	savePendingEmailVerifications(verifications);
+	console.log(`✓ E-Mail-Verifizierung gelöscht: ${token}`);
+}
+
+/**
+ * Bereinigt abgelaufene E-Mail-Verifizierungen
+ */
+export function cleanupExpiredEmailVerifications() {
+	const verifications = loadPendingEmailVerifications();
+	const now = new Date();
+	let deletedCount = 0;
+	
+	for (const [token, verification] of Object.entries(verifications)) {
+		if (new Date(verification.expiresAt) < now) {
+			delete verifications[token];
+			deletedCount++;
+		}
+	}
+	
+	if (deletedCount > 0) {
+		savePendingEmailVerifications(verifications);
+		console.log(`✓ ${deletedCount} abgelaufene E-Mail-Verifizierung(en) bereinigt`);
 	}
 	
 	return deletedCount;

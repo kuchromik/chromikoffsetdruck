@@ -1,4 +1,6 @@
 <script>
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import { PDFDocument } from 'pdf-lib';
@@ -253,6 +255,14 @@
 	let preisBerechnung = $state(null);
 	let bestellStatus = $state(''); // '', 'sending', 'success', 'error'
 
+	// E-Mail-Verifizierung
+	let emailVerifiziert = $state(false);
+	let verifiedEmail = $state('');
+	let existingCustomerId = $state(null);
+	let zeigeEmailVerifizierung = $state(false);
+	let emailVerifikationStatus = $state(''); // '', 'sending', 'sent', 'error', 'verifying'
+	let emailZurVerifizierung = $state('');
+
 	// Kundendaten
 	let kundenDaten = $state({
 		vorname: '',
@@ -465,16 +475,114 @@
 	}
 
 	function startBestellprozess() {
-		zeigeBestellformular = true;
+		// Prüfen ob E-Mail bereits verifiziert ist
+		if (!emailVerifiziert) {
+			// Zeige E-Mail-Verifizierung an
+			zeigeEmailVerifizierung = true;
+			emailVerifikationStatus = '';
+		} else {
+			// E-Mail bereits verifiziert - zeige direkt Bestellformular
+			zeigeBestellformular = true;
+		}
 		
-		// Smooth scroll zum Bestellformular nach kurzer Verzögerung
+		// Smooth scroll zum Formular nach kurzer Verzögerung
 		setTimeout(() => {
-			const orderForm = document.querySelector('.order-form-box');
-			if (orderForm) {
-				orderForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			const target = document.querySelector('.email-verification-box, .order-form-box');
+			if (target) {
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 		}, 100);
 	}
+
+	async function sendeEmailVerifizierung() {
+		if (!emailZurVerifizierung || !emailZurVerifizierung.includes('@')) {
+			alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+			return;
+		}
+
+		emailVerifikationStatus = 'sending';
+
+		try {
+			const response = await fetch('/api/verify-email', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ email: emailZurVerifizierung })
+			});
+
+			if (response.ok) {
+				emailVerifikationStatus = 'sent';
+			} else {
+				emailVerifikationStatus = 'error';
+			}
+		} catch (error) {
+			console.error('Fehler beim Senden der E-Mail-Verifizierung:', error);
+			emailVerifikationStatus = 'error';
+		}
+	}
+
+	// Beim Laden der Seite prüfen, ob ein E-Mail-Token im URL ist
+	onMount(async () => {
+		const emailToken = $page.url.searchParams.get('emailToken');
+		
+		if (emailToken) {
+			emailVerifikationStatus = 'verifying';
+			
+			try {
+				const response = await fetch('/api/check-verified-email', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ token: emailToken })
+				});
+
+				const result = await response.json();
+
+				if (result.success) {
+					// E-Mail wurde verifiziert
+					emailVerifiziert = true;
+					verifiedEmail = result.email;
+					kundenDaten.email = result.email;
+					
+					// Wenn Kundendaten existieren, Formular vorausfüllen
+					if (result.customerExists && result.customerData) {
+						existingCustomerId = result.customerId;
+						kundenDaten.vorname = result.customerData.firstName || '';
+						kundenDaten.nachname = result.customerData.lastName || '';
+						kundenDaten.firma = result.customerData.company || '';
+						kundenDaten.strasse = result.customerData.address || '';
+						kundenDaten.plz = result.customerData.zip || '';
+						kundenDaten.ort = result.customerData.city || '';
+					}
+					
+					emailVerifikationStatus = '';
+					
+					// Entferne Token aus URL
+					const url = new URL(window.location.href);
+					url.searchParams.delete('emailToken');
+					window.history.replaceState({}, '', url);
+					
+					// Scroll zur Produktauswahl falls noch nicht geschehen
+					setTimeout(() => {
+						const productSection = document.querySelector('.product-selection');
+						if (productSection) {
+							productSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						}
+					}, 500);
+					
+				} else {
+					emailVerifikationStatus = 'error';
+					alert('E-Mail-Verifizierung fehlgeschlagen: ' + (result.error || 'Unbekannter Fehler'));
+				}
+			} catch (error) {
+				console.error('Fehler bei E-Mail-Verifizierung:', error);
+				emailVerifikationStatus = 'error';
+				alert('Fehler bei der E-Mail-Verifizierung. Bitte versuchen Sie es erneut.');
+			}
+		}
+	});
 
 	function abbrechenBestellung() {
 		// Komplett zurücksetzen - zurück zur Produktauswahl
@@ -487,8 +595,16 @@
 		ergebnis = '';
 		zeigErgebnis = false;
 		zeigeBestellformular = false;
+		zeigeEmailVerifizierung = false;
 		preisBerechnung = null;
 		bestellStatus = '';
+		
+		// E-Mail-Verifizierung zurücksetzen
+		emailVerifiziert = false;
+		verifiedEmail = '';
+		existingCustomerId = null;
+		emailVerifikationStatus = '';
+		emailZurVerifizierung = '';
 		
 		// Kundendaten zurücksetzen
 		kundenDaten = {
@@ -661,13 +777,16 @@
 			
 			formData.append('data', JSON.stringify(bestellDaten));
 			
+			// ExistingCustomerId hinzufügen (wenn vorhanden)
+			formData.append('existingCustomerId', existingCustomerId || 'null');
+			
 			// PDF-Dateien hinzufügen
 			pdfDateien.forEach((file, index) => {
 				formData.append(`pdf${index}`, file);
 			});
 
-			// API-Route aufrufen (sendet Verifizierungs-Mail)
-			const response = await fetch('/api/send-verification', {
+			// API-Route aufrufen (verarbeitet Bestellung direkt, da E-Mail bereits verifiziert)
+			const response = await fetch('/api/submit-verified-order', {
 				method: 'POST',
 				body: formData // Kein Content-Type Header - wird automatisch gesetzt
 			});
@@ -848,6 +967,77 @@
 				</div>
 			{/if}
 
+			{#if zeigeEmailVerifizierung}
+				<div class="email-verification-box" style="margin-top: 2rem; padding: 2rem; background-color: #f8f9fa; border-radius: 8px;">
+					<h3 style="margin-bottom: 1.5rem;">E-Mail-Adresse bestätigen</h3>
+					
+					<p style="margin-bottom: 1.5rem;">
+						Um mit Ihrer Bestellung fortzufahren, bestätigen Sie bitte zunächst Ihre E-Mail-Adresse. 
+						<strong>Falls Sie bereits bei uns bestellt haben, werden Ihre Daten automatisch geladen.</strong>
+					</p>
+
+					{#if emailVerifikationStatus === 'sent'}
+						<div class="success-message" style="padding: 1.5rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; margin-bottom: 1.5rem;">
+							<h4 style="color: #155724; margin-bottom: 0.5rem;">✓ E-Mail versendet!</h4>
+							<p style="color: #155724; margin: 0;">Wir haben Ihnen eine Bestätigungsmail an <strong>{emailZurVerifizierung}</strong> gesendet.</p>
+							<p style="color: #155724; margin: 0.5rem 0 0;">
+								<strong>Bitte überprüfen Sie Ihr E-Mail-Postfach und klicken Sie auf den Bestätigungslink.</strong>
+								<br>Der Link ist 24 Stunden gültig.
+							</p>
+						</div>
+						<div class="button-group">
+							<button class="btn btn-secondary" onclick={() => { emailVerifikationStatus = ''; emailZurVerifizierung = ''; }}>
+								Andere E-Mail-Adresse verwenden
+							</button>
+							<button class="btn btn-secondary" onclick={abbrechenBestellung}>
+								Abbrechen
+							</button>
+						</div>
+					{:else if emailVerifikationStatus === 'error'}
+						<div class="error-message" style="padding: 1.5rem; background-color: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px; margin-bottom: 1.5rem;">
+							<h4 style="color: #721c24; margin-bottom: 0.5rem;">✗ Fehler beim Senden</h4>
+							<p style="color: #721c24; margin: 0;">Leider ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt.</p>
+						</div>
+						<div class="button-group">
+							<button class="btn btn-primary" onclick={() => emailVerifikationStatus = ''}>Erneut versuchen</button>
+							<button class="btn btn-secondary" onclick={abbrechenBestellung}>Abbrechen</button>
+						</div>
+					{:else if emailVerifikationStatus === 'verifying'}
+						<div style="text-align: center; padding: 2rem;">
+							<div class="spinner"></div>
+							<p style="margin-top: 1rem;">E-Mail-Adresse wird verifiziert...</p>
+						</div>
+					{:else}
+						<div style="background-color: white; padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem;">
+							<div class="form-group">
+								<label for="email-verification">E-Mail-Adresse *</label>
+								<input 
+									type="email" 
+									id="email-verification" 
+									bind:value={emailZurVerifizierung} 
+									placeholder="ihre@email.de" 
+									required 
+									disabled={emailVerifikationStatus === 'sending'}
+									style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;"
+								/>
+							</div>
+						</div>
+
+						<div class="button-group">
+							<button 
+								class="btn btn-primary" 
+								onclick={sendeEmailVerifizierung}
+								disabled={emailVerifikationStatus === 'sending' || !emailZurVerifizierung}
+								style="font-size: 1.1em; padding: 0.75rem 2rem;"
+							>
+								{emailVerifikationStatus === 'sending' ? 'Wird gesendet...' : 'E-Mail bestätigen'}
+							</button>
+							<button class="btn btn-secondary" onclick={abbrechenBestellung}>Abbrechen</button>
+						</div>
+					{/if}
+				</div>
+			{/if}
+
 			{#if zeigeBestellformular}
 				<div class="order-form-box" style="margin-top: 2rem; padding: 2rem; background-color: #f8f9fa; border-radius: 8px;">
 					<h3 style="margin-bottom: 1.5rem;">Auftragsformular</h3>
@@ -878,9 +1068,12 @@
 
 					{#if bestellStatus === 'success'}
 						<div class="success-message" style="padding: 1.5rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; margin-bottom: 1.5rem;">
-							<h4 style="color: #155724; margin-bottom: 0.5rem;">✓ E-Mail versendet!</h4>
-							<p style="color: #155724; margin: 0;">Wir haben Ihnen eine Bestätigungsmail gesendet.</p>
-							<p style="color: #155724; margin: 0.5rem 0 0;"><strong>Bitte überprüfen Sie Ihr E-Mail-Postfach und klicken Sie auf den Bestätigungslink, um Ihre Bestellung abzuschließen.</strong></p>
+							<h4 style="color: #155724; margin-bottom: 0.5rem;">✓ Bestellung erfolgreich abgeschickt!</h4>
+							<p style="color: #155724; margin: 0;">Vielen Dank für Ihre Bestellung!</p>
+							<p style="color: #155724; margin: 0.5rem 0 0;">
+								<strong>Wir haben Ihre Bestellung erhalten und Ihnen eine Bestätigungsmail an {kundenDaten.email} gesendet.</strong>
+								<br>Sie erhalten in Kürze eine detaillierte Auftragsbestätigung von uns.
+							</p>
 						</div>
 						<button class="btn btn-secondary" onclick={abbrechenBestellung}>Neue Bestellung</button>
 					{:else if bestellStatus === 'error'}
@@ -895,6 +1088,16 @@
 					{:else}
 						<form onsubmit={sendeBestellung}>
 							<h4 style="margin-bottom: 1.5rem;">Ihre Kontaktdaten:</h4>
+							
+							{#if existingCustomerId}
+								<div class="info-message" style="padding: 1rem 1.5rem; background-color: #d1ecf1; border-left: 4px solid #17a2b8; border-radius: 4px; margin-bottom: 1.5rem;">
+									<p style="color: #0c5460; margin: 0;">
+										<strong>ℹ️ Willkommen zurück!</strong><br>
+										Wir haben Ihre Daten aus einer früheren Bestellung geladen. 
+										Bitte überprüfen Sie die Angaben und aktualisieren Sie diese bei Bedarf.
+									</p>
+								</div>
+							{/if}
 							
 							<div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
 								<div class="form-group" style="margin-bottom: 0;">
@@ -938,8 +1141,21 @@
 							</div>
 
 							<div class="form-group">
-								<label for="email">E-Mail-Adresse *</label>
-								<input type="email" id="email" bind:value={kundenDaten.email} placeholder="ihre@email.de" required />
+								<label for="email">E-Mail-Adresse * {#if emailVerifiziert}<span style="color: #28a745; font-weight: normal;">✓ Verifiziert</span>{/if}</label>
+								<input 
+									type="email" 
+									id="email" 
+									bind:value={kundenDaten.email} 
+									placeholder="ihre@email.de" 
+									required 
+									disabled={emailVerifiziert}
+									style={emailVerifiziert ? 'background-color: #e9f7ef; cursor: not-allowed;' : ''}
+								/>
+								{#if emailVerifiziert}
+									<small style="color: #6c757d; display: block; margin-top: 0.25rem;">
+										Diese E-Mail-Adresse wurde erfolgreich verifiziert.
+									</small>
+								{/if}
 							</div>
 
 							<div class="form-group" style="margin-top: 1.5rem;">
@@ -1146,8 +1362,9 @@
 								</div>
 							</div>
 						{/if}
+					</div>
 
-							<div class="form-group" style="margin-top: 1.5rem;">
+					<div class="form-group" style="margin-top: 1.5rem;">
 								<label style="display: flex; align-items: flex-start; cursor: pointer;">
 									<input 
 										type="checkbox" 
@@ -1419,6 +1636,27 @@
 
 	.result-box :global(strong) {
 		color: var(--text-primary);
+	}
+
+	.button-group {
+		display: flex;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.spinner {
+		width: 50px;
+		height: 50px;
+		margin: 0 auto;
+		border: 4px solid #f3f4f6;
+		border-top: 4px solid #6b7280;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
 	}
 
 	@keyframes slideIn {
