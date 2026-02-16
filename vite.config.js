@@ -34,13 +34,11 @@ export default defineConfig({
 				},
 			},
 		},
-		// Minification optimieren
-		minify: 'terser',
-		terserOptions: {
-			compress: {
-				drop_console: true, // Console.logs in Production entfernen
-				passes: 2,
-			},
+		// Minification optimieren mit esbuild (schneller und bereits enthalten)
+		minify: 'esbuild',
+		// Console.logs in Production entfernen
+		esbuild: {
+			drop: ['console', 'debugger'],
 		},
 	},
 	
