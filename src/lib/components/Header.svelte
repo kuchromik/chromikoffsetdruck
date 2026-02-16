@@ -114,7 +114,7 @@
 	.header {
 		position: sticky;
 		top: 0;
-		z-index: 1000;
+		z-index: 1001;
 		background-color: var(--bg-primary);
 		border-bottom: 1px solid var(--border);
 		/* Optimierte Transition nur für transform und opacity */
@@ -122,8 +122,6 @@
 		/* Hardware-Beschleunigung */
 		transform: translateZ(0);
 		will-change: box-shadow;
-		/* Verhindert Repaint */
-		contain: layout style;
 	}
 
 	.header.scrolled {
@@ -255,8 +253,6 @@
 		bottom: 0;
 		background-color: rgba(0, 0, 0, 0.5);
 		z-index: 999;
-		/* Hardware-Beschleunigung für Overlay */
-		transform: translateZ(0);
 	}
 
 	.mobile-menu {
@@ -270,6 +266,7 @@
 		padding: 6rem 2rem 2rem;
 		overflow-y: auto;
 		box-shadow: -4px 0 20px var(--shadow);
+		z-index: 1001;
 		/* Optimierte Scroll-Performance */
 		-webkit-overflow-scrolling: touch;
 	}
