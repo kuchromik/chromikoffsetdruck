@@ -46,9 +46,10 @@
 
 <section {id} class="content-section section" bind:this={sectionElement}>
 	<div class="container">
-		{#if visible}
-			<div class="content-wrapper" class:reverse transition:fly={{ y: 50, duration: 600, delay: 100 }}>
-				<div class="text-content">
+		<!-- Platzhalter mit minimaler Höhe reserviert Platz und verhindert Layout-Shift -->
+		<div class="content-wrapper" class:reverse style="min-height: 400px;">
+			{#if visible}
+				<div class="text-content" transition:fly={{ y: 50, duration: 600, delay: 100 }}>
 					<h2>{title}</h2>
 					<p>{@html description}</p>
 					{#if buttonText && buttonLink}
@@ -67,11 +68,18 @@
 						</div>
 					{/if}
 				</div>
-				<div class="image-placeholder">
+				<div class="image-placeholder" transition:fly={{ y: 50, duration: 600, delay: 200 }}>
 					{#if useSlider}
 						<SimpleImageSlider folderPath={sliderFolder} />
 					{:else if imagePath}
-						<img src={imagePath} alt={title} />
+						<img 
+							src={imagePath} 
+							alt={title} 
+							width="600" 
+							height="450"
+							loading="lazy"
+							decoding="async"
+						/>
 					{:else}
 						<div class="placeholder-content">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -82,8 +90,12 @@
 						</div>
 					{/if}
 				</div>
-			</div>
-		{/if}
+			{:else}
+				<!-- Leerer Platzhalter während des Ladens -->
+				<div class="text-content loading-placeholder"></div>
+				<div class="image-placeholder"></div>
+			{/if}
+		</div>
 	</div>
 </section>
 
@@ -268,6 +280,7 @@
 		width: 100%;
 		max-width: 600px;
 		aspect-ratio: 4 / 3;
+		min-height: 400px; /* Verhindert Layout-Shift */
 		background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--hover-bg) 100%);
 		border-radius: 16px;
 		display: flex;
@@ -276,6 +289,9 @@
 		overflow: hidden;
 		position: relative;
 		border: 1px solid var(--border);
+		/* Optimierte GPU-Nutzung */
+		transform: translateZ(0);
+		will-change: auto;
 	}
 
 	.image-placeholder img {
@@ -283,6 +299,12 @@
 		height: 100%;
 		object-fit: cover;
 		object-position: center;
+	}
+	
+	.loading-placeholder {
+		min-height: 300px;
+		background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--hover-bg) 100%);
+		border-radius: 16px;
 	}
 
 	.placeholder-content {

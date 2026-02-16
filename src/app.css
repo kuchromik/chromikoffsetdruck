@@ -23,6 +23,12 @@ body {
 	color: var(--text-primary);
 	line-height: 1.6;
 	transition: background-color 0.3s ease, color 0.3s ease;
+	/* Optimierte Font-Rendering */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+	/* Verhindert Layout-Shifts bei Font-Loading */
+	font-display: swap;
 }
 
 /* Smooth scrolling */
@@ -36,6 +42,8 @@ h1, h2, h3, h4, h5, h6 {
 	font-weight: 600;
 	line-height: 1.2;
 	margin-bottom: 1rem;
+	/* Verhindert Layout-Shifts */
+	contain: layout;
 }
 
 h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
@@ -49,7 +57,10 @@ p {
 a {
 	color: inherit;
 	text-decoration: none;
-	transition: opacity 0.2s ease;
+	/* Optimierte Transition nur für transform und opacity */
+	transition: opacity 0.2s ease, transform 0.2s ease;
+	/* Hardware-Beschleunigung für Links */
+	will-change: auto;
 }
 
 a:hover {

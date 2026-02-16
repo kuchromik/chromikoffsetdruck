@@ -60,6 +60,12 @@
 <svelte:head>
 	<title>Chromik Offsetdruck - Moderne Drucklösungen</title>
 	<meta name="description" content="Professionelle Drucklösungen mit modernster Technologie" />
+	
+	<!-- Preload kritischer Ressourcen -->
+	<link rel="preload" href="/logo.png" as="image" type="image/png" />
+	
+	<!-- Performance Hints -->
+	<meta name="theme-color" content="#ffffff" />
 </svelte:head>
 
 <div class="page-wrapper">

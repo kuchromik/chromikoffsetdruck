@@ -49,7 +49,13 @@
 	<div class="container">
 		<nav class="nav" aria-label="Hauptnavigation">
 			<a href="/" class="logo">
-				<img src="/logo.png" alt="Chromik Offsetdruck - Startseite" />
+				<img 
+					src="/logo.png" 
+					alt="Chromik Offsetdruck - Startseite" 
+					width="210" 
+					height="70"
+					fetchpriority="high"
+				/>
 			</a>
 
 			<!-- Desktop Menu -->
@@ -111,7 +117,13 @@
 		z-index: 1000;
 		background-color: var(--bg-primary);
 		border-bottom: 1px solid var(--border);
-		transition: all 0.3s ease;
+		/* Optimierte Transition nur für transform und opacity */
+		transition: box-shadow 0.3s ease;
+		/* Hardware-Beschleunigung */
+		transform: translateZ(0);
+		will-change: box-shadow;
+		/* Verhindert Repaint */
+		contain: layout style;
 	}
 
 	.header.scrolled {
@@ -133,9 +145,12 @@
 
 	.logo img {
 		height: 50px;
-		width: auto;
+		width: 150px; /* Explizite Breite verhindert CLS */
 		object-fit: contain;
-		transition: all 0.4s ease;
+		/* Optimierte Transition */
+		transition: transform 0.4s ease;
+		/* Hardware-Beschleunigung */
+		transform: translateZ(0);
 	}
 
 	.header.scrolled .logo img {
@@ -146,15 +161,17 @@
 	@media (min-width: 768px) {
 		.logo img {
 			height: 70px;
+			width: 210px;
 		}
 
 		.header.scrolled .logo img {
 			height: 50px;
+			width: 150px;
 		}
 	}
 
 	.logo:hover img {
-		transform: scale(1.05);
+		transform: scale(1.05) translateZ(0);
 	}
 
 	.menu {
@@ -180,6 +197,8 @@
 		height: 2px;
 		background-color: var(--text-primary);
 		transition: width 0.3s ease;
+		/* Hardware-Beschleunigung */
+		transform: translateZ(0);
 	}
 
 	.menu li a:hover::after {
@@ -202,7 +221,9 @@
 		cursor: pointer;
 		padding: 0.5rem;
 		z-index: 1001;
-		transition: all 0.4s ease;
+		transition: gap 0.4s ease;
+		/* Hardware-Beschleunigung */
+		transform: translateZ(0);
 	}
 
 	.menu-toggle span {
@@ -210,6 +231,8 @@
 		height: 3px;
 		background-color: var(--text-primary);
 		transition: all 0.4s ease;
+		/* Hardware-Beschleunigung */
+		transform: translateZ(0);
 	}
 
 	.header.scrolled .menu-toggle {
@@ -232,6 +255,8 @@
 		bottom: 0;
 		background-color: rgba(0, 0, 0, 0.5);
 		z-index: 999;
+		/* Hardware-Beschleunigung für Overlay */
+		transform: translateZ(0);
 	}
 
 	.mobile-menu {
@@ -244,6 +269,10 @@
 		padding: 6rem 2rem 2rem;
 		overflow-y: auto;
 		box-shadow: -4px 0 20px var(--shadow);
+		/* Hardware-Beschleunigung */
+		transform: translateZ(0);
+		/* Optimierte Scroll-Performance */
+		-webkit-overflow-scrolling: touch;
 	}
 
 	.mobile-menu ul {
