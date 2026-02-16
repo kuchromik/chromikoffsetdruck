@@ -7,8 +7,8 @@ import { saveEmailVerification } from '$lib/pendingOrders.js';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	try {
-		// E-Mail aus Request holen
-		const { email } = await request.json();
+		// E-Mail und optionalen orderState aus Request holen
+		const { email, orderState } = await request.json();
 		
 		if (!email) {
 			return json(
@@ -17,8 +17,8 @@ export async function POST({ request }) {
 			);
 		}
 		
-		// E-Mail-Verifizierung speichern und Token generieren
-		const token = saveEmailVerification(email);
+		// E-Mail-Verifizierung speichern (mit orderState) und Token generieren
+		const token = saveEmailVerification(email, orderState);
 		
 		// Bestätigungslink erstellen
 		const baseUrl = PUBLIC_BASE_URL || `https://${request.headers.get('host')}`;

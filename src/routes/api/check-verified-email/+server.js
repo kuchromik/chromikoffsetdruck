@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getEmailFromVerification, deleteEmailVerification, cleanupExpiredEmailVerifications } from '$lib/pendingOrders.js';
+import { getEmailVerification, deleteEmailVerification, cleanupExpiredEmailVerifications } from '$lib/pendingOrders.js';
 import { getCustomerByEmail } from '$lib/firebaseService.js';
 
 /** @type {import('./$types').RequestHandler} */
@@ -18,15 +18,17 @@ export async function POST({ request }) {
 		// Bereinige zuerst abgelaufene Verifizierungen
 		cleanupExpiredEmailVerifications();
 		
-		// Hole E-Mail für diesen Token
-		const email = getEmailFromVerification(token);
+		// Hole E-Mail und orderState für diesen Token
+		const verification = getEmailVerification(token);
 		
-		if (!email) {
+		if (!verification) {
 			return json(
 				{ success: false, error: 'E-Mail-Verifizierung nicht gefunden oder bereits abgelaufen. Der Link ist nur 24 Stunden gültig.' },
 				{ status: 404 }
 			);
 		}
+		
+		const { email, orderState } = verification;
 		
 		// Suche nach existierendem Kunden in Firebase
 		const customerResult = await getCustomerByEmail(email);
@@ -40,18 +42,24 @@ export async function POST({ request }) {
 		// Token löschen (einmalige Verwendung)
 		deleteEmailVerification(token);
 		
-		// Rückgabe: E-Mail und ggf. Kundendaten
+		// Rückgabe: E-Mail, ggf. Kundendaten und ggf. orderState
 		const response = {
 			success: true,
 			email: email,
 			customerExists: !!customerResult.customer,
-			customerData: customerResult.customer || null
+			customerData: customerResult.customer || null,
+			customerId: customerResult.customerId || null,
+			orderState: orderState
 		};
 		
 		if (customerResult.customer) {
 			console.log('✓ Existierender Kunde gefunden für:', email);
 		} else {
 			console.log('✓ Neuer Kunde für:', email);
+		}
+		
+		if (orderState) {
+			console.log('✓ Bestellzustand wiederhergestellt');
 		}
 		
 		return json(response);

@@ -477,19 +477,6 @@
 	function startBestellprozess() {
 		// Prüfen ob E-Mail bereits verifiziert ist
 		if (!emailVerifiziert) {
-			// Speichere aktuellen Bestellzustand in sessionStorage
-			const orderState = {
-				produktId,
-				produktName,
-				auflage,
-				material,
-				format,
-				umfang,
-				falzart,
-				preisBerechnung
-			};
-			sessionStorage.setItem('chromik_order_state', JSON.stringify(orderState));
-			
 			// Zeige E-Mail-Verifizierung an
 			zeigeEmailVerifizierung = true;
 			emailVerifikationStatus = '';
@@ -516,12 +503,27 @@
 		emailVerifikationStatus = 'sending';
 
 		try {
+			// Erstelle orderState zum Speichern
+			const orderState = {
+				produktId,
+				produktName,
+				auflage,
+				material,
+				format,
+				umfang,
+				falzart,
+				preisBerechnung
+			};
+			
 			const response = await fetch('/api/verify-email', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ email: emailZurVerifizierung })
+				body: JSON.stringify({ 
+					email: emailZurVerifizierung,
+					orderState: orderState
+				})
 			});
 
 			if (response.ok) {
@@ -570,11 +572,10 @@
 						kundenDaten.ort = result.customerData.city || '';
 					}
 					
-					// Stelle Bestellzustand aus sessionStorage wieder her
-					const savedState = sessionStorage.getItem('chromik_order_state');
-					if (savedState) {
+					// Stelle Bestellzustand aus Server-Response wieder her
+					if (result.orderState) {
 						try {
-							const orderState = JSON.parse(savedState);
+							const orderState = result.orderState;
 							produktId = orderState.produktId;
 							auflage = orderState.auflage;
 							material = orderState.material;
@@ -586,9 +587,6 @@
 							// Zeige Ergebnis und Bestellformular
 							zeigErgebnis = true;
 							zeigeBestellformular = true;
-							
-							// Lösche gespeicherten State
-							sessionStorage.removeItem('chromik_order_state');
 							
 							console.log('✓ Bestellzustand wiederhergestellt:', orderState);
 						} catch (e) {
@@ -626,9 +624,6 @@
 	});
 
 	function abbrechenBestellung() {
-		// Lösche sessionStorage
-		sessionStorage.removeItem('chromik_order_state');
-		
 		// Komplett zurücksetzen - zurück zur Produktauswahl
 		produktId = '';
 		auflage = '';

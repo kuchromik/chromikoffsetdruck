@@ -174,14 +174,16 @@ function savePendingEmailVerifications(verifications) {
 /**
  * Speichert eine neue E-Mail-Verifizierung
  * @param {string} email - Die zu verifizierende E-Mail-Adresse
+ * @param {Object} [orderState] - Optional: Der Bestellzustand zum Wiederherstellen
  * @returns {string} Der generierte Token
  */
-export function saveEmailVerification(email) {
+export function saveEmailVerification(email, orderState = null) {
 	const token = generateToken();
 	const verifications = loadPendingEmailVerifications();
 	
 	verifications[token] = {
 		email: email,
+		orderState: orderState,
 		timestamp: new Date().toISOString(),
 		expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toISOString()
 	};
@@ -195,9 +197,9 @@ export function saveEmailVerification(email) {
 /**
  * Holt eine E-Mail-Verifizierung anhand des Tokens
  * @param {string} token - Der Verifizierungs-Token
- * @returns {string|null} Die E-Mail-Adresse oder null wenn nicht gefunden/abgelaufen
+ * @returns {Object|null} Ein Objekt mit { email, orderState } oder null wenn nicht gefunden/abgelaufen
  */
-export function getEmailFromVerification(token) {
+export function getEmailVerification(token) {
 	const verifications = loadPendingEmailVerifications();
 	const verification = verifications[token];
 	
@@ -213,7 +215,10 @@ export function getEmailFromVerification(token) {
 		return null;
 	}
 	
-	return verification.email;
+	return {
+		email: verification.email,
+		orderState: verification.orderState || null
+	};
 }
 
 /**
