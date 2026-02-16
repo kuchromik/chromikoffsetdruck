@@ -20,7 +20,7 @@ export async function POST({ request }) {
 		// E-Mail-Verifizierung speichern (mit orderState) und Token generieren
 		const token = saveEmailVerification(email, orderState);
 		
-		// Bestätigungslink erstellen
+		// Verifizierungslink erstellen
 		const baseUrl = PUBLIC_BASE_URL || `https://${request.headers.get('host')}`;
 		const verificationLink = `${baseUrl}/fixguenstig?emailToken=${token}`;
 		
@@ -55,16 +55,16 @@ Guten Tag,
 vielen Dank für Ihr Interesse an Chromik Offsetdruck!
 
 Um sicherzustellen, dass diese E-Mail-Adresse Ihnen gehört, bitten wir Sie,
-Ihre E-Mail-Adresse zu bestätigen, indem Sie auf den folgenden Link klicken:
+Ihre E-Mail-Adresse zu verifizieren, indem Sie auf den folgenden Link klicken:
 
 ${verificationLink}
 
-Nach der Bestätigung können Sie mit Ihrer Bestellung fortfahren.
+Nach der Verifizierung können Sie mit Ihrer Bestellung fortfahren.
 
 WICHTIG:
 --------
-- Dieser Bestätigungslink ist 24 Stunden gültig
-- Nach der Bestätigung werden Ihre bisherigen Kundendaten automatisch geladen (falls vorhanden)
+- Dieser Verifizierungslink ist 24 Stunden gültig
+- Nach der Verifizierung werden Ihre bisherigen Kundendaten automatisch geladen (falls vorhanden)
 - Falls Sie diese Anfrage nicht gestellt haben, können Sie diese E-Mail ignorieren
 
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
@@ -82,7 +82,7 @@ Web: www.chromikoffsetdruck.de
 		await transporter.sendMail({
 			from: EMAIL_FROM,
 			to: email,
-			subject: 'Bitte bestätigen Sie Ihre E-Mail-Adresse',
+			subject: 'Bitte verifizieren Sie Ihre E-Mail-Adresse',
 			text: verificationEmailText
 		});
 		
@@ -92,7 +92,7 @@ Web: www.chromikoffsetdruck.de
 		
 		return json({ 
 			success: true,
-			message: 'Bitte überprüfen Sie Ihr E-Mail-Postfach und bestätigen Sie Ihre E-Mail-Adresse.'
+			message: 'Bitte überprüfen Sie Ihr E-Mail-Postfach und verifizieren Sie Ihre E-Mail-Adresse.'
 		});
 
 	} catch (error) {

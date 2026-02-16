@@ -1018,9 +1018,9 @@
 					{#if emailVerifikationStatus === 'sent'}
 						<div class="success-message" style="padding: 1.5rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; margin-bottom: 1.5rem;">
 							<h4 style="color: #155724; margin-bottom: 0.5rem;">✓ E-Mail versendet!</h4>
-							<p style="color: #155724; margin: 0;">Wir haben Ihnen eine Bestätigungsmail an <strong>{emailZurVerifizierung}</strong> gesendet.</p>
+							<p style="color: #155724; margin: 0;">Wir haben Ihnen eine Verifizierungsmail an <strong>{emailZurVerifizierung}</strong> gesendet.</p>
 							<p style="color: #155724; margin: 0.5rem 0 0;">
-								<strong>Bitte überprüfen Sie Ihr E-Mail-Postfach und klicken Sie auf den Bestätigungslink.</strong>
+								<strong>Bitte überprüfen Sie Ihr E-Mail-Postfach und klicken Sie auf den Verifizierungslink.</strong>
 								<br>Der Link ist 24 Stunden gültig.
 							</p>
 						</div>
