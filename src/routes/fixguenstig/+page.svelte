@@ -477,6 +477,19 @@
 	function startBestellprozess() {
 		// Prüfen ob E-Mail bereits verifiziert ist
 		if (!emailVerifiziert) {
+			// Speichere aktuellen Bestellzustand in sessionStorage
+			const orderState = {
+				produktId,
+				produktName,
+				auflage,
+				material,
+				format,
+				umfang,
+				falzart,
+				preisBerechnung
+			};
+			sessionStorage.setItem('chromik_order_state', JSON.stringify(orderState));
+			
 			// Zeige E-Mail-Verifizierung an
 			zeigeEmailVerifizierung = true;
 			emailVerifikationStatus = '';
@@ -557,6 +570,32 @@
 						kundenDaten.ort = result.customerData.city || '';
 					}
 					
+					// Stelle Bestellzustand aus sessionStorage wieder her
+					const savedState = sessionStorage.getItem('chromik_order_state');
+					if (savedState) {
+						try {
+							const orderState = JSON.parse(savedState);
+							produktId = orderState.produktId;
+							auflage = orderState.auflage;
+							material = orderState.material;
+							format = orderState.format;
+							umfang = orderState.umfang;
+							falzart = orderState.falzart;
+							preisBerechnung = orderState.preisBerechnung;
+							
+							// Zeige Ergebnis und Bestellformular
+							zeigErgebnis = true;
+							zeigeBestellformular = true;
+							
+							// Lösche gespeicherten State
+							sessionStorage.removeItem('chromik_order_state');
+							
+							console.log('✓ Bestellzustand wiederhergestellt:', orderState);
+						} catch (e) {
+							console.error('Fehler beim Wiederherstellen des Bestellzustands:', e);
+						}
+					}
+					
 					emailVerifikationStatus = '';
 					
 					// Entferne Token aus URL
@@ -564,11 +603,13 @@
 					url.searchParams.delete('emailToken');
 					window.history.replaceState({}, '', url);
 					
-					// Scroll zur Produktauswahl falls noch nicht geschehen
+					// Scroll zum Bestellformular falls vorhanden, sonst zur Produktauswahl
 					setTimeout(() => {
+						const orderForm = document.querySelector('.order-form-box');
 						const productSection = document.querySelector('.product-selection');
-						if (productSection) {
-							productSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						const target = orderForm || productSection;
+						if (target) {
+							target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 						}
 					}, 500);
 					
@@ -585,6 +626,9 @@
 	});
 
 	function abbrechenBestellung() {
+		// Lösche sessionStorage
+		sessionStorage.removeItem('chromik_order_state');
+		
 		// Komplett zurücksetzen - zurück zur Produktauswahl
 		produktId = '';
 		auflage = '';
