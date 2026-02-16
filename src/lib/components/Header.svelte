@@ -265,12 +265,11 @@
 		right: 0;
 		bottom: 0;
 		width: min(300px, 80vw);
+		height: 100vh;
 		background-color: var(--bg-primary);
 		padding: 6rem 2rem 2rem;
 		overflow-y: auto;
 		box-shadow: -4px 0 20px var(--shadow);
-		/* Hardware-Beschleunigung */
-		transform: translateZ(0);
 		/* Optimierte Scroll-Performance */
 		-webkit-overflow-scrolling: touch;
 	}
@@ -280,6 +279,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		min-height: calc(100vh - 8rem); /* Berücksichtigt das Padding */
 	}
 
 	.mobile-menu li a {
