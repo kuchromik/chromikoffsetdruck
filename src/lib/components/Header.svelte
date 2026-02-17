@@ -142,8 +142,8 @@
 	}
 
 	.logo img {
-		height: 50px;
-		width: 150px; /* Explizite Breite verhindert CLS */
+		height: 60px;
+		width: auto; /* Seitenverhältnis beibehalten */
 		object-fit: contain;
 		/* Optimierte Transition */
 		transition: transform 0.4s ease;
@@ -152,19 +152,19 @@
 	}
 
 	.header.scrolled .logo img {
-		height: 40px;
+		height: 50px;
 	}
 
 	/* Logo größer auf Desktop */
 	@media (min-width: 768px) {
 		.logo img {
-			height: 70px;
-			width: 210px;
+			height: 90px;
+			width: auto;
 		}
 
 		.header.scrolled .logo img {
-			height: 50px;
-			width: 150px;
+			height: 65px;
+			width: auto;
 		}
 	}
 

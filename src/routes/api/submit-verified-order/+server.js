@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TO, EMAIL_FROM } from '$env/static/private';
-import { createJob, createCustomer, updateCustomer, formatCustomerName, formatJobDetails } from '$lib/firebaseService.js';
+import { createJob, createCustomer, updateCustomer, formatCustomerName, formatJobDetails, createShipmentAddress } from '$lib/firebaseService.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -208,6 +208,28 @@ Web: www.chromikoffsetdruck.de
 					console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
 				}
 				
+				// Versandadresse in Firebase speichern (falls vorhanden und abweichend)
+				let shipmentAddressId = null;
+				
+				if (data.lieferung.art === 'versand' && data.lieferung.lieferadresse) {
+					// Abweichende Lieferadresse vorhanden
+					const addressResult = await createShipmentAddress({
+						name: data.lieferung.lieferadresse.name,
+						street: data.lieferung.lieferadresse.strasse,
+						zip: data.lieferung.lieferadresse.plz,
+						city: data.lieferung.lieferadresse.ort,
+						customerId: existingCustomerId || null
+					});
+					
+					if (addressResult.success) {
+						shipmentAddressId = addressResult.addressId;
+						console.log('✓ Versandadresse erfolgreich in Firebase gespeichert. Adress-ID:', shipmentAddressId);
+					} else {
+						console.error('✗ Fehler beim Speichern der Versandadresse in Firebase:', addressResult.error);
+						// Weiter mit Job-Speicherung, auch wenn Adresse nicht gespeichert wurde
+					}
+				}
+				
 				// Job in Firebase speichern (nach erfolgreichem E-Mail-Versand)
 				const jobResult = await createJob({
 					jobname: data.auftragsname,
@@ -215,7 +237,9 @@ Web: www.chromikoffsetdruck.de
 					customer: formatCustomerName(data.kunde),
 					details: formatJobDetails(data.produktInfo),
 					quantity: data.produktInfo.auflage,
-					producer: 'doe' // Digitaldruck
+					producer: 'doe', // Digitaldruck
+					toShip: data.lieferung.art === 'versand', // Boolean: true = Versand, false = Abholung
+					shipmentAddressId: shipmentAddressId // ID der Versandadresse (null wenn keine abweichende Adresse)
 				});
 				
 				if (jobResult.success) {

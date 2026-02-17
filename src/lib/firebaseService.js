@@ -44,6 +44,8 @@ export function getDb() {
  * @param {string} jobData.details - Produktzusammenfassung
  * @param {number} jobData.quantity - Auflage
  * @param {string} [jobData.producer='doe'] - Produktionsart (default: 'doe' für Digitaldruck)
+ * @param {boolean} [jobData.toShip=false] - Versand (true) oder Abholung (false)
+ * @param {string} [jobData.shipmentAddressId] - ID der Versandadresse (optional, nur bei toShip=true und abweichender Adresse)
  * @returns {Promise<{success: boolean, jobId?: string, error?: string}>}
  */
 export async function createJob(jobData) {
@@ -66,12 +68,20 @@ export async function createJob(jobData) {
 			print_ready: false,
 			shipped_ready: false,
 			
+			// Versand/Abholung
+			toShip: jobData.toShip || false,
+			
 			// FixGuenstig-Markierung
 			FixGuenstig: true,
 			
 			// Timestamp in Sekunden (Unix-Timestamp)
 			jobstart: Math.floor(Date.now() / 1000)
 		};
+		
+		// Versandadresse-Referenz hinzufügen (falls vorhanden)
+		if (jobData.shipmentAddressId) {
+			jobDoc.shipmentAddressId = jobData.shipmentAddressId;
+		}
 
 		// Job in Firestore speichern
 		const docRef = await db.collection('Jobs').add(jobDoc);
@@ -260,6 +270,54 @@ export async function createCustomer(customerData) {
 		
 	} catch (error) {
 		console.error('Fehler beim Speichern des Kunden in Firebase:', error);
+		return {
+			success: false,
+			error: error.message
+		};
+	}
+}
+
+/**
+ * Erstellt eine neue Versandadresse in der Firestore-Datenbank (shipmentAddresses Collection)
+ * 
+ * @param {Object} addressData - Die Versandadressendaten
+ * @param {string} addressData.name - Name/Firma
+ * @param {string} addressData.street - Straße und Hausnummer
+ * @param {string} addressData.zip - Postleitzahl
+ * @param {string} addressData.city - Ort
+ * @param {string} [addressData.customerId] - Kunden-ID (optional, für Zuordnung)
+ * @returns {Promise<{success: boolean, addressId?: string, error?: string}>}
+ */
+export async function createShipmentAddress(addressData) {
+	try {
+		const db = getDb();
+		
+		// Versandadressen-Dokument erstellen
+		const addressDoc = {
+			name: addressData.name,
+			street: addressData.street,
+			zip: addressData.zip,
+			city: addressData.city,
+			createdAt: Math.floor(Date.now() / 1000) // Unix-Timestamp in Sekunden
+		};
+		
+		// Kunden-ID hinzufügen (falls vorhanden)
+		if (addressData.customerId) {
+			addressDoc.customerId = addressData.customerId;
+		}
+
+		// Versandadresse in Firestore speichern
+		const docRef = await db.collection('shipmentAddresses').add(addressDoc);
+		
+		console.log(`Versandadresse erfolgreich in Firebase gespeichert: ${docRef.id}`);
+		
+		return {
+			success: true,
+			addressId: docRef.id
+		};
+		
+	} catch (error) {
+		console.error('Fehler beim Speichern der Versandadresse in Firebase:', error);
 		return {
 			success: false,
 			error: error.message

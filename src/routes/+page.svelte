@@ -52,8 +52,10 @@
 		{
 			id: 'thema6',
 			title: 'Besondere Materialien',
-			description: 'Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus.',
-			reverse: true
+			description: 'Spüren Sie den Unterschied! In unserer Druckerei arbeiten wir mit einer vielfältigen Auswahl außergewöhnlicher Papiere und Kartons, die nicht nur das Auge, sondern vor allem die Sinne berühren. Von samtig-weichen Naturpapieren über strukturierte Leinenpapiere bis hin zu glänzenden Metallic-Kartons – jedes Material erzählt seine eigene Geschichte. Erleben Sie die faszinierende Haptik von gerippten, geprägten oder handgeschöpften Oberflächen. Lassen Sie sich inspirieren von der Vielfalt der Texturen, Stärken und Finish-Varianten, die Ihre Drucksachen zu echten Unikaten machen.',
+			reverse: true,
+			useSlider: true,
+			sliderFolder: 'paperSlider'
 		}
 	];
 </script>
