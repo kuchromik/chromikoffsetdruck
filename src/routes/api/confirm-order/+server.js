@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TO, EMAIL_FROM } from '$env/static/private';
 import { getPendingOrder, deletePendingOrder, cleanupExpiredOrders } from '$lib/pendingOrders.js';
-import { createJob, createCustomer, formatCustomerName, formatJobDetails } from '$lib/firebaseService.js';
+import { createJob, createCustomer, getCustomerByEmail, formatCustomerName, formatJobDetails } from '$lib/firebaseService.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -216,14 +216,46 @@ Web: www.chromikoffsetdruck.de
 					console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
 				}
 				
-				// Job in Firebase speichern (nach erfolgreichem E-Mail-Versand)
+				// Kundendaten in Firebase speichern/suchen (zuerst!)
+				let customerId = null;
+				
+				// Prüfen ob Kunde bereits existiert
+				const existingCustomer = await getCustomerByEmail(data.kunde.email);
+				
+				if (existingCustomer.success && existingCustomer.customer) {
+					// Kunde existiert bereits
+					customerId = existingCustomer.customerId;
+					console.log('✓ Bestehender Kunde gefunden. Kunden-ID:', customerId);
+				} else {
+					// Neuen Kunden erstellen
+					const customerResult = await createCustomer({
+						firstName: data.kunde.vorname,
+						lastName: data.kunde.nachname,
+						email: data.kunde.email,
+						address: data.kunde.strasse,
+						zip: data.kunde.plz,
+						city: data.kunde.ort,
+						company: data.kunde.firma || '',
+						countryCode: 'DE'
+					});
+					
+					if (customerResult.success) {
+						customerId = customerResult.customerId;
+						console.log('✓ Neuer Kunde erfolgreich in Firebase gespeichert. Kunden-ID:', customerId);
+					} else {
+						console.error('✗ Fehler beim Speichern des Kunden in Firebase:', customerResult.error);
+					}
+				}
+				
+				// Job in Firebase speichern (nach erfolgreichem E-Mail-Versand und mit customerID)
 				const jobResult = await createJob({
 					jobname: data.auftragsname,
 					amount: data.preise.gesamtpreisNetto,
 					customer: formatCustomerName(data.kunde),
 					details: formatJobDetails(data.produktInfo),
 					quantity: data.produktInfo.auflage,
-					producer: 'doe' // Digitaldruck
+					producer: 'doe', // Digitaldruck
+					customerID: customerId // Kunden-ID verknüpfen
 				});
 				
 				if (jobResult.success) {
@@ -231,24 +263,6 @@ Web: www.chromikoffsetdruck.de
 				} else {
 					console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
 					// E-Mails wurden bereits versendet, Job-Speicherung ist optional
-				}
-				
-				// Kundendaten in Firebase speichern
-				const customerResult = await createCustomer({
-					firstName: data.kunde.vorname,
-					lastName: data.kunde.nachname,
-					email: data.kunde.email,
-					address: data.kunde.strasse,
-					zip: data.kunde.plz,
-					city: data.kunde.ort,
-					company: data.kunde.firma || '',
-					countryCode: 'DE'
-				});
-				
-				if (customerResult.success) {
-					console.log('✓ Kunde erfolgreich in Firebase gespeichert. Kunden-ID:', customerResult.customerId);
-				} else {
-					console.error('✗ Fehler beim Speichern des Kunden in Firebase:', customerResult.error);
 				}
 				
 			} catch (error) {

@@ -208,48 +208,8 @@ Web: www.chromikoffsetdruck.de
 					console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
 				}
 				
-				// Versandadresse in Firebase speichern (falls vorhanden und abweichend)
-				let shipmentAddressId = null;
-				
-				if (data.lieferung.art === 'versand' && data.lieferung.lieferadresse) {
-					// Abweichende Lieferadresse vorhanden
-					const addressResult = await createShipmentAddress({
-						name: data.lieferung.lieferadresse.name,
-						street: data.lieferung.lieferadresse.strasse,
-						zip: data.lieferung.lieferadresse.plz,
-						city: data.lieferung.lieferadresse.ort,
-						customerId: existingCustomerId || null
-					});
-					
-					if (addressResult.success) {
-						shipmentAddressId = addressResult.addressId;
-						console.log('✓ Versandadresse erfolgreich in Firebase gespeichert. Adress-ID:', shipmentAddressId);
-					} else {
-						console.error('✗ Fehler beim Speichern der Versandadresse in Firebase:', addressResult.error);
-						// Weiter mit Job-Speicherung, auch wenn Adresse nicht gespeichert wurde
-					}
-				}
-				
-				// Job in Firebase speichern (nach erfolgreichem E-Mail-Versand)
-				const jobResult = await createJob({
-					jobname: data.auftragsname,
-					amount: data.preise.gesamtpreisNetto,
-					customer: formatCustomerName(data.kunde),
-					details: formatJobDetails(data.produktInfo),
-					quantity: data.produktInfo.auflage,
-					producer: 'doe', // Digitaldruck
-					toShip: data.lieferung.art === 'versand', // Boolean: true = Versand, false = Abholung
-					shipmentAddressId: shipmentAddressId // ID der Versandadresse (null wenn keine abweichende Adresse)
-				});
-				
-				if (jobResult.success) {
-					console.log('✓ Job erfolgreich in Firebase gespeichert. Job-ID:', jobResult.jobId);
-				} else {
-					console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
-					// E-Mails wurden bereits versendet, Job-Speicherung ist optional
-				}
-				
-				// Kundendaten in Firebase speichern oder aktualisieren
+				// Kundendaten in Firebase speichern oder aktualisieren (zuerst!)
+				let customerId = existingCustomerId;
 				let customerResult;
 				
 				if (existingCustomerId) {
@@ -284,10 +244,53 @@ Web: www.chromikoffsetdruck.de
 					});
 					
 					if (customerResult.success) {
-						console.log('✓ Neuer Kunde erfolgreich in Firebase gespeichert. Kunden-ID:', customerResult.customerId);
+						customerId = customerResult.customerId;
+						console.log('✓ Neuer Kunde erfolgreich in Firebase gespeichert. Kunden-ID:', customerId);
 					} else {
 						console.error('✗ Fehler beim Speichern des Kunden in Firebase:', customerResult.error);
 					}
+				}
+				
+				// Versandadresse in Firebase speichern (falls vorhanden und abweichend)
+				let shipmentAddressId = null;
+				
+				if (data.lieferung.art === 'versand' && data.lieferung.lieferadresse) {
+					// Abweichende Lieferadresse vorhanden
+					const addressResult = await createShipmentAddress({
+						name: data.lieferung.lieferadresse.name,
+						street: data.lieferung.lieferadresse.strasse,
+						zip: data.lieferung.lieferadresse.plz,
+						city: data.lieferung.lieferadresse.ort,
+						customerId: customerId || null
+					});
+					
+					if (addressResult.success) {
+						shipmentAddressId = addressResult.addressId;
+						console.log('✓ Versandadresse erfolgreich in Firebase gespeichert. Adress-ID:', shipmentAddressId);
+					} else {
+						console.error('✗ Fehler beim Speichern der Versandadresse in Firebase:', addressResult.error);
+						// Weiter mit Job-Speicherung, auch wenn Adresse nicht gespeichert wurde
+					}
+				}
+				
+				// Job in Firebase speichern (nach erfolgreichem E-Mail-Versand und mit customerID)
+				const jobResult = await createJob({
+					jobname: data.auftragsname,
+					amount: data.preise.gesamtpreisNetto,
+					customer: formatCustomerName(data.kunde),
+					details: formatJobDetails(data.produktInfo),
+					quantity: data.produktInfo.auflage,
+					producer: 'doe', // Digitaldruck
+					toShip: data.lieferung.art === 'versand', // Boolean: true = Versand, false = Abholung
+					shipmentAddressId: shipmentAddressId, // ID der Versandadresse (null wenn keine abweichende Adresse)
+					customerID: customerId // Kunden-ID verknüpfen
+				});
+				
+				if (jobResult.success) {
+					console.log('✓ Job erfolgreich in Firebase gespeichert. Job-ID:', jobResult.jobId);
+				} else {
+					console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
+					// E-Mails wurden bereits versendet, Job-Speicherung ist optional
 				}
 				
 			} catch (error) {
