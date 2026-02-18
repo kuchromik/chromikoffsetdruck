@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_FROM } from '$env/static/private';
-import { PUBLIC_BASE_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { saveEmailVerification } from '$lib/pendingOrders.js';
 
 /** @type {import('./$types').RequestHandler} */
@@ -21,7 +21,7 @@ export async function POST({ request }) {
 		const token = saveEmailVerification(email, orderState);
 		
 		// Verifizierungslink erstellen
-		const baseUrl = PUBLIC_BASE_URL || `https://${request.headers.get('host')}`;
+		const baseUrl = env.PUBLIC_BASE_URL || `https://${request.headers.get('host')}`;
 		const verificationLink = `${baseUrl}/fixguenstig?emailToken=${token}`;
 		
 		// Nodemailer konfigurieren
