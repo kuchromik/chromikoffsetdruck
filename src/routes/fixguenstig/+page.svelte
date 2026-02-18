@@ -254,6 +254,7 @@
 	let zeigeBestellformular = $state(false);
 	let preisBerechnung = $state(null);
 	let bestellStatus = $state(''); // '', 'sending', 'success', 'error'
+	let verarbeitungsSchritt = $state(0); // Aktueller Schritt für Fortschrittsanzeige
 
 	// E-Mail-Verifizierung
 	let emailVerifiziert = $state(false);
@@ -747,6 +748,14 @@
 	async function sendeBestellung(e) {
 		e.preventDefault();
 		bestellStatus = 'sending';
+		verarbeitungsSchritt = 0;
+
+		// Simuliere Fortschritt (da wir keinen Feedback vom Server haben)
+		const progressInterval = setInterval(() => {
+			if (verarbeitungsSchritt < 4) {
+				verarbeitungsSchritt++;
+			}
+		}, 1500); // Alle 1.5 Sekunden ein Schritt
 
 		try {
 			// Ermittle finalen Auftragsnamen
@@ -830,6 +839,9 @@
 				body: formData // Kein Content-Type Header - wird automatisch gesetzt
 			});
 
+			clearInterval(progressInterval);
+			verarbeitungsSchritt = 5; // Abgeschlossen
+
 			if (response.ok) {
 				bestellStatus = 'success';
 			} else {
@@ -837,6 +849,7 @@
 			}
 		} catch (error) {
 			console.error('Fehler beim Senden der Bestellung:', error);
+			clearInterval(progressInterval);
 			bestellStatus = 'error';
 		}
 	}
@@ -1123,6 +1136,38 @@
 						<div class="button-group">
 							<button class="btn btn-primary" onclick={() => bestellStatus = ''}>Erneut versuchen</button>
 							<button class="btn btn-secondary" onclick={abbrechenBestellung}>Abbrechen</button>
+						</div>
+					{:else if bestellStatus === 'sending'}
+						<!-- Loading-Indikator mit Fortschrittsanzeige -->
+						<div class="loading-overlay">
+							<div class="loading-content">
+								<div class="spinner"></div>
+								<h3 style="margin: 2rem 0 1rem 0; color: #374151;">Ihre Bestellung wird verarbeitet...</h3>
+								<p style="color: #6b7280; margin-bottom: 2rem;">Bitte haben Sie einen Moment Geduld. Dies kann je nach Größe Ihrer PDF-Dateien einige Sekunden dauern.</p>
+								
+								<div class="progress-steps">
+									<div class="progress-step" class:active={verarbeitungsSchritt >= 1} class:completed={verarbeitungsSchritt > 1}>
+										<div class="step-icon">{verarbeitungsSchritt > 1 ? '✓' : '1'}</div>
+										<div class="step-label">Daten vorbereiten</div>
+									</div>
+									<div class="progress-step" class:active={verarbeitungsSchritt >= 2} class:completed={verarbeitungsSchritt > 2}>
+										<div class="step-icon">{verarbeitungsSchritt > 2 ? '✓' : '2'}</div>
+										<div class="step-label">Kunde anlegen</div>
+									</div>
+									<div class="progress-step" class:active={verarbeitungsSchritt >= 3} class:completed={verarbeitungsSchritt > 3}>
+										<div class="step-icon">{verarbeitungsSchritt > 3 ? '✓' : '3'}</div>
+										<div class="step-label">Auftrag erstellen</div>
+									</div>
+									<div class="progress-step" class:active={verarbeitungsSchritt >= 4} class:completed={verarbeitungsSchritt > 4}>
+										<div class="step-icon">{verarbeitungsSchritt > 4 ? '✓' : '4'}</div>
+										<div class="step-label">E-Mails versenden</div>
+									</div>
+									<div class="progress-step" class:active={verarbeitungsSchritt >= 5} class:completed={verarbeitungsSchritt >= 5}>
+										<div class="step-icon">{verarbeitungsSchritt >= 5 ? '✓' : '5'}</div>
+										<div class="step-label">Abschließen</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					{:else}
 						<form onsubmit={sendeBestellung}>
@@ -1693,6 +1738,119 @@
 		animation: spin 1s linear infinite;
 	}
 
+	.loading-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+		animation: fadeIn 0.3s ease;
+	}
+
+	.loading-content {
+		background: white;
+		padding: 3rem;
+		border-radius: 12px;
+		max-width: 600px;
+		width: 90%;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		text-align: center;
+		animation: slideUp 0.4s ease;
+	}
+
+	.progress-steps {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 0.5rem;
+		margin-top: 2rem;
+	}
+
+	.progress-step {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		opacity: 0.4;
+		transition: opacity 0.3s ease;
+	}
+
+	.progress-step.active {
+		opacity: 1;
+	}
+
+	.progress-step.completed {
+		opacity: 1;
+	}
+
+	.progress-step.completed .step-icon {
+		background: #10b981;
+		color: white;
+		border-color: #10b981;
+	}
+
+	.progress-step.active:not(.completed) .step-icon {
+		background: #6b7280;
+		color: white;
+		border-color: #6b7280;
+		animation: pulse 1.5s ease-in-out infinite;
+	}
+
+	.step-icon {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background: white;
+		border: 2px solid #e5e7eb;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		font-size: 0.9rem;
+		transition: all 0.3s ease;
+	}
+
+	.step-label {
+		font-size: 0.75rem;
+		color: #6b7280;
+		text-align: center;
+		line-height: 1.3;
+		max-width: 80px;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	@keyframes slideUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes pulse {
+		0%, 100% {
+			transform: scale(1);
+			box-shadow: 0 0 0 0 rgba(107, 114, 128, 0.7);
+		}
+		50% {
+			transform: scale(1.05);
+			box-shadow: 0 0 0 10px rgba(107, 114, 128, 0);
+		}
+	}
+
 	@keyframes spin {
 		0% { transform: rotate(0deg); }
 		100% { transform: rotate(360deg); }
@@ -1738,6 +1896,26 @@
 
 		.btn {
 			width: 100%;
+		}
+
+		.loading-content {
+			padding: 2rem 1rem;
+		}
+
+		.progress-steps {
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.progress-step {
+			flex-direction: row;
+			justify-content: flex-start;
+			width: 100%;
+		}
+
+		.step-label {
+			text-align: left;
+			max-width: none;
 		}
 	}
 
