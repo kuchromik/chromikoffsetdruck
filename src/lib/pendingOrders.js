@@ -1,9 +1,6 @@
-import { writeFileSync, readFileSync, existsSync } from 'fs';
-import { join } from 'path';
 import crypto from 'crypto';
+import { getDb } from './firebaseService.js';
 
-const PENDING_ORDERS_FILE = join(process.cwd(), 'pending-orders.json');
-const PENDING_EMAIL_VERIFICATIONS_FILE = join(process.cwd(), 'pending-email-verifications.json');
 const TOKEN_EXPIRY_HOURS = 24; // Token läuft nach 24 Stunden ab
 
 /**
@@ -14,129 +11,120 @@ function generateToken() {
 }
 
 /**
- * Lädt alle ausstehenden Bestellungen aus der JSON-Datei
- */
-function loadPendingOrders() {
-	if (!existsSync(PENDING_ORDERS_FILE)) {
-		return {};
-	}
-	try {
-		const data = readFileSync(PENDING_ORDERS_FILE, 'utf-8');
-		return JSON.parse(data);
-	} catch (error) {
-		console.error('Fehler beim Laden der ausstehenden Bestellungen:', error);
-		return {};
-	}
-}
-
-/**
- * Speichert alle ausstehenden Bestellungen in die JSON-Datei
- */
-function savePendingOrders(orders) {
-	try {
-		writeFileSync(PENDING_ORDERS_FILE, JSON.stringify(orders, null, 2));
-	} catch (error) {
-		console.error('Fehler beim Speichern der ausstehenden Bestellungen:', error);
-		throw error;
-	}
-}
-
-/**
- * Speichert eine neue ausstehende Bestellung
+ * Speichert eine neue ausstehende Bestellung in Firestore
  * @param {Object} orderData - Die Bestelldaten
  * @param {Array} attachments - Die PDF-Anhänge
- * @returns {string} Der generierte Token
+ * @returns {Promise<string>} Der generierte Token
  */
-export function savePendingOrder(orderData, attachments = []) {
+export async function savePendingOrder(orderData, attachments = []) {
 	const token = generateToken();
-	const orders = loadPendingOrders();
+	const db = getDb();
 	
-	// Konvertiere Attachments für JSON-Serialisierung
+	// Konvertiere Attachments für Firestore-Serialisierung
 	const serializedAttachments = attachments.map(att => ({
 		filename: att.filename,
 		content: att.content.toString('base64'), // Buffer zu Base64
 		contentType: att.contentType
 	}));
 	
-	orders[token] = {
+	const orderDoc = {
 		data: orderData,
 		attachments: serializedAttachments,
 		timestamp: new Date().toISOString(),
 		expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toISOString()
 	};
 	
-	savePendingOrders(orders);
-	console.log(`✓ Ausstehende Bestellung gespeichert mit Token: ${token}`);
-	
-	return token;
-}
-
-/**
- * Holt eine ausstehende Bestellung anhand des Tokens
- * @param {string} token - Der Verifizierungs-Token
- * @returns {Object|null} Die Bestelldaten oder null wenn nicht gefunden/abgelaufen
- */
-export function getPendingOrder(token) {
-	const orders = loadPendingOrders();
-	const order = orders[token];
-	
-	if (!order) {
-		console.log(`✗ Keine Bestellung gefunden für Token: ${token}`);
-		return null;
+	try {
+		await db.collection('PendingOrders').doc(token).set(orderDoc);
+		console.log(`✓ Ausstehende Bestellung gespeichert mit Token: ${token}`);
+		return token;
+	} catch (error) {
+		console.error('Fehler beim Speichern der ausstehenden Bestellung:', error);
+		throw error;
 	}
-	
-	// Prüfe ob Token abgelaufen ist
-	if (new Date(order.expiresAt) < new Date()) {
-		console.log(`✗ Token abgelaufen: ${token}`);
-		deletePendingOrder(token);
-		return null;
-	}
-	
-	// Konvertiere Attachments zurück zu Buffern
-	const attachments = order.attachments.map(att => ({
-		filename: att.filename,
-		content: Buffer.from(att.content, 'base64'),
-		contentType: att.contentType
-	}));
-	
-	return {
-		data: order.data,
-		attachments: attachments
-	};
 }
 
 /**
- * Löscht eine ausstehende Bestellung
+ * Holt eine ausstehende Bestellung anhand des Tokens aus Firestore
  * @param {string} token - Der Verifizierungs-Token
+ * @returns {Promise<Object|null>} Die Bestelldaten oder null wenn nicht gefunden/abgelaufen
  */
-export function deletePendingOrder(token) {
-	const orders = loadPendingOrders();
-	delete orders[token];
-	savePendingOrders(orders);
-	console.log(`✓ Ausstehende Bestellung gelöscht: ${token}`);
-}
-
-/**
- * Bereinigt abgelaufene Bestellungen
- */
-export function cleanupExpiredOrders() {
-	const orders = loadPendingOrders();
-	const now = new Date();
-	let deletedCount = 0;
+export async function getPendingOrder(token) {
+	const db = getDb();
 	
-	for (const [token, order] of Object.entries(orders)) {
-		if (new Date(order.expiresAt) < now) {
-			delete orders[token];
-			deletedCount++;
+	try {
+		const doc = await db.collection('PendingOrders').doc(token).get();
+		
+		if (!doc.exists) {
+			console.log(`✗ Keine Bestellung gefunden für Token: ${token}`);
+			return null;
 		}
+		
+		const order = doc.data();
+		
+		// Prüfe ob Token abgelaufen ist
+		if (new Date(order.expiresAt) < new Date()) {
+			console.log(`✗ Token abgelaufen: ${token}`);
+			await deletePendingOrder(token);
+			return null;
+		}
+		
+		// Konvertiere Attachments zurück zu Buffern
+		const attachments = order.attachments.map(att => ({
+			filename: att.filename,
+			content: Buffer.from(att.content, 'base64'),
+			contentType: att.contentType
+		}));
+		
+		return {
+			data: order.data,
+			attachments: attachments
+		};
+	} catch (error) {
+		console.error('Fehler beim Laden der Bestellung:', error);
+		return null;
 	}
+}
+
+/**
+ * Löscht eine ausstehende Bestellung aus Firestore
+ * @param {string} token - Der Verifizierungs-Token
+ */
+export async function deletePendingOrder(token) {
+	const db = getDb();
 	
-	if (deletedCount > 0) {
-		savePendingOrders(orders);
-		console.log(`✓ ${deletedCount} abgelaufene Bestellung(en) bereinigt`);
+	try {
+		await db.collection('PendingOrders').doc(token).delete();
+		console.log(`✓ Ausstehende Bestellung gelöscht: ${token}`);
+	} catch (error) {
+		console.error('Fehler beim Löschen der Bestellung:', error);
 	}
+}
+
+/**
+ * Bereinigt abgelaufene Bestellungen aus Firestore
+ */
+export async function cleanupExpiredOrders() {
+	const db = getDb();
+	const now = new Date();
 	
-	return deletedCount;
+	try {
+		const snapshot = await db.collection('PendingOrders')
+			.where('expiresAt', '<', now.toISOString())
+			.get();
+		
+		const batch = db.batch();
+		snapshot.docs.forEach(doc => {
+			batch.delete(doc.ref);
+		});
+		
+		await batch.commit();
+		console.log(`✓ ${snapshot.size} abgelaufene Bestellung(en) bereinigt`);
+		return snapshot.size;
+	} catch (error) {
+		console.error('Fehler beim Bereinigen abgelaufener Bestellungen:', error);
+		return 0;
+	}
 }
 
 // ====================================
@@ -144,113 +132,104 @@ export function cleanupExpiredOrders() {
 // ====================================
 
 /**
- * Lädt alle ausstehenden E-Mail-Verifizierungen aus der JSON-Datei
- */
-function loadPendingEmailVerifications() {
-	if (!existsSync(PENDING_EMAIL_VERIFICATIONS_FILE)) {
-		return {};
-	}
-	try {
-		const data = readFileSync(PENDING_EMAIL_VERIFICATIONS_FILE, 'utf-8');
-		return JSON.parse(data);
-	} catch (error) {
-		console.error('Fehler beim Laden der E-Mail-Verifizierungen:', error);
-		return {};
-	}
-}
-
-/**
- * Speichert alle ausstehenden E-Mail-Verifizierungen in die JSON-Datei
- */
-function savePendingEmailVerifications(verifications) {
-	try {
-		writeFileSync(PENDING_EMAIL_VERIFICATIONS_FILE, JSON.stringify(verifications, null, 2));
-	} catch (error) {
-		console.error('Fehler beim Speichern der E-Mail-Verifizierungen:', error);
-		throw error;
-	}
-}
-
-/**
- * Speichert eine neue E-Mail-Verifizierung
+ * Speichert eine neue E-Mail-Verifizierung in Firestore
  * @param {string} email - Die zu verifizierende E-Mail-Adresse
  * @param {Object} [orderState] - Optional: Der Bestellzustand zum Wiederherstellen
- * @returns {string} Der generierte Token
+ * @returns {Promise<string>} Der generierte Token
  */
-export function saveEmailVerification(email, orderState = null) {
+export async function saveEmailVerification(email, orderState = null) {
 	const token = generateToken();
-	const verifications = loadPendingEmailVerifications();
+	const db = getDb();
 	
-	verifications[token] = {
+	const verificationDoc = {
 		email: email,
 		orderState: orderState,
 		timestamp: new Date().toISOString(),
 		expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toISOString()
 	};
 	
-	savePendingEmailVerifications(verifications);
-	console.log(`✓ E-Mail-Verifizierung gespeichert mit Token: ${token}`);
-	
-	return token;
-}
-
-/**
- * Holt eine E-Mail-Verifizierung anhand des Tokens
- * @param {string} token - Der Verifizierungs-Token
- * @returns {Object|null} Ein Objekt mit { email, orderState } oder null wenn nicht gefunden/abgelaufen
- */
-export function getEmailVerification(token) {
-	const verifications = loadPendingEmailVerifications();
-	const verification = verifications[token];
-	
-	if (!verification) {
-		console.log(`✗ Keine E-Mail-Verifizierung gefunden für Token: ${token}`);
-		return null;
+	try {
+		await db.collection('PendingEmailVerifications').doc(token).set(verificationDoc);
+		console.log(`✓ E-Mail-Verifizierung gespeichert mit Token: ${token}`);
+		return token;
+	} catch (error) {
+		console.error('Fehler beim Speichern der E-Mail-Verifizierung:', error);
+		throw error;
 	}
-	
-	// Prüfe ob Token abgelaufen ist
-	if (new Date(verification.expiresAt) < new Date()) {
-		console.log(`✗ E-Mail-Verifizierungs-Token abgelaufen: ${token}`);
-		deleteEmailVerification(token);
-		return null;
-	}
-	
-	return {
-		email: verification.email,
-		orderState: verification.orderState || null
-	};
 }
 
 /**
- * Löscht eine E-Mail-Verifizierung
+ * Holt eine E-Mail-Verifizierung anhand des Tokens aus Firestore
  * @param {string} token - Der Verifizierungs-Token
+ * @returns {Promise<Object|null>} Ein Objekt mit { email, orderState } oder null wenn nicht gefunden/abgelaufen
  */
-export function deleteEmailVerification(token) {
-	const verifications = loadPendingEmailVerifications();
-	delete verifications[token];
-	savePendingEmailVerifications(verifications);
-	console.log(`✓ E-Mail-Verifizierung gelöscht: ${token}`);
-}
-
-/**
- * Bereinigt abgelaufene E-Mail-Verifizierungen
- */
-export function cleanupExpiredEmailVerifications() {
-	const verifications = loadPendingEmailVerifications();
-	const now = new Date();
-	let deletedCount = 0;
+export async function getEmailVerification(token) {
+	const db = getDb();
 	
-	for (const [token, verification] of Object.entries(verifications)) {
-		if (new Date(verification.expiresAt) < now) {
-			delete verifications[token];
-			deletedCount++;
+	try {
+		const doc = await db.collection('PendingEmailVerifications').doc(token).get();
+		
+		if (!doc.exists) {
+			console.log(`✗ Keine E-Mail-Verifizierung gefunden für Token: ${token}`);
+			return null;
 		}
+		
+		const verification = doc.data();
+		
+		// Prüfe ob Token abgelaufen ist
+		if (new Date(verification.expiresAt) < new Date()) {
+			console.log(`✗ E-Mail-Verifizierungs-Token abgelaufen: ${token}`);
+			await deleteEmailVerification(token);
+			return null;
+		}
+		
+		return {
+			email: verification.email,
+			orderState: verification.orderState || null
+		};
+	} catch (error) {
+		console.error('Fehler beim Laden der E-Mail-Verifizierung:', error);
+		return null;
 	}
+}
+
+/**
+ * Löscht eine E-Mail-Verifizierung aus Firestore
+ * @param {string} token - Der Verifizierungs-Token
+ */
+export async function deleteEmailVerification(token) {
+	const db = getDb();
 	
-	if (deletedCount > 0) {
-		savePendingEmailVerifications(verifications);
-		console.log(`✓ ${deletedCount} abgelaufene E-Mail-Verifizierung(en) bereinigt`);
+	try {
+		await db.collection('PendingEmailVerifications').doc(token).delete();
+		console.log(`✓ E-Mail-Verifizierung gelöscht: ${token}`);
+	} catch (error) {
+		console.error('Fehler beim Löschen der E-Mail-Verifizierung:', error);
 	}
+}
+
+/**
+ * Bereinigt abgelaufene E-Mail-Verifizierungen aus Firestore
+ */
+export async function cleanupExpiredEmailVerifications() {
+	const db = getDb();
+	const now = new Date();
 	
-	return deletedCount;
+	try {
+		const snapshot = await db.collection('PendingEmailVerifications')
+			.where('expiresAt', '<', now.toISOString())
+			.get();
+		
+		const batch = db.batch();
+		snapshot.docs.forEach(doc => {
+			batch.delete(doc.ref);
+		});
+		
+		await batch.commit();
+		console.log(`✓ ${snapshot.size} abgelaufene E-Mail-Verifizierung(en) bereinigt`);
+		return snapshot.size;
+	} catch (error) {
+		console.error('Fehler beim Bereinigen abgelaufener E-Mail-Verifizierungen:', error);
+		return 0;
+	}
 }

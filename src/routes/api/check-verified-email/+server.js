@@ -16,10 +16,10 @@ export async function POST({ request }) {
 		}
 		
 		// Bereinige zuerst abgelaufene Verifizierungen
-		cleanupExpiredEmailVerifications();
+		await cleanupExpiredEmailVerifications();
 		
 		// Hole E-Mail und orderState für diesen Token
-		const verification = getEmailVerification(token);
+		const verification = await getEmailVerification(token);
 		
 		if (!verification) {
 			return json(
@@ -40,7 +40,7 @@ export async function POST({ request }) {
 		}
 		
 		// Token löschen (einmalige Verwendung)
-		deleteEmailVerification(token);
+		await deleteEmailVerification(token);
 		
 		// Rückgabe: E-Mail, ggf. Kundendaten und ggf. orderState
 		const response = {

@@ -18,7 +18,7 @@ export async function POST({ request }) {
 		}
 		
 		// E-Mail-Verifizierung speichern (mit orderState) und Token generieren
-		const token = saveEmailVerification(email, orderState);
+		const token = await saveEmailVerification(email, orderState);
 		
 		// Verifizierungslink erstellen
 		const baseUrl = env.PUBLIC_BASE_URL || `https://${request.headers.get('host')}`;

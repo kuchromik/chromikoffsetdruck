@@ -18,10 +18,10 @@ export async function POST({ request }) {
 		}
 		
 		// Bereinige zuerst abgelaufene Bestellungen
-		cleanupExpiredOrders();
+		await cleanupExpiredOrders();
 		
 		// Hole ausstehende Bestellung
-		const pendingOrder = getPendingOrder(token);
+		const pendingOrder = await getPendingOrder(token);
 		
 		if (!pendingOrder) {
 			return json(
@@ -117,7 +117,7 @@ HINWEIS: Diese Bestellung wurde vom Kunden per E-Mail-Bestätigungslink verifizi
 		`;
 
 		// Bestellung sofort aus temporärem Speicher löschen
-		deletePendingOrder(token);
+		await deletePendingOrder(token);
 		
 		// E-Mails ASYNCHRON im Hintergrund versenden (blockiert nicht die Antwort)
 		const kundenEmailText = `

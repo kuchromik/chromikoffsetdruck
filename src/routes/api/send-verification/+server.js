@@ -32,7 +32,7 @@ export async function POST({ request }) {
 		}
 		
 		// Bestellung temporär speichern und Token generieren
-		const token = savePendingOrder(data, attachments);
+		const token = await savePendingOrder(data, attachments);
 		
 		// Bestätigungslink erstellen
 		const baseUrl = env.PUBLIC_BASE_URL || `https://${request.headers.get('host')}`;
