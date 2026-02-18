@@ -227,9 +227,13 @@ Web: www.chromikoffsetdruck.de
 			
 			if (addressResult.success) {
 				shipmentAddressId = addressResult.addressId;
-				console.log('✓ Versandadresse erfolgreich in Firebase gespeichert. Adress-ID:', shipmentAddressId);
+				if (addressResult.isExisting) {
+					console.log('✓ Existierende Versandadresse wiederverwendet. Adress-ID:', shipmentAddressId);
+				} else {
+					console.log('✓ Neue Versandadresse in Firebase gespeichert. Adress-ID:', shipmentAddressId);
+				}
 			} else {
-				console.error('✗ Fehler beim Speichern der Versandadresse in Firebase:', addressResult.error);
+				console.error('✗ Fehler beim Verarbeiten der Versandadresse in Firebase:', addressResult.error);
 			}
 		}
 		

@@ -284,7 +284,57 @@ export async function createCustomer(customerData) {
 }
 
 /**
+ * Sucht nach einer existierenden Versandadresse in Firebase
+ * 
+ * @param {Object} addressData - Die Adressdaten zum Suchen
+ * @param {string} addressData.name - Name/Firma
+ * @param {string} addressData.street - Straße und Hausnummer
+ * @param {string} addressData.zip - Postleitzahl
+ * @param {string} addressData.city - Ort
+ * @returns {Promise<{success: boolean, addressId?: string, address?: Object, error?: string}>}
+ */
+export async function findShipmentAddress(addressData) {
+	try {
+		const db = getDb();
+		
+		// Suche nach Adresse mit exakt gleichen Daten
+		const snapshot = await db.collection('shipmentAddresses')
+			.where('name', '==', addressData.name)
+			.where('street', '==', addressData.street)
+			.where('zip', '==', addressData.zip)
+			.where('city', '==', addressData.city)
+			.limit(1)
+			.get();
+		
+		if (!snapshot.empty) {
+			const doc = snapshot.docs[0];
+			console.log(`✓ Existierende Versandadresse gefunden: ${doc.id}`);
+			return {
+				success: true,
+				addressId: doc.id,
+				address: doc.data()
+			};
+		}
+		
+		console.log('✗ Keine existierende Versandadresse gefunden');
+		return {
+			success: true,
+			addressId: null,
+			address: null
+		};
+		
+	} catch (error) {
+		console.error('Fehler beim Suchen der Versandadresse in Firebase:', error);
+		return {
+			success: false,
+			error: error.message
+		};
+	}
+}
+
+/**
  * Erstellt eine neue Versandadresse in der Firestore-Datenbank (shipmentAddresses Collection)
+ * Prüft zuerst, ob die Adresse bereits existiert und vermeidet Duplikate
  * 
  * @param {Object} addressData - Die Versandadressendaten
  * @param {string} addressData.name - Name/Firma
@@ -292,13 +342,31 @@ export async function createCustomer(customerData) {
  * @param {string} addressData.zip - Postleitzahl
  * @param {string} addressData.city - Ort
  * @param {string} [addressData.customerId] - Kunden-ID (optional, für Zuordnung)
- * @returns {Promise<{success: boolean, addressId?: string, error?: string}>}
+ * @returns {Promise<{success: boolean, addressId?: string, isExisting?: boolean, error?: string}>}
  */
 export async function createShipmentAddress(addressData) {
 	try {
 		const db = getDb();
 		
-		// Versandadressen-Dokument erstellen
+		// Prüfe zuerst, ob die Adresse bereits existiert
+		const existingAddress = await findShipmentAddress({
+			name: addressData.name,
+			street: addressData.street,
+			zip: addressData.zip,
+			city: addressData.city
+		});
+		
+		if (existingAddress.success && existingAddress.addressId) {
+			// Adresse existiert bereits
+			console.log(`✓ Verwende existierende Versandadresse: ${existingAddress.addressId}`);
+			return {
+				success: true,
+				addressId: existingAddress.addressId,
+				isExisting: true
+			};
+		}
+		
+		// Neue Versandadresse erstellen
 		const addressDoc = {
 			name: addressData.name,
 			street: addressData.street,
@@ -315,11 +383,12 @@ export async function createShipmentAddress(addressData) {
 		// Versandadresse in Firestore speichern
 		const docRef = await db.collection('shipmentAddresses').add(addressDoc);
 		
-		console.log(`Versandadresse erfolgreich in Firebase gespeichert: ${docRef.id}`);
+		console.log(`✓ Neue Versandadresse erfolgreich in Firebase gespeichert: ${docRef.id}`);
 		
 		return {
 			success: true,
-			addressId: docRef.id
+			addressId: docRef.id,
+			isExisting: false
 		};
 		
 	} catch (error) {
