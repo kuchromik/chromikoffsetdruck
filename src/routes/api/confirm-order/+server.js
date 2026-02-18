@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
 import { EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS, EMAIL_TO, EMAIL_FROM } from '$env/static/private';
 import { getPendingOrder, deletePendingOrder, cleanupExpiredOrders } from '$lib/pendingOrders.js';
-import { createJob, createCustomer, getCustomerByEmail, formatCustomerName, formatJobDetails } from '$lib/firebaseService.js';
+import { createJob, createCustomer, getCustomerByEmail, formatCustomerName, formatJobDetails, createShipmentAddress } from '$lib/firebaseService.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -180,99 +180,119 @@ E-Mail: ${EMAIL_FROM}
 Web: www.chromikoffsetdruck.de
 		`;
 
-		// Sofort Erfolgsantwort zurückgeben (bevor E-Mails versendet werden)
-		// Dies verhindert lange Wartezeiten bei großen PDF-Anhängen
-		const responsePromise = json({ 
-			success: true,
-			message: 'Bestellung erfolgreich bestätigt'
+		// Firebase-Operationen ZUERST ausführen (vor E-Mail-Versand)
+		// Kundendaten in Firebase speichern/suchen
+		let customerId = null;
+		
+		// Prüfen ob Kunde bereits existiert
+		const existingCustomer = await getCustomerByEmail(data.kunde.email);
+		
+		if (existingCustomer.success && existingCustomer.customer) {
+			// Kunde existiert bereits
+			customerId = existingCustomer.customerId;
+			console.log('✓ Bestehender Kunde gefunden. Kunden-ID:', customerId);
+		} else {
+			// Neuen Kunden erstellen
+			const customerResult = await createCustomer({
+				firstName: data.kunde.vorname,
+				lastName: data.kunde.nachname,
+				email: data.kunde.email,
+				address: data.kunde.strasse,
+				zip: data.kunde.plz,
+				city: data.kunde.ort,
+				company: data.kunde.firma || '',
+				countryCode: 'DE'
+			});
+			
+			if (customerResult.success) {
+				customerId = customerResult.customerId;
+				console.log('✓ Neuer Kunde erfolgreich in Firebase gespeichert. Kunden-ID:', customerId);
+			} else {
+				console.error('✗ Fehler beim Speichern des Kunden in Firebase:', customerResult.error);
+			}
+		}
+		
+		// Versandadresse in Firebase speichern (falls vorhanden und abweichend)
+		let shipmentAddressId = null;
+		
+		if (data.lieferung.art === 'versand' && data.lieferung.lieferadresse) {
+			// Abweichende Lieferadresse vorhanden
+			const addressResult = await createShipmentAddress({
+				name: data.lieferung.lieferadresse.name,
+				street: data.lieferung.lieferadresse.strasse,
+				zip: data.lieferung.lieferadresse.plz,
+				city: data.lieferung.lieferadresse.ort,
+				customerId: customerId || null
+			});
+			
+			if (addressResult.success) {
+				shipmentAddressId = addressResult.addressId;
+				console.log('✓ Versandadresse erfolgreich in Firebase gespeichert. Adress-ID:', shipmentAddressId);
+			} else {
+				console.error('✗ Fehler beim Speichern der Versandadresse in Firebase:', addressResult.error);
+			}
+		}
+		
+		// Job in Firebase speichern (mit customerID)
+		const jobResult = await createJob({
+			jobname: data.auftragsname,
+			amount: data.preise.gesamtpreisNetto,
+			customer: formatCustomerName(data.kunde),
+			details: formatJobDetails(data.produktInfo),
+			quantity: data.produktInfo.auflage,
+			producer: 'doe', // Digitaldruck
+			toShip: data.lieferung.art === 'versand',
+			shipmentAddressId: shipmentAddressId,
+			customerID: customerId
 		});
 		
-		// E-Mails ASYNCHRON im Hintergrund versenden (fire-and-forget)
-		// Dies blockiert nicht die HTTP-Antwort an den Client
-		(async () => {
-			try {
-				// E-Mail an Betreiber (mit Anhängen)
-				await transporter.sendMail({
-					from: EMAIL_FROM,
-					to: EMAIL_TO,
-					replyTo: data.kunde.email,
-					subject: `Neue Bestellung: ${data.auftragsname} - ${data.kunde.nachname}`,
-					text: emailText,
-					attachments: attachments
-				});
-				
-				// Bestätigungsmail an den Kunden (ohne Anhänge)
-				await transporter.sendMail({
-					from: EMAIL_FROM,
-					to: data.kunde.email,
-					subject: 'Ihre Bestellung bei Chromik Offsetdruck',
-					text: kundenEmailText
-				});
-				
-				// Logge erfolgreichen Versand
-				console.log('✓ Bestellung erfolgreich per E-Mail versendet an:', EMAIL_TO);
-				console.log('✓ Bestätigungsmail an Kunden gesendet:', data.kunde.email);
-				if (attachments.length > 0) {
-					console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
-				}
-				
-				// Kundendaten in Firebase speichern/suchen (zuerst!)
-				let customerId = null;
-				
-				// Prüfen ob Kunde bereits existiert
-				const existingCustomer = await getCustomerByEmail(data.kunde.email);
-				
-				if (existingCustomer.success && existingCustomer.customer) {
-					// Kunde existiert bereits
-					customerId = existingCustomer.customerId;
-					console.log('✓ Bestehender Kunde gefunden. Kunden-ID:', customerId);
-				} else {
-					// Neuen Kunden erstellen
-					const customerResult = await createCustomer({
-						firstName: data.kunde.vorname,
-						lastName: data.kunde.nachname,
-						email: data.kunde.email,
-						address: data.kunde.strasse,
-						zip: data.kunde.plz,
-						city: data.kunde.ort,
-						company: data.kunde.firma || '',
-						countryCode: 'DE'
-					});
-					
-					if (customerResult.success) {
-						customerId = customerResult.customerId;
-						console.log('✓ Neuer Kunde erfolgreich in Firebase gespeichert. Kunden-ID:', customerId);
-					} else {
-						console.error('✗ Fehler beim Speichern des Kunden in Firebase:', customerResult.error);
-					}
-				}
-				
-				// Job in Firebase speichern (nach erfolgreichem E-Mail-Versand und mit customerID)
-				const jobResult = await createJob({
-					jobname: data.auftragsname,
-					amount: data.preise.gesamtpreisNetto,
-					customer: formatCustomerName(data.kunde),
-					details: formatJobDetails(data.produktInfo),
-					quantity: data.produktInfo.auflage,
-					producer: 'doe', // Digitaldruck
-					customerID: customerId // Kunden-ID verknüpfen
-				});
-				
-				if (jobResult.success) {
-					console.log('✓ Job erfolgreich in Firebase gespeichert. Job-ID:', jobResult.jobId);
-				} else {
-					console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
-					// E-Mails wurden bereits versendet, Job-Speicherung ist optional
-				}
-				
-			} catch (error) {
-				console.error('✗ Fehler beim Versenden der E-Mails (asynchron):', error);
-				// Hinweis: Der Benutzer hat bereits eine Erfolgsbestätigung erhalten
-				// In einer produktiven Umgebung sollte hier ggf. eine Benachrichtigung erfolgen
-			}
-		})();
+		if (jobResult.success) {
+			console.log('✓ Job erfolgreich in Firebase gespeichert. Job-ID:', jobResult.jobId);
+		} else {
+			console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
+			// Weiter mit E-Mail-Versand, auch wenn Job nicht gespeichert wurde
+		}
 		
-		return responsePromise;
+		// E-Mails versenden (nach Firebase-Operationen)
+		try {
+			// E-Mail an Betreiber (mit Anhängen)
+			await transporter.sendMail({
+				from: EMAIL_FROM,
+				to: EMAIL_TO,
+				replyTo: data.kunde.email,
+				subject: `Neue Bestellung: ${data.auftragsname} - ${data.kunde.nachname}`,
+				text: emailText,
+				attachments: attachments
+			});
+			
+			// Bestätigungsmail an den Kunden (ohne Anhänge)
+			await transporter.sendMail({
+				from: EMAIL_FROM,
+				to: data.kunde.email,
+				subject: 'Ihre Bestellung bei Chromik Offsetdruck',
+				text: kundenEmailText
+			});
+			
+			console.log('✓ Bestellung erfolgreich per E-Mail versendet an:', EMAIL_TO);
+			console.log('✓ Bestätigungsmail an Kunden gesendet:', data.kunde.email);
+			if (attachments.length > 0) {
+				console.log(`  Mit PDF-Anhang:`, attachments.map(a => a.filename).join(', '));
+			}
+		} catch (emailError) {
+			console.error('✗ Fehler beim Versenden der E-Mails:', emailError);
+			// Firebase-Daten sind bereits gespeichert, E-Mail-Fehler wird gemeldet
+			return json(
+				{ success: false, error: 'Bestellung wurde gespeichert, aber E-Mail-Versand ist fehlgeschlagen' },
+				{ status: 500 }
+			);
+		}
+		
+		// Erfolgsantwort zurückgeben (nachdem alles abgeschlossen ist)
+		return json({ 
+			success: true,
+			message: 'Bestellung erfolgreich bestätigt',
+			jobId: jobResult.success ? jobResult.jobId : null
+		});
 
 	} catch (error) {
 		console.error('Fehler beim Bestätigen der Bestellung:', error);
