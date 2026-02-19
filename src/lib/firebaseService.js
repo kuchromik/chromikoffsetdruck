@@ -284,6 +284,52 @@ export async function createCustomer(customerData) {
 }
 
 /**
+ * Lädt alle Versandadressen eines Kunden aus Firebase
+ * 
+ * @param {string} customerId - Die ID des Kunden
+ * @returns {Promise<{success: boolean, addresses?: Array<{id: string, data: Object}>, error?: string}>}
+ */
+export async function getShipmentAddressesByCustomerId(customerId) {
+	try {
+		const db = getDb();
+		
+		if (!customerId) {
+			return {
+				success: true,
+				addresses: []
+			};
+		}
+		
+		// Suche alle Adressen des Kunden
+		const snapshot = await db.collection('shipmentAddresses')
+			.where('customerId', '==', customerId)
+			.get();
+		
+		const addresses = [];
+		snapshot.forEach(doc => {
+			addresses.push({
+				id: doc.id,
+				data: doc.data()
+			});
+		});
+		
+		console.log(`✓ ${addresses.length} Versandadresse(n) für Kunde ${customerId} gefunden`);
+		
+		return {
+			success: true,
+			addresses: addresses
+		};
+		
+	} catch (error) {
+		console.error('Fehler beim Laden der Versandadressen in Firebase:', error);
+		return {
+			success: false,
+			error: error.message
+		};
+	}
+}
+
+/**
  * Sucht nach einer existierenden Versandadresse in Firebase
  * 
  * @param {Object} addressData - Die Adressdaten zum Suchen

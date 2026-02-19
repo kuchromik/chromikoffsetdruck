@@ -142,7 +142,7 @@
 	}
 
 	.logo img {
-		height: 60px;
+		height: 47px;
 		width: auto; /* Seitenverhältnis beibehalten */
 		object-fit: contain;
 		/* Optimierte Transition */
@@ -152,18 +152,18 @@
 	}
 
 	.header.scrolled .logo img {
-		height: 50px;
+		height: 39px;
 	}
 
 	/* Logo größer auf Desktop */
 	@media (min-width: 768px) {
 		.logo img {
-			height: 90px;
+			height: 70px;
 			width: auto;
 		}
 
 		.header.scrolled .logo img {
-			height: 65px;
+			height: 50px;
 			width: auto;
 		}
 	}

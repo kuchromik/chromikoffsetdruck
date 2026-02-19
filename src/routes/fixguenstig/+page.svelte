@@ -292,6 +292,11 @@
 		ort: ''
 	});
 	
+	// Versandadressen-Verwaltung
+	let vorhandeneVersandadressen = $state([]);
+	let gewaehlteAdresseId = $state('neu'); // 'neu' oder eine Adress-ID
+	let versandadressenGeladen = $state(false);
+	
 	// Versandkosten
 	const versandkostenNetto = 5.90;
 	const versandkostenBrutto = versandkostenNetto * (1 + mehrwertsteuer);
@@ -495,6 +500,58 @@
 		}, 100);
 	}
 
+	// Lade Versandadressen für existierenden Kunden
+	async function ladeVersandadressen() {
+		if (!existingCustomerId || versandadressenGeladen) {
+			return;
+		}
+		
+		try {
+			const response = await fetch(`/api/get-shipment-addresses?customerId=${existingCustomerId}`);
+			const result = await response.json();
+			
+			if (result.success) {
+				vorhandeneVersandadressen = result.addresses || [];
+				versandadressenGeladen = true;
+				console.log(`✓ ${vorhandeneVersandadressen.length} Versandadresse(n) geladen`);
+			} else {
+				console.error('Fehler beim Laden der Versandadressen:', result.error);
+			}
+		} catch (error) {
+			console.error('Fehler beim Laden der Versandadressen:', error);
+		}
+	}
+	
+	// Effekt: Lade Versandadressen wenn Kunde identifiziert wird und Versand gewählt ist
+	$effect(() => {
+		if (existingCustomerId && lieferart === 'versand' && !lieferadresseGleichRechnungsadresse && !versandadressenGeladen) {
+			ladeVersandadressen();
+		}
+	});
+	
+	// Wenn eine vorhandene Adresse ausgewählt wird, fülle die Felder
+	$effect(() => {
+		if (gewaehlteAdresseId && gewaehlteAdresseId !== 'neu') {
+			const adresse = vorhandeneVersandadressen.find(a => a.id === gewaehlteAdresseId);
+			if (adresse) {
+				lieferadresse = {
+					name: adresse.data.name,
+					strasse: adresse.data.street,
+					plz: adresse.data.zip,
+					ort: adresse.data.city
+				};
+			}
+		} else if (gewaehlteAdresseId === 'neu') {
+			// Felder leeren für neue Adresse
+			lieferadresse = {
+				name: '',
+				strasse: '',
+				plz: '',
+				ort: ''
+			};
+		}
+	});
+
 	async function sendeEmailVerifizierung() {
 		if (!emailZurVerifizierung || !emailZurVerifizierung.includes('@')) {
 			alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
@@ -675,6 +732,11 @@
 			plz: '',
 			ort: ''
 		};
+		
+		// Versandadressen zurücksetzen
+		vorhandeneVersandadressen = [];
+		gewaehlteAdresseId = 'neu';
+		versandadressenGeladen = false;
 	}
 
 	async function handleFileChange(event) {
@@ -1392,47 +1454,79 @@
 									<div style="border-top: 1px solid #dee2e6; padding-top: 1rem; margin-top: 1rem;">
 										<h5 style="margin-bottom: 1rem; font-size: 1em;">Abweichende Lieferadresse:</h5>
 										
-										<div class="form-group">
-											<label for="liefer-name">Name / Firma *</label>
-											<input 
-												type="text" 
-												id="liefer-name" 
-												bind:value={lieferadresse.name} 
-												placeholder="z.B. Max Mustermann oder Musterfirma GmbH" 
-												required 
-											/>
-										</div>
+										{#if existingCustomerId && vorhandeneVersandadressen.length > 0}
+											<!-- Auswahl: Vorhandene Adresse oder neue Adresse -->
+											<div class="form-group" style="margin-bottom: 1.5rem;">
+												<label for="adress-auswahl">Adresse auswählen *</label>
+												<select 
+													id="adress-auswahl" 
+													bind:value={gewaehlteAdresseId}
+													style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;"
+													required
+												>
+													<option value="neu">➕ Neue Adresse hinzufügen</option>
+													{#each vorhandeneVersandadressen as adresse}
+														<option value={adresse.id}>
+															{adresse.data.name}, {adresse.data.street}, {adresse.data.zip} {adresse.data.city}
+														</option>
+													{/each}
+												</select>
+											</div>
+										{/if}
 										
-										<div class="form-group">
-											<label for="liefer-strasse">Straße und Hausnummer *</label>
-											<input 
-												type="text" 
-												id="liefer-strasse" 
-												bind:value={lieferadresse.strasse} 
-												placeholder="z.B. Musterstraße 123" 
-												required 
-											/>
-										</div>
-
-										<div class="form-row" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
-											<div class="form-group" style="margin-bottom: 0;">
-												<label for="liefer-plz">PLZ *</label>
+										{#if !existingCustomerId || gewaehlteAdresseId === 'neu'}
+											<!-- Eingabefelder für neue Adresse -->
+											<div class="form-group">
+												<label for="liefer-name">Name / Firma *</label>
 												<input 
 													type="text" 
-													id="liefer-plz" 
-													bind:value={lieferadresse.plz} 
-													inputmode="numeric"
-													maxlength="5"
-													minlength="4"
-													placeholder="12345" 
+													id="liefer-name" 
+													bind:value={lieferadresse.name} 
+													placeholder="z.B. Max Mustermann oder Musterfirma GmbH" 
 													required 
 												/>
 											</div>
-											<div class="form-group" style="margin-bottom: 0;">
-												<label for="liefer-ort">Ort *</label>
-												<input type="text" id="liefer-ort" bind:value={lieferadresse.ort} required />
+											
+											<div class="form-group">
+												<label for="liefer-strasse">Straße und Hausnummer *</label>
+												<input 
+													type="text" 
+													id="liefer-strasse" 
+													bind:value={lieferadresse.strasse} 
+													placeholder="z.B. Musterstraße 123" 
+													required 
+												/>
 											</div>
-										</div>
+
+											<div class="form-row" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
+												<div class="form-group" style="margin-bottom: 0;">
+													<label for="liefer-plz">PLZ *</label>
+													<input 
+														type="text" 
+														id="liefer-plz" 
+														bind:value={lieferadresse.plz} 
+														inputmode="numeric"
+														maxlength="5"
+														minlength="4"
+														placeholder="12345" 
+														required 
+													/>
+												</div>
+												<div class="form-group" style="margin-bottom: 0;">
+													<label for="liefer-ort">Ort *</label>
+													<input type="text" id="liefer-ort" bind:value={lieferadresse.ort} required />
+												</div>
+											</div>
+										{:else if gewaehlteAdresseId !== 'neu'}
+											<!-- Anzeige der ausgewählten Adresse -->
+											<div style="padding: 1rem; background-color: #e7f3ff; border-left: 3px solid #0066cc; border-radius: 4px; margin-top: 1rem;">
+												<p style="margin: 0.25rem 0; font-size: 0.95em;">
+													<strong>{lieferadresse.name}</strong>
+												</p>
+												<p style="margin: 0.25rem 0; font-size: 0.95em;">{lieferadresse.strasse}</p>
+												<p style="margin: 0.25rem 0; font-size: 0.95em;">{lieferadresse.plz} {lieferadresse.ort}</p>
+											</div>
+										{/if}
 									</div>
 								{/if}
 								
