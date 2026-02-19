@@ -56,123 +56,11 @@ export async function POST({ request }) {
 			logger: false,
 			debug: false
 		});
-
-		// E-Mail-Text für den Betreiber
-		const emailText = `
-Neue BESTÄTIGTE Bestellung über Fix&günstig
-
-AUFTRAGSNAME: ${data.auftragsname}
-========================================
-
-PRODUKTINFORMATIONEN:
----------------------
-Produkt: ${data.produktInfo.produkt}
-Format: ${data.produktInfo.format}
-${data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
-Material: ${data.produktInfo.material}
-
-KALKULATION:
-------------
-Anzahl Druckbogen: ${data.preise.anzahlDruckbogen}
-Klickanzahl: ${data.preise.klickanzahl}
-
-Grundpreis: ${data.preise.grundpreis.toFixed(2)} €
-Druckkosten: ${data.preise.druckkosten.toFixed(2)} €
-Materialkosten: ${data.preise.materialkosten.toFixed(2)} €
-Schneidekosten: ${data.preise.schneidekosten.toFixed(2)} €
-${data.preise.zusatzkosten > 0 ? `${data.preise.zusatzkostenName}: ${data.preise.zusatzkosten.toFixed(2)} €\n` : ''}
---------------------
-Produktpreis netto: ${data.preise.gesamtpreisNetto.toFixed(2)} €
-${data.preise.versandkosten ? `Versandkosten netto: ${data.preise.versandkosten.netto.toFixed(2)} €\n` : ''}${data.preise.versandkosten ? `--------------------\nGesamtpreis netto: ${data.preise.gesamtpreisNettoMitVersand.toFixed(2)} €\n` : ''}
-zzgl. 19% MwSt.: ${(data.preise.versandkosten ? data.preise.mwstBetragMitVersand : data.preise.mwstBetrag).toFixed(2)} €
---------------------
-GESAMTPREIS BRUTTO: ${(data.preise.versandkosten ? data.preise.gesamtpreisBruttoMitVersand : data.preise.gesamtpreisBrutto).toFixed(2)} €
-
-KUNDENDATEN:
-------------
-${data.kunde.firma ? `Firma: ${data.kunde.firma}\n` : ''}Vorname: ${data.kunde.vorname}
-Nachname: ${data.kunde.nachname}
-${data.kunde.firma ? `Firma: ${data.kunde.firma}\n` : ''}Adresse: ${data.kunde.strasse}
-         ${data.kunde.plz} ${data.kunde.ort}
-E-Mail: ${data.kunde.email}
-
-LIEFERUNG:
-----------
-${data.lieferung.art === 'abholung' ? `Art: Abholung
-Abholadresse: Marie-Curie-Straße 8 in 15236 Frankfurt (Oder)
-Abholzeiten: Montag bis Donnerstag, 9:00 - 15:00 Uhr oder nach Absprache` : 
-`Art: Versand per DPD
-${data.lieferung.lieferadresse ? `Lieferadresse (abweichend von Rechnungsadresse):
-${data.lieferung.lieferadresse.name}
-${data.lieferung.lieferadresse.strasse}
-${data.lieferung.lieferadresse.plz} ${data.lieferung.lieferadresse.ort}` :
-`Lieferadresse: ${data.kunde.firma ? data.kunde.firma + '\n' : ''}${data.kunde.vorname} ${data.kunde.nachname}
-${data.lieferung.rechnungsadresse.strasse}
-${data.lieferung.rechnungsadresse.plz} ${data.lieferung.rechnungsadresse.ort}`}`}
-
-Datenschutz akzeptiert: ${data.kunde.datenschutz ? 'Ja' : 'Nein'}
-${attachments.length > 0 ? `\nAnhang: ${attachments.map(a => a.filename).join(', ')}` : ''}
-
-HINWEIS: Diese Bestellung wurde vom Kunden per E-Mail-Verifizierung bestätigt.
-${existingCustomerId ? '\n[BESTANDSKUNDE - Kundendaten wurden aktualisiert]' : '\n[NEUKUNDE - Erstbestellung]'}
-		`;
-
-		// Bestätigungsmail-Text für den Kunden
-		const kundenEmailText = `
-Guten Tag ${data.kunde.vorname} ${data.kunde.nachname},
-
-vielen Dank für Ihre Bestellung bei Chromik Offsetdruck!
-
-Wir haben Ihre Anfrage erhalten und werden diese schnellstmöglich prüfen. 
-Sie erhalten in Kürze eine detaillierte Auftragsbestätigung von uns.
-
-IHRE BESTELLUNG:
-----------------
-Auftragsname: ${data.auftragsname}
-Produkt: ${data.produktInfo.produkt}
-Format: ${data.produktInfo.format}
-${data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
-Material: ${data.produktInfo.material}
-
-PREIS:
-------
-Produktpreis (brutto): ${data.preise.gesamtpreisBrutto.toFixed(2)} €
-${data.preise.versandkosten ? `Versandkosten (brutto): ${data.preise.versandkosten.brutto.toFixed(2)} €\n` : ''}${data.preise.versandkosten ? `------\nGesamtpreis (brutto): ${data.preise.gesamtpreisBruttoMitVersand.toFixed(2)} €` : ''}
-
-LIEFERUNG:
-----------
-${data.lieferung.art === 'abholung' ? `Art: Abholung
-Abholadresse: Marie-Curie-Straße 8 in 15236 Frankfurt (Oder)
-Abholzeiten: Montag bis Donnerstag, 9:00 - 15:00 Uhr oder nach Absprache` :
-`Art: Versand per DPD
-${data.lieferung.lieferadresse ? 
-`Lieferadresse:
-${data.lieferung.lieferadresse.name}
-${data.lieferung.lieferadresse.strasse}
-${data.lieferung.lieferadresse.plz} ${data.lieferung.lieferadresse.ort}` :
-`Lieferadresse:
-${data.kunde.firma ? data.kunde.firma + '\n' : ''}${data.kunde.vorname} ${data.kunde.nachname}
-${data.lieferung.rechnungsadresse.strasse}
-${data.lieferung.rechnungsadresse.plz} ${data.lieferung.rechnungsadresse.ort}`}`}
-
-IHRE KONTAKTDATEN:
-------------------
-${data.kunde.firma ? `${data.kunde.firma}\n` : ''}${data.kunde.vorname} ${data.kunde.nachname}
-${data.kunde.strasse}
-${data.kunde.plz} ${data.kunde.ort}
-E-Mail: ${data.kunde.email}
-
-Bei Rückfragen stehen wir Ihnen gerne zur Verfügung.
-
-Mit freundlichen Grüßen
-Ihr Team von Chromik Offsetdruck
-
----
-Chromik Offsetdruck
-Telefon: 0151-52457061
-E-Mail: ${EMAIL_FROM}
-Web: www.chromikoffsetdruck.de
-		`;
+		
+		// Berechne Deadline für PDF-Upload (24 Stunden nach jobstart)
+		const jobstartTime = Date.now();
+		const deadlineTime = new Date(jobstartTime + 24 * 60 * 60 * 1000);
+		const deadlineFormatted = deadlineTime.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' um ' + deadlineTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
 
 		// Firebase-Operationen ZUERST ausführen (vor E-Mail-Versand)
 		// Kundendaten in Firebase speichern oder aktualisieren
@@ -262,6 +150,143 @@ Web: www.chromikoffsetdruck.de
 			console.error('✗ Fehler beim Speichern in Firebase:', jobResult.error);
 			// Weiter mit E-Mail-Versand, auch wenn Job nicht gespeichert wurde
 		}
+		
+		// E-Mail-Text für den Betreiber (NACH Firebase-Job-Erstellung, mit echter jobId)
+		const emailText = `
+Neue BESTÄTIGTE Bestellung über Fix&günstig
+
+AUFTRAGSNAME: ${data.auftragsname}
+========================================
+
+PRODUKTINFORMATIONEN:
+---------------------
+Produkt: ${data.produktInfo.produkt}
+Format: ${data.produktInfo.format}
+${data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
+Material: ${data.produktInfo.material}
+
+KALKULATION:
+------------
+Anzahl Druckbogen: ${data.preise.anzahlDruckbogen}
+Klickanzahl: ${data.preise.klickanzahl}
+
+Grundpreis: ${data.preise.grundpreis.toFixed(2)} €
+Druckkosten: ${data.preise.druckkosten.toFixed(2)} €
+Materialkosten: ${data.preise.materialkosten.toFixed(2)} €
+Schneidekosten: ${data.preise.schneidekosten.toFixed(2)} €
+${data.preise.zusatzkosten > 0 ? `${data.preise.zusatzkostenName}: ${data.preise.zusatzkosten.toFixed(2)} €\n` : ''}
+--------------------
+Produktpreis netto: ${data.preise.gesamtpreisNetto.toFixed(2)} €
+${data.preise.versandkosten ? `Versandkosten netto: ${data.preise.versandkosten.netto.toFixed(2)} €\n` : ''}${data.preise.versandkosten ? `--------------------\nGesamtpreis netto: ${data.preise.gesamtpreisNettoMitVersand.toFixed(2)} €\n` : ''}
+zzgl. 19% MwSt.: ${(data.preise.versandkosten ? data.preise.mwstBetragMitVersand : data.preise.mwstBetrag).toFixed(2)} €
+--------------------
+GESAMTPREIS BRUTTO: ${(data.preise.versandkosten ? data.preise.gesamtpreisBruttoMitVersand : data.preise.gesamtpreisBrutto).toFixed(2)} €
+
+KUNDENDATEN:
+------------
+${data.kunde.firma ? `Firma: ${data.kunde.firma}\n` : ''}Vorname: ${data.kunde.vorname}
+Nachname: ${data.kunde.nachname}
+${data.kunde.firma ? `Firma: ${data.kunde.firma}\n` : ''}Adresse: ${data.kunde.strasse}
+         ${data.kunde.plz} ${data.kunde.ort}
+E-Mail: ${data.kunde.email}
+
+LIEFERUNG:
+----------
+${data.lieferung.art === 'abholung' ? `Art: Abholung
+Abholadresse: Marie-Curie-Straße 8 in 15236 Frankfurt (Oder)
+Abholzeiten: Montag bis Donnerstag, 9:00 - 15:00 Uhr oder nach Absprache` : 
+`Art: Versand per DPD
+${data.lieferung.lieferadresse ? `Lieferadresse (abweichend von Rechnungsadresse):
+${data.lieferung.lieferadresse.name}
+${data.lieferung.lieferadresse.strasse}
+${data.lieferung.lieferadresse.plz} ${data.lieferung.lieferadresse.ort}` :
+`Lieferadresse: ${data.kunde.firma ? data.kunde.firma + '\n' : ''}${data.kunde.vorname} ${data.kunde.nachname}
+${data.lieferung.rechnungsadresse.strasse}
+${data.lieferung.rechnungsadresse.plz} ${data.lieferung.rechnungsadresse.ort}`}`}
+
+Datenschutz akzeptiert: ${data.kunde.datenschutz ? 'Ja' : 'Nein'}
+${attachments.length > 0 ? `\nAnhang: ${attachments.map(a => a.filename).join(', ')}` : `\n⚠️  ACHTUNG: KEINE DRUCKDATEI HOCHGELADEN!\n   --> Kunde muss PDF bis ${deadlineFormatted} an daten.chromik@online.de senden\n   --> Job-ID: ${jobResult.success && jobResult.jobId ? jobResult.jobId : '[N/A]'}`}
+
+HINWEIS: Diese Bestellung wurde vom Kunden per E-Mail-Verifizierung bestätigt.
+${existingCustomerId ? '\n[BESTANDSKUNDE - Kundendaten wurden aktualisiert]' : '\n[NEUKUNDE - Erstbestellung]'}
+		`;
+		
+		// Bestätigungsmail-Text für den Kunden (NACH Firebase-Job-Erstellung)
+		const kundenEmailText = `
+Guten Tag ${data.kunde.vorname} ${data.kunde.nachname},
+
+vielen Dank für Ihre Bestellung bei Chromik Offsetdruck!
+
+Wir haben Ihre Anfrage erhalten und werden diese schnellstmöglich prüfen. 
+Sie erhalten in Kürze eine detaillierte Auftragsbestätigung von uns.
+
+IHRE BESTELLUNG:
+----------------
+Auftragsname: ${data.auftragsname}
+Produkt: ${data.produktInfo.produkt}
+Format: ${data.produktInfo.format}
+${data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
+Material: ${data.produktInfo.material}
+
+PREIS:
+------
+Produktpreis (brutto): ${data.preise.gesamtpreisBrutto.toFixed(2)} €
+${data.preise.versandkosten ? `Versandkosten (brutto): ${data.preise.versandkosten.brutto.toFixed(2)} €\n` : ''}${data.preise.versandkosten ? `------\nGesamtpreis (brutto): ${data.preise.gesamtpreisBruttoMitVersand.toFixed(2)} €` : ''}
+
+LIEFERUNG:
+----------
+${data.lieferung.art === 'abholung' ? `Art: Abholung
+Abholadresse: Marie-Curie-Straße 8 in 15236 Frankfurt (Oder)
+Abholzeiten: Montag bis Donnerstag, 9:00 - 15:00 Uhr oder nach Absprache` :
+`Art: Versand per DPD
+${data.lieferung.lieferadresse ? 
+`Lieferadresse:
+${data.lieferung.lieferadresse.name}
+${data.lieferung.lieferadresse.strasse}
+${data.lieferung.lieferadresse.plz} ${data.lieferung.lieferadresse.ort}` :
+`Lieferadresse:
+${data.kunde.firma ? data.kunde.firma + '\\n' : ''}${data.kunde.vorname} ${data.kunde.nachname}
+${data.lieferung.rechnungsadresse.strasse}
+${data.lieferung.rechnungsadresse.plz} ${data.lieferung.rechnungsadresse.ort}`}`}
+
+IHRE KONTAKTDATEN:
+------------------
+${data.kunde.firma ? `${data.kunde.firma}\n` : ''}${data.kunde.vorname} ${data.kunde.nachname}
+${data.kunde.strasse}
+${data.kunde.plz} ${data.kunde.ort}
+E-Mail: ${data.kunde.email}
+${attachments.length === 0 ? `
+
+════════════════════════════════════════════════════════════════
+⚠️  WICHTIG: DRUCKDATEI ERFORDERLICH
+════════════════════════════════════════════════════════════════
+
+Sie haben noch keine Druckdatei hochgeladen!
+
+Bitte senden Sie bis ${deadlineFormatted} 
+die Druckdatei (PDF) an:
+
+📧  daten.chromik@online.de
+
+Geben Sie dabei bitte im Betreff die Job-ID an:
+${jobResult.success && jobResult.jobId ? jobResult.jobId : '[wird nachgereicht]'}
+
+Ohne Druckdatei können wir Ihren Auftrag leider nicht bearbeiten.
+
+════════════════════════════════════════════════════════════════
+` : ''}
+
+Bei Rückfragen stehen wir Ihnen gerne zur Verfügung.
+
+Mit freundlichen Grüßen
+Ihr Team von Chromik Offsetdruck
+
+---
+Chromik Offsetdruck
+Telefon: 0151-52457061
+E-Mail: ${EMAIL_FROM}
+Web: www.chromikoffsetdruck.de
+		`;
 		
 		// E-Mails versenden (nach Firebase-Operationen)
 		try {

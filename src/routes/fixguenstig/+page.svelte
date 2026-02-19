@@ -255,6 +255,8 @@
 	let preisBerechnung = $state(null);
 	let bestellStatus = $state(''); // '', 'sending', 'success', 'error'
 	let verarbeitungsSchritt = $state(0); // Aktueller Schritt für Fortschrittsanzeige
+	let jobId = $state(null);
+	let jobstart = $state(null);
 
 	// E-Mail-Verifizierung
 	let emailVerifiziert = $state(false);
@@ -905,6 +907,11 @@
 			verarbeitungsSchritt = 5; // Abgeschlossen
 
 			if (response.ok) {
+				const result = await response.json();
+				if (result.success && result.jobId) {
+					jobId = result.jobId;
+					jobstart = Date.now(); // Timestamp in Millisekunden
+				}
 				bestellStatus = 'success';
 			} else {
 				bestellStatus = 'error';
@@ -1188,6 +1195,20 @@
 								<strong>Wir haben Ihre Bestellung erhalten und Ihnen eine Bestätigungsmail an {kundenDaten.email} gesendet.</strong>
 								<br>Sie erhalten in Kürze eine detaillierte Auftragsbestätigung von uns.
 							</p>
+						
+						{#if pdfDateien.length === 0 && jobId}
+							<div style="margin-top: 1.5rem; padding: 1rem; background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 4px;">
+								<h5 style="color: #856404; margin: 0 0 0.75rem 0; font-size: 1.1em;">⚠️ Wichtig: Druckdatei erforderlich</h5>
+								<p style="color: #856404; margin: 0; line-height: 1.6;">
+									<strong>Bitte senden Sie bis {new Date(jobstart + 24 * 60 * 60 * 1000).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} um {new Date(jobstart + 24 * 60 * 60 * 1000).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr</strong> die Druckdatei (PDF) an:
+									<br><br>
+									📧 <strong style="font-size: 1.05em;">daten.chromik@online.de</strong>
+									<br><br>
+									Bitte geben Sie im Betreff die Job-ID an:<br>
+									<strong style="font-size: 1.05em; font-family: monospace; background-color: #fff; padding: 0.25rem 0.5rem; border-radius: 3px;">{jobId}</strong>
+								</p>
+							</div>
+						{/if}
 						</div>
 						<button class="btn btn-secondary" onclick={abbrechenBestellung}>Neue Bestellung</button>
 					{:else if bestellStatus === 'error'}
