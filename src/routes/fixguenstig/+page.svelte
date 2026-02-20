@@ -1009,7 +1009,33 @@
 			<h1>Fix&günstig</h1>
 			<p class="intro">Schnelle und preiswerte Lösungen im 4-farbigen Digitaldruck:</p>
 
-			{#if !produktId}
+			{#if emailVerifikationStatus === 'verified-close-tab'}
+				<!-- E-Mail verifiziert - Hinweis zum Tab schließen (oberste Priorität) -->
+				<div class="email-verification-box" style="margin-top: 2rem; padding: 2rem; background-color: #f8f9fa; border-radius: 8px;">
+					<div class="success-message" style="padding: 2rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; text-align: center;">
+						<h3 style="color: #155724; margin-bottom: 1rem;">✓ E-Mail erfolgreich verifiziert!</h3>
+						<p style="color: #155724; font-size: 1.1em; margin-bottom: 1.5rem;">
+							Ihre E-Mail-Adresse <strong>{verifiedEmail}</strong> wurde erfolgreich bestätigt.
+						</p>
+						<div style="background-color: #c3e6cb; padding: 1.5rem; margin: 1.5rem 0; border-radius: 6px;">
+							<p style="color: #155724; margin: 0; font-size: 1.05em; line-height: 1.6;">
+								<strong>Sie können diesen Tab jetzt schließen</strong> und zu Ihrer ursprünglichen Bestellseite zurückkehren.<br>
+								Ihre Daten werden dort automatisch geladen.
+							</p>
+						</div>
+						<p style="color: #666; font-size: 0.9em; margin-top: 1rem;">
+							Falls Sie die ursprüngliche Seite geschlossen haben, können Sie jetzt mit einer neuen Bestellung beginnen.
+						</p>
+						<button 
+							class="btn btn-primary" 
+							onclick={() => { window.location.href = '/fixguenstig'; }}
+							style="margin-top: 1rem; font-size: 1.1em; padding: 0.75rem 2rem;"
+						>
+							Neue Bestellung starten
+						</button>
+					</div>
+				</div>
+			{:else if !produktId}
 				<!-- Produktauswahl -->
 				<div class="product-selection">
 					<h2>Produkt wählen</h2>
@@ -1207,29 +1233,6 @@
 						<div style="text-align: center; padding: 2rem;">
 							<div class="spinner"></div>
 							<p style="margin-top: 1rem;">E-Mail-Adresse wird verifiziert...</p>
-						</div>
-					{:else if emailVerifikationStatus === 'verified-close-tab'}
-						<div class="success-message" style="padding: 2rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; text-align: center;">
-							<h3 style="color: #155724; margin-bottom: 1rem;">✓ E-Mail erfolgreich verifiziert!</h3>
-							<p style="color: #155724; font-size: 1.1em; margin-bottom: 1.5rem;">
-								Ihre E-Mail-Adresse <strong>{verifiedEmail}</strong> wurde erfolgreich bestätigt.
-							</p>
-							<div style="background-color: #c3e6cb; padding: 1.5rem; margin: 1.5rem 0; border-radius: 6px;">
-								<p style="color: #155724; margin: 0; font-size: 1.05em; line-height: 1.6;">
-									<strong>Sie können diesen Tab jetzt schließen</strong> und zu Ihrer ursprünglichen Bestellseite zurückkehren.<br>
-									Ihre Daten werden dort automatisch geladen.
-								</p>
-							</div>
-							<p style="color: #666; font-size: 0.9em; margin-top: 1rem;">
-								Falls Sie die ursprüngliche Seite geschlossen haben, können Sie jetzt mit einer neuen Bestellung beginnen.
-							</p>
-							<button 
-								class="btn btn-primary" 
-								onclick={() => { window.location.href = '/fixguenstig'; }}
-								style="margin-top: 1rem; font-size: 1.1em; padding: 0.75rem 2rem;"
-							>
-								Neue Bestellung starten
-							</button>
 						</div>
 					{:else}
 						<div style="background-color: white; padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem;">
