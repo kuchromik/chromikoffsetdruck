@@ -1476,22 +1476,45 @@
 										<h5 style="margin-bottom: 1rem; font-size: 1em;">Abweichende Lieferadresse:</h5>
 										
 										{#if existingCustomerId && vorhandeneVersandadressen.length > 0}
-											<!-- Auswahl: Vorhandene Adresse oder neue Adresse -->
-											<div class="form-group" style="margin-bottom: 1.5rem;">
-												<label for="adress-auswahl">Adresse auswählen *</label>
-												<select 
-													id="adress-auswahl" 
-													bind:value={gewaehlteAdresseId}
-													style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;"
-													required
+											<!-- Auswahl: Vorhandene Adresse oder neue Adresse als anklickbare Karten -->
+											<div style="margin-bottom: 1.5rem;">
+												<p style="margin-bottom: 0.75rem; font-weight: 600;">Adresse auswählen *</p>
+												
+												<!-- Neue Adresse Option -->
+												<label 
+													style="display: block; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid {gewaehlteAdresseId === 'neu' ? '#0066cc' : '#dee2e6'}; border-radius: 8px; cursor: pointer; background-color: {gewaehlteAdresseId === 'neu' ? '#e7f3ff' : '#fff'}; transition: all 0.2s;"
 												>
-													<option value="neu">➕ Neue Adresse hinzufügen</option>
-													{#each vorhandeneVersandadressen as adresse}
-														<option value={adresse.id}>
-															{adresse.data.name}, {adresse.data.street}, {adresse.data.zip} {adresse.data.city}
-														</option>
-													{/each}
-												</select>
+													<input 
+														type="radio" 
+														name="adressauswahl" 
+														value="neu"
+														bind:group={gewaehlteAdresseId}
+														required
+														style="margin-right: 0.75rem; cursor: pointer;"
+													/>
+													<strong style="font-size: 1em;">➕ Neue Adresse hinzufügen</strong>
+												</label>
+												
+												<!-- Vorhandene Adressen -->
+												{#each vorhandeneVersandadressen as adresse}
+													<label 
+														style="display: block; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid {gewaehlteAdresseId === adresse.id ? '#0066cc' : '#dee2e6'}; border-radius: 8px; cursor: pointer; background-color: {gewaehlteAdresseId === adresse.id ? '#e7f3ff' : '#fff'}; transition: all 0.2s;"
+													>
+														<input 
+															type="radio" 
+															name="adressauswahl" 
+															value={adresse.id}
+															bind:group={gewaehlteAdresseId}
+															required
+															style="margin-right: 0.75rem; cursor: pointer;"
+														/>
+														<div style="display: inline-block; vertical-align: top;">
+															<strong style="font-size: 0.95em; display: block; margin-bottom: 0.25rem;">{adresse.data.name}</strong>
+															<span style="font-size: 0.9em; color: #666; display: block;">{adresse.data.street}</span>
+															<span style="font-size: 0.9em; color: #666; display: block;">{adresse.data.zip} {adresse.data.city}</span>
+														</div>
+													</label>
+												{/each}
 											</div>
 										{/if}
 										
