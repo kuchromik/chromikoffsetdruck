@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getEmailVerification, deleteEmailVerification, cleanupExpiredEmailVerifications } from '$lib/pendingOrders.js';
+import { getEmailVerification, deleteEmailVerification, cleanupExpiredEmailVerifications, markEmailAsVerified } from '$lib/pendingOrders.js';
 import { getCustomerByEmail } from '$lib/firebaseService.js';
 
 /** @type {import('./$types').RequestHandler} */
@@ -38,6 +38,13 @@ export async function POST({ request }) {
 			console.error('Fehler beim Suchen des Kunden:', customerResult.error);
 			// Trotzdem fortfahren - E-Mail ist verifiziert
 		}
+		
+		// Markiere E-Mail als verifiziert für Polling (bevor Token gelöscht wird)
+		await markEmailAsVerified(email, orderState, {
+			customerExists: !!customerResult.customer,
+			customerData: customerResult.customer || null,
+			customerId: customerResult.customerId || null
+		});
 		
 		// Token löschen (einmalige Verwendung)
 		await deleteEmailVerification(token);

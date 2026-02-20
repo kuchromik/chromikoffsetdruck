@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
@@ -265,6 +265,7 @@
 	let zeigeEmailVerifizierung = $state(false);
 	let emailVerifikationStatus = $state(''); // '', 'sending', 'sent', 'error', 'verifying'
 	let emailZurVerifizierung = $state('');
+	let pollingInterval = null; // Für automatische Verifizierungs-Prüfung
 
 	// Kundendaten
 	let kundenDaten = $state({
@@ -588,6 +589,8 @@
 
 			if (response.ok) {
 				emailVerifikationStatus = 'sent';
+				// Starte Polling für automatische Verifizierung
+				starteEmailPolling();
 			} else {
 				emailVerifikationStatus = 'error';
 			}
@@ -595,6 +598,110 @@
 			console.error('Fehler beim Senden der E-Mail-Verifizierung:', error);
 			emailVerifikationStatus = 'error';
 		}
+	}
+
+	// Polling-Funktion für automatische E-Mail-Verifizierung
+	function starteEmailPolling() {
+		// Falls bereits ein Polling läuft, stoppe es
+		if (pollingInterval) {
+			clearInterval(pollingInterval);
+		}
+		
+		let pollCount = 0;
+		const maxPolls = 60; // 60 Versuche = 5 Minuten bei 5 Sekunden Intervall
+		
+		pollingInterval = setInterval(async () => {
+			pollCount++;
+			
+			try {
+				const response = await fetch('/api/poll-email-verification', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ email: emailZurVerifizierung })
+				});
+				
+				const result = await response.json();
+				
+				if (result.success && result.verified) {
+					// E-Mail wurde verifiziert!
+					stoppeEmailPolling();
+					verarbeiteVerifizierung(result);
+				} else if (pollCount >= maxPolls) {
+					// Timeout nach 5 Minuten
+					stoppeEmailPolling();
+					console.log('Polling timeout nach 5 Minuten');
+				}
+			} catch (error) {
+				console.error('Fehler beim Polling:', error);
+			}
+		}, 5000); // Alle 5 Sekunden prüfen
+		
+		console.log('✓ E-Mail-Polling gestartet');
+	}
+
+	function stoppeEmailPolling() {
+		if (pollingInterval) {
+			clearInterval(pollingInterval);
+			pollingInterval = null;
+			console.log('✓ E-Mail-Polling gestoppt');
+		}
+	}
+
+	function verarbeiteVerifizierung(result) {
+		// E-Mail wurde verifiziert
+		emailVerifiziert = true;
+		verifiedEmail = result.email;
+		kundenDaten.email = result.email;
+		
+		// Wenn Kundendaten existieren, Formular vorausfüllen
+		if (result.customerExists && result.customerData) {
+			existingCustomerId = result.customerId;
+			kundenDaten.vorname = result.customerData.firstName || '';
+			kundenDaten.nachname = result.customerData.lastName || '';
+			kundenDaten.firma = result.customerData.company || '';
+			kundenDaten.strasse = result.customerData.address || '';
+			kundenDaten.plz = result.customerData.zip || '';
+			kundenDaten.ort = result.customerData.city || '';
+		}
+		
+		// Stelle Bestellzustand aus Server-Response wieder her
+		if (result.orderState) {
+			try {
+				const orderState = result.orderState;
+				produktId = orderState.produktId;
+				auflage = orderState.auflage;
+				material = orderState.material;
+				format = orderState.format;
+				umfang = orderState.umfang;
+				falzart = orderState.falzart;
+				preisBerechnung = orderState.preisBerechnung;
+				
+				// Zeige Ergebnis und Bestellformular
+				zeigErgebnis = true;
+				zeigeBestellformular = true;
+				
+				console.log('✓ Bestellzustand wiederhergestellt:', orderState);
+			} catch (e) {
+				console.error('Fehler beim Wiederherstellen des Bestellzustands:', e);
+			}
+		}
+		
+		emailVerifikationStatus = '';
+		zeigeEmailVerifizierung = false;
+		
+		// Scroll zum Bestellformular falls vorhanden, sonst zur Produktauswahl
+		setTimeout(() => {
+			const orderForm = document.querySelector('.order-form-box');
+			const productSection = document.querySelector('.product-selection');
+			const target = orderForm || productSection;
+			if (target) {
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}, 500);
+		
+		console.log('✓ E-Mail automatisch verifiziert');
 	}
 
 	// Beim Laden der Seite prüfen, ob ein E-Mail-Token im URL ist
@@ -683,7 +790,15 @@
 		}
 	});
 
+	// Cleanup beim Verlassen der Seite
+	onDestroy(() => {
+		stoppeEmailPolling();
+	});
+
 	function abbrechenBestellung() {
+		// Stoppe laufendes Polling
+		stoppeEmailPolling();
+		
 		// Komplett zurücksetzen - zurück zur Produktauswahl
 		produktId = '';
 		auflage = '';
@@ -1101,9 +1216,17 @@
 						<div class="success-message" style="padding: 1.5rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; margin-bottom: 1.5rem;">
 							<h4 style="color: #155724; margin-bottom: 0.5rem;">✓ E-Mail versendet!</h4>
 							<p style="color: #155724; margin: 0;">Wir haben Ihnen eine Verifizierungsmail an <strong>{emailZurVerifizierung}</strong> gesendet.</p>
-							<p style="color: #155724; margin: 0.5rem 0 0;">
+							<p style="color: #155724; margin: 0.75rem 0 0;">
 								<strong>Bitte überprüfen Sie Ihr E-Mail-Postfach und klicken Sie auf den Verifizierungslink.</strong>
-								<br>Der Link ist 24 Stunden gültig.
+							</p>
+							<div style="background-color: #c3e6cb; padding: 1rem; margin-top: 1rem; border-radius: 4px;">
+								<p style="color: #155724; margin: 0; font-size: 0.95em;">
+									💡 <strong>Tipp:</strong> Sie können auf dieser Seite bleiben. Nach dem Klick auf den Verifizierungslink 
+									werden Ihre Daten automatisch geladen und Sie können direkt mit der Bestellung fortfahren.
+								</p>
+							</div>
+							<p style="color: #666; margin: 0.75rem 0 0; font-size: 0.9em;">
+								Der Link ist 24 Stunden gültig.
 							</p>
 						</div>
 						<div class="button-group">

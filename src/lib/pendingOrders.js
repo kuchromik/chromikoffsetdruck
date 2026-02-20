@@ -233,3 +233,75 @@ export async function cleanupExpiredEmailVerifications() {
 		return 0;
 	}
 }
+
+/**
+ * Markiert eine E-Mail als verifiziert (für Polling-Abfragen)
+ * Speichert die Verifizierung temporär (5 Minuten) in einer separaten Collection
+ * @param {string} email - Die verifizierte E-Mail-Adresse
+ * @param {Object} orderState - Der Bestellzustand
+ * @param {Object} customerData - Die Kundendaten
+ * @returns {Promise<void>}
+ */
+export async function markEmailAsVerified(email, orderState, customerData) {
+	const db = getDb();
+	const expiresAt = new Date();
+	expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 Minuten gültig
+	
+	const verificationDoc = {
+		email: email,
+		orderState: orderState || null,
+		customerData: customerData || null,
+		verifiedAt: new Date().toISOString(),
+		expiresAt: expiresAt.toISOString()
+	};
+	
+	try {
+		// Verwende E-Mail als Dokument-ID (encoded für Firebase-Kompatibilität)
+		const docId = Buffer.from(email).toString('base64').replace(/[\/\+\=]/g, '_');
+		await db.collection('VerifiedEmails').doc(docId).set(verificationDoc);
+		console.log(`✓ E-Mail als verifiziert markiert: ${email}`);
+	} catch (error) {
+		console.error('Fehler beim Markieren der E-Mail als verifiziert:', error);
+		throw error;
+	}
+}
+
+/**
+ * Prüft, ob eine E-Mail kürzlich verifiziert wurde (für Polling)
+ * @param {string} email - Die zu prüfende E-Mail-Adresse
+ * @returns {Promise<Object|null>} Ein Objekt mit { email, orderState, customerData } oder null
+ */
+export async function checkIfEmailWasVerified(email) {
+	const db = getDb();
+	
+	try {
+		const docId = Buffer.from(email).toString('base64').replace(/[\/\+\=]/g, '_');
+		const doc = await db.collection('VerifiedEmails').doc(docId).get();
+		
+		if (!doc.exists) {
+			return null;
+		}
+		
+		const verification = doc.data();
+		
+		// Prüfe ob Verifizierung abgelaufen ist
+		if (new Date(verification.expiresAt) < new Date()) {
+			console.log(`✗ Verifizierung abgelaufen für: ${email}`);
+			await db.collection('VerifiedEmails').doc(docId).delete();
+			return null;
+		}
+		
+		// Lösche nach erfolgreichem Abruf (einmalige Verwendung)
+		await db.collection('VerifiedEmails').doc(docId).delete();
+		console.log(`✓ Verifizierung abgerufen und gelöscht für: ${email}`);
+		
+		return {
+			email: verification.email,
+			orderState: verification.orderState || null,
+			customerData: verification.customerData || null
+		};
+	} catch (error) {
+		console.error('Fehler beim Prüfen der E-Mail-Verifizierung:', error);
+		return null;
+	}
+}
