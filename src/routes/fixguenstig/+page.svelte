@@ -263,7 +263,7 @@
 	let verifiedEmail = $state('');
 	let existingCustomerId = $state(null);
 	let zeigeEmailVerifizierung = $state(false);
-	let emailVerifikationStatus = $state(''); // '', 'sending', 'sent', 'error', 'verifying'
+	let emailVerifikationStatus = $state(''); // '', 'sending', 'sent', 'error', 'verifying', 'verified-close-tab'
 	let emailZurVerifizierung = $state('');
 	let pollingInterval = null; // Für automatische Verifizierungs-Prüfung
 
@@ -709,6 +709,8 @@
 		const emailToken = $page.url.searchParams.get('emailToken');
 		
 		if (emailToken) {
+			// Zeige Verifizierungs-UI
+			zeigeEmailVerifizierung = true;
 			emailVerifikationStatus = 'verifying';
 			
 			try {
@@ -724,59 +726,14 @@
 
 				if (result.success) {
 					// E-Mail wurde verifiziert
-					emailVerifiziert = true;
+					// Zeige nur Bestätigungsmeldung - Daten werden via Polling im Original-Tab geladen
+					emailVerifikationStatus = 'verified-close-tab';
 					verifiedEmail = result.email;
-					kundenDaten.email = result.email;
-					
-					// Wenn Kundendaten existieren, Formular vorausfüllen
-					if (result.customerExists && result.customerData) {
-						existingCustomerId = result.customerId;
-						kundenDaten.vorname = result.customerData.firstName || '';
-						kundenDaten.nachname = result.customerData.lastName || '';
-						kundenDaten.firma = result.customerData.company || '';
-						kundenDaten.strasse = result.customerData.address || '';
-						kundenDaten.plz = result.customerData.zip || '';
-						kundenDaten.ort = result.customerData.city || '';
-					}
-					
-					// Stelle Bestellzustand aus Server-Response wieder her
-					if (result.orderState) {
-						try {
-							const orderState = result.orderState;
-							produktId = orderState.produktId;
-							auflage = orderState.auflage;
-							material = orderState.material;
-							format = orderState.format;
-							umfang = orderState.umfang;
-							falzart = orderState.falzart;
-							preisBerechnung = orderState.preisBerechnung;
-							
-							// Zeige Ergebnis und Bestellformular
-							zeigErgebnis = true;
-							zeigeBestellformular = true;
-							
-							console.log('✓ Bestellzustand wiederhergestellt:', orderState);
-						} catch (e) {
-							console.error('Fehler beim Wiederherstellen des Bestellzustands:', e);
-						}
-					}
-					
-					emailVerifikationStatus = '';
 					
 					// Entferne Token aus URL
 					const url = new URL(window.location.href);
 					url.searchParams.delete('emailToken');
 					window.history.replaceState({}, '', url);
-					
-					// Scroll zum Bestellformular falls vorhanden, sonst zur Produktauswahl
-					setTimeout(() => {
-						const orderForm = document.querySelector('.order-form-box');
-						const productSection = document.querySelector('.product-selection');
-						const target = orderForm || productSection;
-						if (target) {
-							target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-						}
-					}, 500);
 					
 				} else {
 					emailVerifikationStatus = 'error';
@@ -1250,6 +1207,29 @@
 						<div style="text-align: center; padding: 2rem;">
 							<div class="spinner"></div>
 							<p style="margin-top: 1rem;">E-Mail-Adresse wird verifiziert...</p>
+						</div>
+					{:else if emailVerifikationStatus === 'verified-close-tab'}
+						<div class="success-message" style="padding: 2rem; background-color: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; text-align: center;">
+							<h3 style="color: #155724; margin-bottom: 1rem;">✓ E-Mail erfolgreich verifiziert!</h3>
+							<p style="color: #155724; font-size: 1.1em; margin-bottom: 1.5rem;">
+								Ihre E-Mail-Adresse <strong>{verifiedEmail}</strong> wurde erfolgreich bestätigt.
+							</p>
+							<div style="background-color: #c3e6cb; padding: 1.5rem; margin: 1.5rem 0; border-radius: 6px;">
+								<p style="color: #155724; margin: 0; font-size: 1.05em; line-height: 1.6;">
+									<strong>Sie können diesen Tab jetzt schließen</strong> und zu Ihrer ursprünglichen Bestellseite zurückkehren.<br>
+									Ihre Daten werden dort automatisch geladen.
+								</p>
+							</div>
+							<p style="color: #666; font-size: 0.9em; margin-top: 1rem;">
+								Falls Sie die ursprüngliche Seite geschlossen haben, können Sie jetzt mit einer neuen Bestellung beginnen.
+							</p>
+							<button 
+								class="btn btn-primary" 
+								onclick={() => { window.location.href = '/fixguenstig'; }}
+								style="margin-top: 1rem; font-size: 1.1em; padding: 0.75rem 2rem;"
+							>
+								Neue Bestellung starten
+							</button>
 						</div>
 					{:else}
 						<div style="background-color: white; padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem;">
