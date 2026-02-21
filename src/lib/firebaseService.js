@@ -46,7 +46,7 @@ export function getDb() {
  * @param {string} [jobData.producer='doe'] - Produktionsart (default: 'doe' für Digitaldruck)
  * @param {boolean} [jobData.toShip=false] - Versand (true) oder Abholung (false)
  * @param {string} [jobData.shipmentAddressId] - ID der Versandadresse (optional, nur bei toShip=true und abweichender Adresse)
- * @param {string} [jobData.customerID] - ID des Kunden aus der customer Collection
+ * @param {string} [jobData.customerId] - ID des Kunden aus der customer Collection
  * @returns {Promise<{success: boolean, jobId?: string, error?: string}>}
  */
 export async function createJob(jobData) {
@@ -85,8 +85,8 @@ export async function createJob(jobData) {
 		}
 		
 		// Kunden-ID hinzufügen (falls vorhanden)
-		if (jobData.customerID) {
-			jobDoc.customerID = jobData.customerID;
+		if (jobData.customerId) {
+			jobDoc.customerId = jobData.customerId;
 		}
 
 		// Job in Firestore speichern

@@ -237,7 +237,7 @@ Web: www.chromikoffsetdruck.de
 			}
 		}
 		
-		// Job in Firebase speichern (mit customerID)
+		// Job in Firebase speichern (mit customerId)
 		const jobResult = await createJob({
 			jobname: data.auftragsname,
 			amount: data.preise.gesamtpreisNetto,
@@ -247,7 +247,7 @@ Web: www.chromikoffsetdruck.de
 			producer: 'doe', // Digitaldruck
 			toShip: data.lieferung.art === 'versand',
 			shipmentAddressId: shipmentAddressId,
-			customerID: customerId
+			customerId: customerId
 		});
 		
 		if (jobResult.success) {

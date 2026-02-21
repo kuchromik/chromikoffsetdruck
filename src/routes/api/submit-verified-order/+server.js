@@ -131,7 +131,7 @@ export async function POST({ request }) {
 			}
 		}
 		
-		// Job in Firebase speichern (mit customerID)
+		// Job in Firebase speichern (mit customerId)
 		const jobResult = await createJob({
 			jobname: data.auftragsname,
 			amount: data.preise.gesamtpreisNetto,
@@ -141,7 +141,7 @@ export async function POST({ request }) {
 			producer: 'doe', // Digitaldruck
 			toShip: data.lieferung.art === 'versand',
 			shipmentAddressId: shipmentAddressId,
-			customerID: customerId
+			customerId: customerId
 		});
 		
 		if (jobResult.success) {
