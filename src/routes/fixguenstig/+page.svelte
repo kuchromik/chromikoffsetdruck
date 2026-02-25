@@ -298,6 +298,19 @@
 	// Versandadressen-Verwaltung
 	let vorhandeneVersandadressen = $state([]);
 	let gewaehlteAdresseId = $state('neu'); // 'neu' oder eine Adress-ID
+	
+	// Abweichende Rechnungsadresse (optional)
+	let rechnungsadresseAbweichend = $state(false);
+	let rechnungsadresse = $state({
+		firma: '',
+		strasse: '',
+		plz: '',
+		ort: ''
+	});
+	
+	// Abweichende E-Mail-Adresse für Rechnungsversand (optional)
+	let rechnungsEmailAbweichend = $state(false);
+	let rechnungsEmail = $state('');
 	let versandadressenGeladen = $state(false);
 	
 	// Versandkosten
@@ -811,6 +824,19 @@
 		vorhandeneVersandadressen = [];
 		gewaehlteAdresseId = 'neu';
 		versandadressenGeladen = false;
+		
+		// Abweichende Rechnungsadresse zurücksetzen
+		rechnungsadresseAbweichend = false;
+		rechnungsadresse = {
+			firma: '',
+			strasse: '',
+			plz: '',
+			ort: ''
+		};
+		
+		// Abweichende Rechnungs-E-Mail zurücksetzen
+		rechnungsEmailAbweichend = false;
+		rechnungsEmail = '';
 	}
 
 	async function handleFileChange(event) {
@@ -956,44 +982,52 @@
 						ort: kundenDaten.ort
 					},
 					lieferadresse: (lieferart === 'versand' && !lieferadresseGleichRechnungsadresse) ? lieferadresse : null
-				}
-			};
-			
-			formData.append('data', JSON.stringify(bestellDaten));
-			
-			// ExistingCustomerId hinzufügen (wenn vorhanden)
-			formData.append('existingCustomerId', existingCustomerId || 'null');
-			
-			// PDF-Dateien hinzufügen
-			pdfDateien.forEach((file, index) => {
-				formData.append(`pdf${index}`, file);
-			});
+			},
+			abweichendeRechnungsadresse: rechnungsadresseAbweichend ? {
+				firma: rechnungsadresse.firma,
+				strasse: rechnungsadresse.strasse,
+				plz: rechnungsadresse.plz,
+				ort: rechnungsadresse.ort,
+				land: 'DE'
+			} : null,
+			abweichendeRechnungsEmail: rechnungsEmailAbweichend ? rechnungsEmail : null
+		};
+		
+		formData.append('data', JSON.stringify(bestellDaten));
+		
+		// ExistingCustomerId hinzufügen (wenn vorhanden)
+		formData.append('existingCustomerId', existingCustomerId || 'null');
+		
+		// PDF-Dateien hinzufügen
+		pdfDateien.forEach((file, index) => {
+			formData.append(`pdf${index}`, file);
+		});
 
-			// API-Route aufrufen (verarbeitet Bestellung direkt, da E-Mail bereits verifiziert)
-			const response = await fetch('/api/submit-verified-order', {
-				method: 'POST',
-				body: formData // Kein Content-Type Header - wird automatisch gesetzt
-			});
+		// API-Route aufrufen (verarbeitet Bestellung direkt, da E-Mail bereits verifiziert)
+		const response = await fetch('/api/submit-verified-order', {
+			method: 'POST',
+			body: formData // Kein Content-Type Header - wird automatisch gesetzt
+		});
 
-			clearInterval(progressInterval);
-			verarbeitungsSchritt = 5; // Abgeschlossen
+		clearInterval(progressInterval);
+		verarbeitungsSchritt = 5; // Abgeschlossen
 
-			if (response.ok) {
-				const result = await response.json();
-				if (result.success && result.jobId) {
-					jobId = result.jobId;
-					jobstart = Date.now(); // Timestamp in Millisekunden
-				}
-				bestellStatus = 'success';
-			} else {
-				bestellStatus = 'error';
+		if (response.ok) {
+			const result = await response.json();
+			if (result.success && result.jobId) {
+				jobId = result.jobId;
+				jobstart = Date.now(); // Timestamp in Millisekunden
 			}
-		} catch (error) {
-			console.error('Fehler beim Senden der Bestellung:', error);
-			clearInterval(progressInterval);
+			bestellStatus = 'success';
+		} else {
 			bestellStatus = 'error';
 		}
+	} catch (error) {
+		console.error('Fehler beim Senden der Bestellung:', error);
+		clearInterval(progressInterval);
+		bestellStatus = 'error';
 	}
+}
 </script>
 
 <svelte:head>
@@ -1506,6 +1540,106 @@
 										Geben Sie Ihrem Auftrag einen Namen zur besseren Übersicht.
 									{/if}
 								</p>
+							</div>
+
+							<!-- Abweichende Rechnungsadresse (optional) -->
+							<div class="form-group" style="margin-top: 2rem; padding: 1.5rem; background-color: #fff9e6; border: 2px solid #ffc107; border-radius: 6px;">
+								<h4 style="margin-bottom: 1rem;">Abweichende Rechnungsadresse (optional)</h4>
+								
+								<div style="margin-bottom: 1rem;">
+									<label style="display: flex; align-items: center; cursor: pointer;">
+										<input 
+											type="checkbox" 
+											bind:checked={rechnungsadresseAbweichend}
+											style="margin-right: 0.5rem;"
+										/>
+										<span style="font-size: 0.95em;">Ich möchte eine abweichende Rechnungsadresse angeben</span>
+									</label>
+								</div>
+								
+								{#if rechnungsadresseAbweichend}
+									<div style="border-top: 1px solid #ffd54f; padding-top: 1rem; margin-top: 1rem;">
+										<div class="form-group">
+											<label for="rechnung-firma">Firma *</label>
+											<input 
+												type="text" 
+												id="rechnung-firma" 
+												bind:value={rechnungsadresse.firma} 
+												placeholder="z.B. Musterfirma GmbH" 
+												required 
+											/>
+										</div>
+										
+										<div class="form-group">
+											<label for="rechnung-strasse">Straße und Hausnummer *</label>
+											<input 
+												type="text" 
+												id="rechnung-strasse" 
+												bind:value={rechnungsadresse.strasse} 
+												placeholder="z.B. Musterstraße 123" 
+												required 
+											/>
+										</div>
+
+										<div class="form-row" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
+											<div class="form-group" style="margin-bottom: 0;">
+												<label for="rechnung-plz">PLZ *</label>
+												<input 
+													type="text" 
+													id="rechnung-plz" 
+													bind:value={rechnungsadresse.plz} 
+													inputmode="numeric"
+													maxlength="5"
+													minlength="4"
+													placeholder="12345" 
+													required 
+												/>
+											</div>
+											<div class="form-group" style="margin-bottom: 0;">
+												<label for="rechnung-ort">Ort *</label>
+												<input type="text" id="rechnung-ort" bind:value={rechnungsadresse.ort} required />
+											</div>
+										</div>
+										
+										<p style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+											Die Rechnungsadresse wird automatisch mit Länderschlüssel "DE" (Deutschland) gespeichert.
+										</p>
+									</div>
+								{/if}
+							</div>
+
+							<!-- Abweichende E-Mail-Adresse für Rechnungsversand (optional) -->
+							<div class="form-group" style="margin-top: 1.5rem; padding: 1.5rem; background-color: #e7f3ff; border: 2px solid #17a2b8; border-radius: 6px;">
+								<h4 style="margin-bottom: 1rem;">Abweichende E-Mail für Rechnungsversand (optional)</h4>
+								
+								<div style="margin-bottom: 1rem;">
+									<label style="display: flex; align-items: center; cursor: pointer;">
+										<input 
+											type="checkbox" 
+											bind:checked={rechnungsEmailAbweichend}
+											style="margin-right: 0.5rem;"
+										/>
+										<span style="font-size: 0.95em;">Die Rechnung soll an eine andere E-Mail-Adresse gesendet werden</span>
+									</label>
+								</div>
+								
+								{#if rechnungsEmailAbweichend}
+									<div style="border-top: 1px solid #66d9ef; padding-top: 1rem; margin-top: 1rem;">
+										<div class="form-group">
+											<label for="rechnung-email">E-Mail-Adresse für Rechnungsversand *</label>
+											<input 
+												type="email" 
+												id="rechnung-email" 
+												bind:value={rechnungsEmail} 
+												placeholder="rechnung@email.de" 
+												required 
+											/>
+										</div>
+										<p style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+											Die Rechnung wird an diese E-Mail-Adresse versendet. Die Auftragsbestätigung wird weiterhin an <strong>{kundenDaten.email}</strong> gesendet.
+										</p>
+									</div>
+								{/if}
 							</div>
 
 							<div class="form-group" style="margin-top: 2rem; padding: 1.5rem; background-color: #fff; border: 2px solid #0066cc; border-radius: 6px;">
