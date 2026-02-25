@@ -47,6 +47,8 @@ export function getDb() {
  * @param {boolean} [jobData.toShip=false] - Versand (true) oder Abholung (false)
  * @param {string} [jobData.shipmentAddressId] - ID der Versandadresse (optional, nur bei toShip=true und abweichender Adresse)
  * @param {string} [jobData.customerId] - ID des Kunden aus der customer Collection
+ * @param {Object} [jobData.billingAddress] - Abweichende Rechnungsadresse (optional)
+ * @param {string} [jobData.billingEmail] - Abweichende E-Mail für Rechnungsversand (optional)
  * @returns {Promise<{success: boolean, jobId?: string, error?: string}>}
  */
 export async function createJob(jobData) {
@@ -87,6 +89,16 @@ export async function createJob(jobData) {
 		// Kunden-ID hinzufügen (falls vorhanden)
 		if (jobData.customerId) {
 			jobDoc.customerId = jobData.customerId;
+		}
+		
+		// Abweichende Rechnungsadresse hinzufügen (falls vorhanden)
+		if (jobData.billingAddress) {
+			jobDoc.billingAddress = jobData.billingAddress;
+		}
+		
+		// Abweichende E-Mail für Rechnungsversand hinzufügen (falls vorhanden)
+		if (jobData.billingEmail) {
+			jobDoc.billingEmail = jobData.billingEmail;
 		}
 
 		// Job in Firestore speichern

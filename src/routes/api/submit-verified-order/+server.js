@@ -141,7 +141,9 @@ export async function POST({ request }) {
 			producer: 'doe', // Digitaldruck
 			toShip: data.lieferung.art === 'versand',
 			shipmentAddressId: shipmentAddressId,
-			customerId: customerId
+			customerId: customerId,
+			billingAddress: data.abweichendeRechnungsadresse || null,
+			billingEmail: data.abweichendeRechnungsEmail || null
 		});
 		
 		if (jobResult.success) {
@@ -190,7 +192,18 @@ ${data.kunde.firma ? `Firma: ${data.kunde.firma}\n` : ''}Adresse: ${data.kunde.s
          ${data.kunde.plz} ${data.kunde.ort}
 E-Mail: ${data.kunde.email}
 
-LIEFERUNG:
+${data.abweichendeRechnungsadresse ? `ABWEICHENDE RECHNUNGSADRESSE:
+---------------------------------
+Firma: ${data.abweichendeRechnungsadresse.firma}
+Adresse: ${data.abweichendeRechnungsadresse.strasse}
+         ${data.abweichendeRechnungsadresse.plz} ${data.abweichendeRechnungsadresse.ort}
+Land: ${data.abweichendeRechnungsadresse.land}
+
+` : ''}${data.abweichendeRechnungsEmail ? `ABWEICHENDE E-MAIL FÜR RECHNUNGSVERSAND:
+-----------------------------------------
+E-Mail: ${data.abweichendeRechnungsEmail}
+
+` : ''}LIEFERUNG:
 ----------
 ${data.lieferung.art === 'abholung' ? `Art: Abholung
 Abholadresse: Marie-Curie-Straße 8 in 15236 Frankfurt (Oder)
@@ -255,6 +268,18 @@ ${data.kunde.firma ? `${data.kunde.firma}\n` : ''}${data.kunde.vorname} ${data.k
 ${data.kunde.strasse}
 ${data.kunde.plz} ${data.kunde.ort}
 E-Mail: ${data.kunde.email}
+${data.abweichendeRechnungsadresse ? `
+
+ABWEICHENDE RECHNUNGSADRESSE:
+------------------------------
+${data.abweichendeRechnungsadresse.firma}
+${data.abweichendeRechnungsadresse.strasse}
+${data.abweichendeRechnungsadresse.plz} ${data.abweichendeRechnungsadresse.ort}
+Land: ${data.abweichendeRechnungsadresse.land}` : ''}${data.abweichendeRechnungsEmail ? `
+
+ABWEICHENDE E-MAIL FÜR RECHNUNGSVERSAND:
+-----------------------------------------
+${data.abweichendeRechnungsEmail}` : ''}
 ${attachments.length === 0 ? `
 
 ════════════════════════════════════════════════════════════════
