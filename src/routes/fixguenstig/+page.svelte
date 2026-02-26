@@ -108,6 +108,24 @@
 	};
 
 	// Hilfsfunktionen zum Abrufen der Datenobjekte
+
+	// Gibt für ein Produkt (id) den Flächengewichtsbereich als String zurück, z.B. "246 g/m² - 350 g/m²"
+	function getFlaechengewichtBereich(produktId) {
+		const mats = produktKonfiguration[produktId]?.materialien || [];
+		// Hole alle passenden Material-Objekte
+		const matObjs = mats.map(id => alleMaterialien.find(m => m.id === id)).filter(Boolean);
+		// Extrahiere das Flächengewicht (letzte 8 Zeichen des Namens)
+		const gewichte = matObjs.map(m => m.name.slice(-8));
+		// In Zahlen umwandeln zum Sortieren
+		const zahlen = gewichte.map(g => parseInt(g));
+		if (zahlen.length === 0) return '';
+		const min = Math.min(...zahlen);
+		const max = Math.max(...zahlen);
+		// Finde das zugehörige Suffix (z.B. "g/m²")
+		const suffix = matObjs[0]?.name.slice(-5) || 'g/m²';
+		if (min === max) return `${min} ${suffix}`;
+		return `${min} ${suffix} - ${max} ${suffix}`;
+	}
 	function getFormatData(formatName) {
 		return alleFormate.find(f => f.name === formatName);
 	}
@@ -1079,7 +1097,10 @@
 								class="product-button" 
 								onclick={() => waehleProdukt(prod.id)}
 							>
-								{prod.name}
+								<div>{prod.name}</div>
+								<div style="font-size:0.9em;color:#666;margin-top:2px;">
+									{getFlaechengewichtBereich(prod.id)}
+								</div>
 							</button>
 						{/each}
 					</div>
