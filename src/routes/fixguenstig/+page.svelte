@@ -1053,57 +1053,6 @@
 	<meta name="description" content="Schnelle und preiswerte Drucklösungen" />
 </svelte:head>
 
-<style>
-	/* Modernes Styling für Auftragsformular-Eingabefelder */
-	.order-form-box input[type="text"],
-	.order-form-box input[type="email"],
-	.order-form-box input[type="number"],
-	.order-form-box input[type="file"],
-	.order-form-box select {
-		width: 100%;
-		padding: 0.75em 1em;
-		font-size: 1.08em;
-		border: 1.5px solid #bfc9d1;
-		border-radius: 6px;
-		margin-top: 0.25em;
-		margin-bottom: 0.7em;
-		background: #f8fafc;
-		transition: border-color 0.2s, box-shadow 0.2s;
-		box-sizing: border-box;
-	}
-	.order-form-box input[type="text"]:focus,
-	.order-form-box input[type="email"]:focus,
-	.order-form-box input[type="number"]:focus,
-	.order-form-box input[type="file"]:focus,
-	.order-form-box select:focus {
-		border-color: #0066cc;
-		outline: none;
-		box-shadow: 0 0 0 2px #cce6ff;
-		background: #fff;
-	}
-	.order-form-box label {
-		font-size: 1.08em;
-		font-weight: 500;
-		margin-bottom: 0.25em;
-		color: #22314a;
-		display: block;
-	}
-	.order-form-box .form-group {
-		margin-bottom: 1.2em;
-	}
-	.order-form-box input[type="checkbox"],
-	.order-form-box input[type="radio"] {
-		width: 1.2em;
-		height: 1.2em;
-		accent-color: #0066cc;
-		margin-right: 0.5em;
-	}
-	.order-form-box input[disabled] {
-		background: #e9f7ef;
-		color: #888;
-		cursor: not-allowed;
-	}
-</style>
 <div class="page-wrapper">
 	<Header />
 	
@@ -2387,5 +2336,55 @@
 		.form-row {
 			grid-template-columns: 1fr !important;
 		}
+	}
+
+	/* Modernes Styling für Auftragsformular-Eingabefelder */
+	.order-form-box input[type="text"],
+	.order-form-box input[type="email"],
+	.order-form-box input[type="number"],
+	.order-form-box input[type="file"],
+	.order-form-box select {
+		width: 100%;
+		padding: 0.75em 1em;
+		font-size: 1.08em;
+		border: 1.5px solid #bfc9d1;
+		border-radius: 6px;
+		margin-top: 0.25em;
+		margin-bottom: 0.7em;
+		background: #f8fafc;
+		transition: border-color 0.2s, box-shadow 0.2s;
+		box-sizing: border-box;
+	}
+	.order-form-box input[type="text"]:focus,
+	.order-form-box input[type="email"]:focus,
+	.order-form-box input[type="number"]:focus,
+	.order-form-box input[type="file"]:focus,
+	.order-form-box select:focus {
+		border-color: #0066cc;
+		outline: none;
+		box-shadow: 0 0 0 2px #cce6ff;
+		background: #fff;
+	}
+	.order-form-box label {
+		font-size: 1.08em;
+		font-weight: 500;
+		margin-bottom: 0.25em;
+		color: #22314a;
+		display: block;
+	}
+	.order-form-box .form-group {
+		margin-bottom: 1.2em;
+	}
+	.order-form-box input[type="checkbox"],
+	.order-form-box input[type="radio"] {
+		width: 1.2em;
+		height: 1.2em;
+		accent-color: #0066cc;
+		margin-right: 0.5em;
+	}
+	.order-form-box input[disabled] {
+		background: #e9f7ef;
+		color: #888;
+		cursor: not-allowed;
 	}
 </style>
