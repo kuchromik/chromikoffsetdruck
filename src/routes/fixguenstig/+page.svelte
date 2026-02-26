@@ -1098,7 +1098,7 @@
 								onclick={() => waehleProdukt(prod.id)}
 							>
 								<div>{prod.name}</div>
-								<div style="font-size:0.9em;color:#666;margin-top:2px;">
+								<div style="font-size:0.6em; font-weight: lighter; color:#999; margin-top:2px;">
 									{getFlaechengewichtBereich(prod.id)}
 								</div>
 							</button>
