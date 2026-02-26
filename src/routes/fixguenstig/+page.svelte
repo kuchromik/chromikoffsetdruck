@@ -1366,6 +1366,20 @@
 									<br><br>
 									Bitte geben Sie im Betreff die Job-ID an:<br>
 									<strong style="font-size: 1.05em; font-family: monospace; background-color: #fff; padding: 0.25rem 0.5rem; border-radius: 3px;">{jobId}</strong>
+									<button type="button" aria-label="Job-ID kopieren" title="Job-ID kopieren"
+										style="border:none;background:none;padding:0 0.25em;cursor:pointer;vertical-align:middle;"
+										on:click={() => {navigator.clipboard.writeText(jobId); jobIdCopied = true; setTimeout(() => jobIdCopied = false, 1200);}}>
+										<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style="vertical-align:middle;">
+											<path d="M10 1.5A1.5 1.5 0 0 1 11.5 3v1H13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.5H4A1.5 1.5 0 0 1 2.5 10V3A1.5 1.5 0 0 1 4 1.5h6zm1.5 3V3A.5.5 0 0 0 11 2.5H4A.5.5 0 0 0 3.5 3v7a.5.5 0 0 0 .5.5h.5V6a2 2 0 0 1 2-2h5zM6 5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H6z"/>
+										</svg>
+									</button>
+									{#if jobIdCopied}
+										<span style="font-size:0.95em;color:#28a745;margin-left:0.5em;">Kopiert!</span>
+									{/if}
+								<script>
+									// ...existing code...
+									let jobIdCopied = false;
+								</script>
 								</p>
 							</div>
 						{/if}
