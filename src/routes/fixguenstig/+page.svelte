@@ -12,7 +12,8 @@
 		{ name: 'Folder', id: 'folder', grundpreis: 10 },
 		{ name: 'Karten', id: 'karten', grundpreis: 10 },
 		{ name: 'Klappkarten', id: 'klappkarten', grundpreis: 10 },
-		{ name: 'Plakate', id: 'plakate', grundpreis: 10 }
+		{ name: 'Plakate', id: 'plakate', grundpreis: 10 },
+		{ name: 'Plakate mit Abrissperforation', id: 'plakate-abriss', grundpreis: 10, beschreibung: 'Format DIN A3 mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm' }
 	];
 
 	// Alle verfügbaren Formate mit IDs und Formatfaktoren
@@ -105,6 +106,15 @@
 				'2-seitig': true // für alle Formate verfügbar
 			}
 		}
+		,
+		'plakate-abriss': {
+			formate: ['format-a3'],
+			materialien: ['mat-bild135', 'mat-bild170'],
+			umfaenge: {
+				'1-seitig': true,
+				'2-seitig': true
+			}
+		}
 	};
 
 	// Hilfsfunktionen zum Abrufen der Datenobjekte
@@ -161,6 +171,10 @@
 	const kostenJeStueckFalzen = 0.01; // Kosten je Stück beim Falzen
 	const kostenJeStueckRillen4Seitig = 0.05; // Kosten je Stück beim Rillen 4-seitig
 	const kostenJeStueckRillen6Seitig = 0.09; // Kosten je Stück beim Rillen 6-seitig
+
+	// Abrissperforation (Plakate mit Abriss)
+	const abrissGrundpreis = 40; // fixer Grundpreis (einmalig, auflagenunabhängig)
+	const abrissPreisJeStueck = 0.20; // Preis je Stück abhängig von der Auflage
 
 	// Preisberechnungsfunktion
 	function berechneGesamtpreis() {
@@ -227,6 +241,10 @@
 			zusatzkosten = grundpreisRillen + (auflage * kostenJeStueckRillen);
 			zusatzkostenName = 'Rillkosten';
 		}
+		} else if (produktId === 'plakate-abriss') {
+			// Abrissperforation: fixer Grundpreis + auflagenabhängiger Preis je Stück
+			zusatzkosten = abrissGrundpreis + (auflage * abrissPreisJeStueck);
+			zusatzkostenName = 'Abrissperforation';
 
 		// Gesamtpreis
 		const gesamtpreisNetto = grundpreis + berechneDruckkosten + berechneMaterialkosten + berechneSchneidekosten + zusatzkosten;
@@ -1072,7 +1090,7 @@
 						</p>
 						<div style="background-color: #c3e6cb; padding: 1.5rem; margin: 1.5rem 0; border-radius: 6px;">
 							<p style="color: #155724; margin: 0; font-size: 1.05em; line-height: 1.6;">
-								<strong>Sie können diesen Tab jetzt schließen</strong> und zu Ihrer ursprünglichen Bestellseite zurückkehren.<br>
+								<strong>Sie können diesen Tab jetzt schließen</strong> und zu Ihrer ursprünglichen Bestellseite ( ggfs. anderer Browser-Tab) zurückkehren.<br>
 								Ihre Daten werden dort automatisch geladen.
 							</p>
 						</div>
@@ -1099,9 +1117,12 @@
 								onclick={() => waehleProdukt(prod.id)}
 							>
 								<div>{prod.name}</div>
-								<div style="font-size:0.6em; font-weight: lighter; color:#999; margin-top:2px;">
-									{getFlaechengewichtBereich(prod.id)}
-								</div>
+										<div style="font-size:0.6em; font-weight: lighter; color:#999; margin-top:2px;">
+											{getFlaechengewichtBereich(prod.id)}
+										</div>
+										{#if prod.beschreibung}
+											<div style="font-size:0.85em; color:#666; margin-top:6px;">{prod.beschreibung}</div>
+										{/if}
 							</button>
 						{/each}
 					</div>
@@ -1328,6 +1349,11 @@
 					<div style="background-color: white; padding: 1.5rem; border-radius: 6px; margin-bottom: 2rem;">
 						<h4 style="margin-bottom: 1rem;">Ihre Bestellung:</h4>
 						<p><strong>Produkt:</strong> {produktName}</p>
+						{#if produktId === 'plakate-abriss'}
+							<div style="margin-top:0.5rem; padding:0.75rem; background-color:#fffbe6; border:1px solid #ffecb5; border-radius:6px;">
+								<strong>Hinweis Abrissperforation:</strong> Format DIN A3 mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm.
+							</div>
+						{/if}
 						<p><strong>Format:</strong> {format}</p>
 						{#if umfang}
 							<p><strong>Umfang:</strong> {umfang}</p>
