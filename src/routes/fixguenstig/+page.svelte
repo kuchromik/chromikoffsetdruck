@@ -13,7 +13,7 @@
 		{ name: 'Karten', id: 'karten', grundpreis: 10 },
 		{ name: 'Klappkarten', id: 'klappkarten', grundpreis: 10 },
 		{ name: 'Plakate', id: 'plakate', grundpreis: 10 },
-		{ name: 'Plakate mit Abrissperforation', id: 'plakate-abriss', grundpreis: 10, beschreibung: 'Format DIN A3 mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm' }
+		{ name: 'Plakate mit Abrissperforation', id: 'plakate-abriss', grundpreis: 10, beschreibung: 'Format DIN A3 hoch mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm' }
 	];
 
 	// Alle verfügbaren Formate mit IDs und Formatfaktoren
@@ -1121,7 +1121,7 @@
 											{getFlaechengewichtBereich(prod.id)}
 										</div>
 										{#if prod.beschreibung}
-											<div style="font-size:0.85em; color:#666; margin-top:6px;">{prod.beschreibung}</div>
+											<div style="font-size:0.6em; font-weight: lighter; color:#999; margin-top:6px;">{prod.beschreibung}</div>
 										{/if}
 							</button>
 						{/each}
@@ -1351,7 +1351,7 @@
 						<p><strong>Produkt:</strong> {produktName}</p>
 						{#if produktId === 'plakate-abriss'}
 							<div style="margin-top:0.5rem; padding:0.75rem; background-color:#fffbe6; border:1px solid #ffecb5; border-radius:6px;">
-								<strong>Hinweis Abrissperforation:</strong> Format DIN A3 mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm.
+								<strong>Hinweis Abrissperforation:</strong> Format DIN A3 hoch mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm.
 							</div>
 						{/if}
 						<p><strong>Format:</strong> {format}</p>
