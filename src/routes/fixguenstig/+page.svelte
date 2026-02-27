@@ -244,6 +244,7 @@
 			// Abrissperforation: fixer Grundpreis + auflagenabhängiger Preis je Stück
 			zusatzkosten = abrissGrundpreis + (auflage * abrissPreisJeStueck);
 			zusatzkostenName = 'Abrissperforation';
+		}
 
 		// Gesamtpreis
 		const gesamtpreisNetto = grundpreis + berechneDruckkosten + berechneMaterialkosten + berechneSchneidekosten + zusatzkosten;
