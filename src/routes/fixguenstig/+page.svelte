@@ -275,6 +275,7 @@
 	let verarbeitungsSchritt = $state(0); // Aktueller Schritt für Fortschrittsanzeige
 	let jobId = $state(null);
 	let jobstart = $state(null);
+	let jobIdCopied = $state(false);
 
 	// E-Mail-Verifizierung
 	let emailVerifiziert = $state(false);
@@ -1376,10 +1377,6 @@
 									{#if jobIdCopied}
 										<span style="font-size:0.95em;color:#28a745;margin-left:0.5em;">Kopiert!</span>
 									{/if}
-								<script>
-									// ...existing code...
-									let jobIdCopied = false;
-								</script>
 								</p>
 							</div>
 						{/if}
