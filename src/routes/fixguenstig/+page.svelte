@@ -9,11 +9,11 @@
 	const produkte = [
 		{ name: 'Visitenkarten', id: 'visitenkarten', grundpreis: 10 },
 		{ name: 'Flyer', id: 'flyer', grundpreis: 10 },
-		{ name: 'Folder', id: 'folder', grundpreis: 10 },
+		{ name: 'Folder', id: 'folder', grundpreis: 15 },
 		{ name: 'Karten', id: 'karten', grundpreis: 10 },
-		{ name: 'Klappkarten', id: 'klappkarten', grundpreis: 10 },
-		{ name: 'Plakate', id: 'plakate', grundpreis: 10 },
-		{ name: 'Plakate mit Abrissperforation', id: 'plakate-abriss', grundpreis: 10, beschreibung: 'Format DIN A3 hoch mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm' }
+		{ name: 'Klappkarten', id: 'klappkarten', grundpreis: 15 },
+		{ name: 'Plakate', id: 'plakate', grundpreis: 15 },
+		{ name: 'Plakate DIN A3 hoch mit Abrissperforation', id: 'plakate-abriss', grundpreis: 15, beschreibung: 'mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm' }
 	];
 
 	// Alle verfügbaren Formate mit IDs und Formatfaktoren
@@ -32,7 +32,7 @@
 	const alleMaterialien = [
 		{ id: 'mat-senglatt308', name: 'Senator glatt 308 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger weißer Karton mit glatter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
 		{ id: 'mat-senlein246', name: 'Senator leinen 246 g/m²', materialfaktor: 0.20, beschreibung: 'Hochwertiger weißer Karton mit feiner Leinenstruktur, ideal für edle Visitenkarten und Einladungen.' },
-		{ id: 'mat-conqwovewhite300', name: 'Conqueror naturweiß 300 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger naturweißer Karton mit matter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
+		{ id: 'mat-conqwovewhite300', name: 'Conqueror wove naturweiß 300 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger naturweißer Karton mit matter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
 		{ id: 'mat-sopor350', name: 'Soporset 350 g/m²', materialfaktor: 0.14, beschreibung: 'Fester hochweißer Karton mit leicht rauer Oberfläche.' },
 		{ id: 'mat-bild300', name: 'Bilderdruck matt 300 g/m²', materialfaktor: 0.11, beschreibung: 'Klassischer matter Bilderdruckkarton, vielseitig einsetzbar mit sehr guter Farbwiedergabe.' },
 		{ id: 'mat-bild350', name: 'Bilderdruck matt 350 g/m²', materialfaktor: 0.13, beschreibung: 'Stärkerer Bilderdruckkarton mit matter Oberfläche, besonders stabil und hochwertig.' },
@@ -174,7 +174,7 @@
 
 	// Abrissperforation (Plakate mit Abriss)
 	const abrissGrundpreis = 40; // fixer Grundpreis (einmalig, auflagenunabhängig)
-	const abrissPreisJeStueck = 0.20; // Preis je Stück abhängig von der Auflage
+	const abrissPreisJeStueck = 0.05; // Preis je Stück abhängig von der Auflage
 
 	// Preisberechnungsfunktion
 	function berechneGesamtpreis() {
@@ -473,7 +473,14 @@
 	function waehleProdukt(id) {
 		produktId = id;
 		zeigErgebnis = false;
+		// Für 'Plakate mit Abrissperforation' ist das Format immer DIN A3
+		if (id === 'plakate-abriss') {
+			format = 'DIN A3';
+		} else {
+			format = '';
+		}
 	}
+
 
 	function berechneErgebnis(e) {
 		e.preventDefault();
@@ -1065,6 +1072,8 @@
 		bestellStatus = 'error';
 	}
 }
+
+
 </script>
 
 <svelte:head>
@@ -1117,12 +1126,14 @@
 								onclick={() => waehleProdukt(prod.id)}
 							>
 								<div>{prod.name}</div>
-										<div style="font-size:0.6em; font-weight: lighter; color:#999; margin-top:2px;">
+										<div style="font-size:0.6em; font-weight: lighter; color:#888; margin-top:2px;">
 											{getFlaechengewichtBereich(prod.id)}
 										</div>
 										{#if prod.beschreibung}
-											<div style="font-size:0.6em; font-weight: lighter; color:#999; margin-top:6px;">{prod.beschreibung}</div>
+											<div style="font-size:0.6em; font-weight: lighter; color:#888; margin-top:6px;">{prod.beschreibung}</div>
+											
 										{/if}
+							
 							</button>
 						{/each}
 					</div>
@@ -1145,15 +1156,29 @@
 				</div>
 
 				<form class="calculator-form" onsubmit={berechneErgebnis}>
-					<div class="form-group">
-						<label for="format">{formatLabel}</label>
-						<select id="format" bind:value={format} required>
-							<option value="">Bitte wählen...</option>
-							{#each verfuegbareFormate as fmt}
-							<option value={fmt.name}>{fmt.name}</option>
-							{/each}
-						</select>
-					</div>
+					{#if produktId !== 'plakate-abriss'}
+						<div class="form-group">
+							<label for="format">{formatLabel}</label>
+							<select id="format" bind:value={format} required>
+								<option value="">Bitte wählen...</option>
+								{#each verfuegbareFormate as fmt}
+								<option value={fmt.name}>{fmt.name}</option>
+								{/each}
+							</select>
+						</div>
+					{:else}
+						<div class="form-group">
+							<!-- Produktbeschreibung (aus produkte-Array) vor dem Bild -->
+							{#if produkte.find(p => p.id === 'plakate-abriss')?.beschreibung}
+								<div class="plakate-abriss-desc">{produkte.find(p => p.id === 'plakate-abriss').beschreibung}</div>
+							{/if}
+							<!-- Bild für Abrissperforation über der Formatanzeige -->
+							<img src="/Abrissperforation.png" alt="Abrissperforation" style="max-width:100%; height:auto; display:block; margin-bottom:8px; object-fit:contain;" />
+							<label>Format</label>
+							<div style="font-weight:600; margin-top:4px;">DIN A3</div>
+							<input type="hidden" bind:value={format} />
+						</div>
+					{/if}
 
 					{#if zeigeUmfang}
 						<div class="form-group">
@@ -1213,15 +1238,21 @@
 							{materialBeschreibung}
 						</div>
 					{/if}
-					{#if zeigeMaxAuflageHinweis}
-						<div class="max-auflage-info" style="margin-top: 0.75rem; padding: 0.75rem; background-color: #e8f4f8; border-left: 3px solid #0066cc; border-radius: 4px;">
-							<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 6px; color: #0066cc;">
-								<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-								<path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
-							</svg>
-							<strong>Hinweis:</strong> Die maximale wirtschaftlich sinnvolle Auflage im Digitaldruck beträgt <strong>{maxAuflage.toLocaleString('de-DE')} Stück</strong>.
-						</div>
-					{/if}
+					<!-- Fadeable container: always present to reserve space, animates opacity/translate on show/hide -->
+					<div
+						class="max-auflage-info"
+						aria-hidden={!zeigeMaxAuflageHinweis}
+						style="margin-top: 0.75rem; padding: 0.75rem; background-color: #e8f4f8; border-left: 3px solid #0066cc; border-radius: 4px; opacity: {zeigeMaxAuflageHinweis ? 1 : 0}; transform: translateY({zeigeMaxAuflageHinweis ? '0' : '-6px'}); transition: opacity 220ms ease, transform 220ms ease; will-change: opacity, transform; pointer-events: {zeigeMaxAuflageHinweis ? 'auto' : 'none'};"
+					>
+						<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 6px; color: #0066cc;">
+							<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+							<path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+						</svg>
+						<strong>Hinweis:</strong>
+						<span aria-hidden={!zeigeMaxAuflageHinweis}>
+							Die maximale wirtschaftlich sinnvolle Auflage im Digitaldruck beträgt <strong>{#if zeigeMaxAuflageHinweis}{maxAuflage.toLocaleString('de-DE')} Stück{:else}&nbsp;{/if}</strong>.
+						</span>
+					</div>
 				</div>
 
 				<div class="form-group">
@@ -2409,5 +2440,17 @@
 		background: #e9f7ef;
 		color: #888;
 		cursor: not-allowed;
+	}
+
+	.plakate-abriss-desc {
+	font-size: 0.98rem;
+	color: #333;
+	margin-bottom: 0.5rem;
+	line-height: 1.38;
+	font-weight: 500;
+	}
+
+	@media (max-width: 480px) {
+		.plakate-abriss-desc { font-size: 0.94rem; }
 	}
 </style>
