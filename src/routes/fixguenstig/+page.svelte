@@ -240,7 +240,6 @@
 			// Rillkosten = Grundpreis + (Auflage * Kosten je Stück)
 			zusatzkosten = grundpreisRillen + (auflage * kostenJeStueckRillen);
 			zusatzkostenName = 'Rillkosten';
-		}
 		} else if (produktId === 'plakate-abriss') {
 			// Abrissperforation: fixer Grundpreis + auflagenabhängiger Preis je Stück
 			zusatzkosten = abrissGrundpreis + (auflage * abrissPreisJeStueck);
