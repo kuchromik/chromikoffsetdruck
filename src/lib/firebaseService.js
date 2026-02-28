@@ -1,5 +1,6 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import { 
 	FIREBASE_PROJECT_ID, 
 	FIREBASE_CLIENT_EMAIL, 
@@ -32,6 +33,27 @@ function initFirebase() {
 export function getDb() {
 	initFirebase();
 	return getFirestore();
+}
+
+/**
+ * Verifiziert ein ID-Token und prüft, ob der Nutzer ein Admin ist.
+ * @param {string} idToken
+ * @returns {Promise<{success: boolean, uid?: string, claims?: object, error?: string}>}
+ */
+export async function verifyAdminToken(idToken) {
+	try {
+		initFirebase();
+		const auth = getAuth();
+		const decoded = await auth.verifyIdToken(idToken);
+		const isAdmin = decoded?.admin === true || decoded?.claims?.admin === true;
+		if (!isAdmin) {
+			return { success: false, error: 'not-admin' };
+		}
+		return { success: true, uid: decoded.uid, claims: decoded };
+	} catch (error) {
+		console.error('verifyAdminToken error', error);
+		return { success: false, error: error.message };
+	}
 }
 
 /**
