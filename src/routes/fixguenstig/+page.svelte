@@ -5,117 +5,23 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import { PDFDocument } from 'pdf-lib';
 
-	// Produktliste
-	const produkte = [
-		{ name: 'Visitenkarten', id: 'visitenkarten', grundpreis: 10 },
-		{ name: 'Flyer', id: 'flyer', grundpreis: 10 },
-		{ name: 'Folder', id: 'folder', grundpreis: 15 },
-		{ name: 'Karten', id: 'karten', grundpreis: 10 },
-		{ name: 'Klappkarten', id: 'klappkarten', grundpreis: 15 },
-		{ name: 'Plakate', id: 'plakate', grundpreis: 15 },
-		{ name: 'Plakate DIN A3 hoch mit Abrissperforation', id: 'plakate-abriss', grundpreis: 15, beschreibung: 'mit 15 Abrissen unten, Höhe des Abrisses 65 mm, Breite 19,8 mm' }
-	];
+// In Svelte runes mode use `$props()` instead of `export let`
+const { data } = $props();
+const {
+	produkte,
+	alleFormate,
+	alleMaterialien,
+	alleUmfaenge,
+	formatUmfangAbweichungen,
+	produktKonfiguration
+} = data?.config || {};
 
-	// Alle verfügbaren Formate mit IDs und Formatfaktoren
-	const alleFormate = [
-		{ id: 'format-85x55', name: '8,5 x 5,5 cm', formatfaktor: 0.1250, schneideaufwandsfaktor: 13 },
-		{ id: 'format-a6', name: 'DIN A6', formatfaktor: 0.2500, schneideaufwandsfaktor: 8 },
-		{ id: 'format-a5', name: 'DIN A5', formatfaktor: 0.5000, schneideaufwandsfaktor: 6 },
-		{ id: 'format-lang', name: 'DIN lang', formatfaktor: 0.3334, schneideaufwandsfaktor: 7 },
-		{ id: 'format-21x21', name: '21 x 21cm', formatfaktor: 1.0000, schneideaufwandsfaktor: 5 },
-		{ id: 'format-a4', name: 'DIN A4', formatfaktor: 1.0000, schneideaufwandsfaktor: 5 },
-		{ id: 'format-a3', name: 'DIN A3', formatfaktor: 2, schneideaufwandsfaktor: 4 }
-	];
-
-	// Alle verfügbaren Materialien mit IDs und Materialfaktoren
-	// Der Materialfaktor gibt den Preis je Bogen A3+ an
-	const alleMaterialien = [
-		{ id: 'mat-senglatt308', name: 'Senator glatt 308 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger weißer Karton mit glatter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
-		{ id: 'mat-senlein246', name: 'Senator leinen 246 g/m²', materialfaktor: 0.20, beschreibung: 'Hochwertiger weißer Karton mit feiner Leinenstruktur, ideal für edle Visitenkarten und Einladungen.' },
-		{ id: 'mat-conqwovewhite300', name: 'Conqueror wove naturweiß 300 g/m²', materialfaktor: 0.25, beschreibung: 'Hochwertiger naturweißer Karton mit matter Oberfläche, ideal für edle Visitenkarten und Einladungen.' },
-		{ id: 'mat-sopor350', name: 'Soporset 350 g/m²', materialfaktor: 0.14, beschreibung: 'Fester hochweißer Karton mit leicht rauer Oberfläche.' },
-		{ id: 'mat-bild300', name: 'Bilderdruck matt 300 g/m²', materialfaktor: 0.11, beschreibung: 'Klassischer matter Bilderdruckkarton, vielseitig einsetzbar mit sehr guter Farbwiedergabe.' },
-		{ id: 'mat-bild350', name: 'Bilderdruck matt 350 g/m²', materialfaktor: 0.13, beschreibung: 'Stärkerer Bilderdruckkarton mit matter Oberfläche, besonders stabil und hochwertig.' },
-		{ id: 'mat-bild135', name: 'Bilderdruck matt 135 g/m²', materialfaktor: 0.04, beschreibung: 'Leichtes Papier für Flyer und Folder, wirtschaftlich mit sehr guter Farbwiedergabe.' },
-		{ id: 'mat-bild170', name: 'Bilderdruck matt 170 g/m²', materialfaktor: 0.05, beschreibung: 'Mittleres Papier für Flyer und Folder, wirtschaftlich mit sehr guter Farbwiedergabe.' }
-	];
-
-	// Alle verfügbaren Umfänge mit IDs und Flächenfaktoren
-	const alleUmfaenge = [
-		{ id: 'umfang-1s', name: '1-seitig', flaechenfaktor: 0.5 },
-		{ id: 'umfang-2s', name: '2-seitig', flaechenfaktor: 1.0 },
-		{ id: 'umfang-4s', name: '4-seitig', flaechenfaktor: 2.0 },
-		{ id: 'umfang-6s', name: '6-seitig', flaechenfaktor: 4.0 }
-	];
-
-	// Formatspezifische Abweichungen für Flächenfaktoren
-	const formatUmfangAbweichungen = {
-		'DIN lang': {
-			'4-seitig': 3.0,
-			'6-seitig': 3.0
-		}
-	};
-
-	// Produktzentrische Konfiguration (verwendet IDs)
-	const produktKonfiguration = {
-		visitenkarten: {
-			formate: ['format-85x55'],
-			materialien: ['mat-senglatt308','mat-senlein246', 'mat-conqwovewhite300', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
-			umfaenge: {
-				'1-seitig': true, // für alle Formate verfügbar
-				'2-seitig': true // für alle Formate verfügbar
-			}
-		},
-		flyer: {
-			formate: ['format-a6', 'format-a5', 'format-lang', 'format-21x21', 'format-a4', 'format-a3'],
-			materialien: ['mat-bild135', 'mat-bild170'],
-			umfaenge: {
-				'1-seitig': true, // für alle Formate verfügbar
-				'2-seitig': true // für alle Formate verfügbar
-			}
-		},
-		folder: {
-			formate: ['format-a6', 'format-a5', 'format-lang', 'format-21x21', 'format-a4'],
-			materialien: ['mat-bild135', 'mat-bild170'],
-			umfaenge: {
-				'4-seitig': true, // für alle Formate verfügbar
-				'6-seitig': ['format-a6', 'format-a5', 'format-lang'] // nur für diese Formate
-			}
-		},
-		karten: {
-			formate: ['format-a6', 'format-a5', 'format-lang', 'format-21x21', 'format-a4', 'format-a3'],
-			materialien: ['mat-senglatt308','mat-senlein246', 'mat-conqwovewhite300', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
-			umfaenge: {
-				'1-seitig': true, // für alle Formate verfügbar
-				'2-seitig': true // für alle Formate verfügbar
-			}
-		},
-		klappkarten: {
-			formate: ['format-a6', 'format-a5', 'format-lang', 'format-21x21', 'format-a4', 'format-a3'],
-			materialien: ['mat-senglatt308','mat-senlein246', 'mat-conqwovewhite300', 'mat-sopor350', 'mat-bild300', 'mat-bild350'],
-			umfaenge: {
-				'4-seitig': true, // für alle Formate verfügbar
-				'6-seitig': ['format-a6', 'format-a5', 'format-lang'] // nur für diese Formate
-			}
-		},
-		plakate: {
-			formate: ['format-a4', 'format-a3'],
-			materialien: ['mat-bild135', 'mat-bild170'],
-			umfaenge: {
-				'1-seitig': true, // für alle Formate verfügbar
-				'2-seitig': true // für alle Formate verfügbar
-			}
-		}
-		,
-		'plakate-abriss': {
-			formate: ['format-a3'],
-			materialien: ['mat-bild135', 'mat-bild170'],
-			umfaenge: {
-				'1-seitig': true,
-				'2-seitig': true
-			}
-		}
-	};
+// Kurzer Log, welche Datenquelle verwendet wurde
+if (typeof data?.source === 'string') {
+	console.log(`FixGuenstig config source: ${data.source}`);
+} else {
+	console.log('FixGuenstig config source: unknown');
+}
 
 	// Hilfsfunktionen zum Abrufen der Datenobjekte
 
