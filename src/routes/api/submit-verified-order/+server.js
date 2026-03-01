@@ -186,7 +186,7 @@ Grundpreis: ${data.preise.grundpreis.toFixed(2)} €
 Druckkosten: ${data.preise.druckkosten.toFixed(2)} €
 Materialkosten: ${data.preise.materialkosten.toFixed(2)} €
 Schneidekosten: ${data.preise.schneidekosten.toFixed(2)} €
-${data.preise.zusatzkosten > 0 ? `${data.preise.zusatzkostenName}: ${data.preise.zusatzkosten.toFixed(2)} €\n` : ''}
+${data.preise.farbigkeitSummand > 0 ? `Farbwechselkosten: ${data.preise.farbigkeitSummand.toFixed(2)} €\n` : ''}${data.preise.zusatzkosten > 0 ? `${data.preise.zusatzkostenName}: ${data.preise.zusatzkosten.toFixed(2)} €\n` : ''}
 --------------------
 Produktpreis netto: ${data.preise.gesamtpreisNetto.toFixed(2)} €
 ${data.preise.versandkosten ? `Versandkosten netto: ${data.preise.versandkosten.netto.toFixed(2)} €\n` : ''}${data.preise.versandkosten ? `--------------------\nGesamtpreis netto: ${data.preise.gesamtpreisNettoMitVersand.toFixed(2)} €\n` : ''}

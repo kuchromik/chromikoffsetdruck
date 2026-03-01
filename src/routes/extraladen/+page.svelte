@@ -1013,7 +1013,17 @@
 										class="btn btn-primary farb-abschliessen-btn"
 										onclick={() => {
 											aktFarbart = ''; aktFarbwert = ''; farbFehler = '';
-											farbwahlModus = aktSeite === 'vorderseite' ? 'rueckseite_frage' : 'fertig';
+											if (aktSeite === 'vorderseite') {
+												// 1-seitig: Rückseite überspringen
+												if (umfang === '1-seitig') {
+													farbenRueckseite = [];
+													farbwahlModus = 'fertig';
+												} else {
+													farbwahlModus = 'rueckseite_frage';
+												}
+											} else {
+												farbwahlModus = 'fertig';
+											}
 										}}
 									>
 										{aktSeite === 'vorderseite' ? 'Vorderseite abschlie\u00dfen \u2192' : 'R\u00fcckseite abschlie\u00dfen \u2192'}
