@@ -132,11 +132,22 @@ export async function POST({ request }) {
 		}
 		
 		// Job in Firebase speichern (mit customerId)
+		// details-Feld: für extraladen (producer 'chr') mit Farbigkeit, sonst Standard
+		const jobDetails = data.producer === 'chr'
+			? [
+				data.produktInfo.produkt,
+				data.produktInfo.format,
+				...(data.produktInfo.umfang && data.produktInfo.umfang !== '-' ? [data.produktInfo.umfang] : []),
+				farbigkeitLabel || data.produktInfo.farbigkeit,
+				data.produktInfo.material
+			].join(', ')
+			: formatJobDetails(data.produktInfo);
+
 		const jobResult = await createJob({
 			jobname: data.auftragsname,
 			amount: data.preise.gesamtpreisNetto,
 			customer: formatCustomerName(data.kunde),
-			details: formatJobDetails(data.produktInfo),
+			details: jobDetails,
 			quantity: data.produktInfo.auflage,
 			producer: data.producer || 'doe',
 			toShip: data.lieferung.art === 'versand',
