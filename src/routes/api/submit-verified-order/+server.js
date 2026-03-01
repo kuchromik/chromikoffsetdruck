@@ -138,7 +138,7 @@ export async function POST({ request }) {
 			customer: formatCustomerName(data.kunde),
 			details: formatJobDetails(data.produktInfo),
 			quantity: data.produktInfo.auflage,
-			producer: 'doe', // Digitaldruck
+			producer: data.producer || 'doe',
 			toShip: data.lieferung.art === 'versand',
 			shipmentAddressId: shipmentAddressId,
 			customerId: customerId,
@@ -153,9 +153,19 @@ export async function POST({ request }) {
 			// Weiter mit E-Mail-Versand, auch wenn Job nicht gespeichert wurde
 		}
 		
+		// Farbigkeit-Label für E-Mails aufbauen (nur Offsetdruck / extraladen)
+		const farbigkeitLabel = (() => {
+			const vs = data.produktInfo.farbenVorderseite;
+			if (!Array.isArray(vs) || vs.length === 0) return null;
+			const rs = Array.isArray(data.produktInfo.farbenRueckseite) && data.produktInfo.farbenRueckseite.length > 0
+				? data.produktInfo.farbenRueckseite.join(', ')
+				: 'keine';
+			return `${data.produktInfo.farbigkeit}-farbig ${vs.join(', ')} / ${rs}`;
+		})();
+
 		// E-Mail-Text für den Betreiber (NACH Firebase-Job-Erstellung, mit echter jobId)
 		const emailText = `
-Neue BESTÄTIGTE Bestellung über Fix&günstig
+Neue BESTÄTIGTE Bestellung
 
 AUFTRAGSNAME: ${data.auftragsname}
 ========================================
@@ -164,7 +174,7 @@ PRODUKTINFORMATIONEN:
 ---------------------
 Produkt: ${data.produktInfo.produkt}
 Format: ${data.produktInfo.format}
-${data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
+${data.produktInfo.umfang && data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart && data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}${farbigkeitLabel ? `Farbigkeit: ${farbigkeitLabel}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
 Material: ${data.produktInfo.material}
 
 KALKULATION:
@@ -238,7 +248,7 @@ IHRE BESTELLUNG:
 Auftragsname: ${data.auftragsname}
 Produkt: ${data.produktInfo.produkt}
 Format: ${data.produktInfo.format}
-${data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
+${data.produktInfo.umfang && data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart && data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}${farbigkeitLabel ? `Farbigkeit: ${farbigkeitLabel}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
 Material: ${data.produktInfo.material}
 
 PREIS:

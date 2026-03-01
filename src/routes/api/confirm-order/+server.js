@@ -58,7 +58,7 @@ export async function POST({ request }) {
 
 		// E-Mail-Text für den Betreiber
 		const emailText = `
-Neue BESTÄTIGTE Bestellung über Fix&günstig
+Neue BESTÄTIGTE Bestellung 
 
 AUFTRAGSNAME: ${data.auftragsname}
 ========================================

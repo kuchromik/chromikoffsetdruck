@@ -746,6 +746,7 @@
 			const formData = new FormData();
 			const bestellDaten = {
 				auftragsname: finalerAuftragsname,
+				producer: 'chr', // Offsetdruck
 				produktInfo: {
 					produkt: produktName,
 					format,

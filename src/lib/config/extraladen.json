@@ -21,15 +21,11 @@
     { "id": "umfang-1s", "name": "1-seitig", "flaechenfaktor": 0.5 },
     { "id": "umfang-2s", "name": "2-seitig", "flaechenfaktor": 1.0 }
   ],
-  "alleFarbigkeit": [
-    { "id": "1-0-hks", "name": "1/0-HKS", "summand": 20 },
-    { "id": "1-0-pantone", "name": "1/0-Pantone", "summand": 30 }
-  ],
   "formatUmfangAbweichungen": {},
   "produktKonfiguration": {
     "visitenkarten": {
       "formate": ["format-85x55"],
-      "materialien": ["mat-senglatt308","mat-senlein246","mat-conqwovewhite300","mat-sopor350","mat-bild300","mat-bild350"],
+      "materialien": ["mat-senglatt308","mat-senlein246","mat-conqwovewhite300","mat-sopor350"],
       "umfaenge": { "1-seitig": true, "2-seitig": true },
       "farbigkeit": ["1-0-hks", "1-0-pantone"]
     },
