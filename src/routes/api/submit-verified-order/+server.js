@@ -132,6 +132,16 @@ export async function POST({ request }) {
 		}
 		
 		// Job in Firebase speichern (mit customerId)
+		// Farbigkeit-Label für E-Mails und details-Feld (nur Offsetdruck / extraladen)
+		const farbigkeitLabel = (() => {
+			const vs = data.produktInfo.farbenVorderseite;
+			if (!Array.isArray(vs) || vs.length === 0) return null;
+			const rs = Array.isArray(data.produktInfo.farbenRueckseite) && data.produktInfo.farbenRueckseite.length > 0
+				? data.produktInfo.farbenRueckseite.join(', ')
+				: 'keine';
+			return `${data.produktInfo.farbigkeit}-farbig ${vs.join(', ')} / ${rs}`;
+		})();
+
 		// details-Feld: für extraladen (producer 'chr') mit Farbigkeit, sonst Standard
 		const jobDetails = data.producer === 'chr'
 			? [
@@ -164,16 +174,6 @@ export async function POST({ request }) {
 			// Weiter mit E-Mail-Versand, auch wenn Job nicht gespeichert wurde
 		}
 		
-		// Farbigkeit-Label für E-Mails aufbauen (nur Offsetdruck / extraladen)
-		const farbigkeitLabel = (() => {
-			const vs = data.produktInfo.farbenVorderseite;
-			if (!Array.isArray(vs) || vs.length === 0) return null;
-			const rs = Array.isArray(data.produktInfo.farbenRueckseite) && data.produktInfo.farbenRueckseite.length > 0
-				? data.produktInfo.farbenRueckseite.join(', ')
-				: 'keine';
-			return `${data.produktInfo.farbigkeit}-farbig ${vs.join(', ')} / ${rs}`;
-		})();
-
 		// E-Mail-Text für den Betreiber (NACH Firebase-Job-Erstellung, mit echter jobId)
 		const emailText = `
 Neue BESTÄTIGTE Bestellung
