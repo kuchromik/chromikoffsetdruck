@@ -18,9 +18,13 @@ export async function GET({ request }) {
     return json({ success: false, error: 'unauthorized' }, { status: 403 });
   }
 
+  // allow ?doc=extraladen (default: fixguenstig)
+  const url = new URL(request.url);
+  const docId = url.searchParams.get('doc') || 'fixguenstig';
+
   try {
     const db = getDb();
-    const doc = await db.collection('config').doc('fixguenstig').get();
+    const doc = await db.collection('config').doc(docId).get();
     if (!doc.exists) return json({ success: true, config: null });
     return json({ success: true, config: doc.data() });
   } catch (err) {
@@ -39,13 +43,16 @@ export async function PUT({ request }) {
   }
 
   try {
+    const url = new URL(request.url);
+    const docId = url.searchParams.get('doc') || 'fixguenstig';
+
     const body = await request.json();
     if (!body || typeof body.config !== 'object') {
       return json({ success: false, error: 'invalid_payload' }, { status: 400 });
     }
 
     const db = getDb();
-    await db.collection('config').doc('fixguenstig').set(body.config, { merge: false });
+    await db.collection('config').doc(docId).set(body.config, { merge: false });
     return json({ success: true });
   } catch (err) {
     console.error('Error writing config in admin API', err);

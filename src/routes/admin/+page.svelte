@@ -10,6 +10,7 @@ let idToken = null;
 let userEmail = '';
 let configText = '';
 let statusMsg = '';
+let docId = 'fixguenstig';
 
 function initFirebaseClient() {
   // Dynamically import firebase client libs to avoid server-side import issues
@@ -50,7 +51,7 @@ async function doLogin() {
 async function loadConfig() {
   statusMsg = 'Loading config...';
   try {
-    const res = await fetch('/api/admin/config', {
+    const res = await fetch('/api/admin/config?doc=' + encodeURIComponent(docId), {
       headers: { Authorization: 'Bearer ' + idToken }
     });
     const body = await res.json();
@@ -70,7 +71,7 @@ async function saveConfig() {
   statusMsg = 'Saving...';
   try {
     const parsed = JSON.parse(configText);
-    const res = await fetch('/api/admin/config', {
+    const res = await fetch('/api/admin/config?doc=' + encodeURIComponent(docId), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -117,6 +118,16 @@ onMount(() => {
 
 <div class="admin-page">
   <h1>Admin — FixGuenstig Konfiguration</h1>
+  {#if loggedIn}
+    <div style="margin-bottom:0.6rem">
+      <label>Dokument
+        <select bind:value={docId}>
+          <option value="fixguenstig">fixguenstig</option>
+          <option value="extraladen">extraladen</option>
+        </select>
+      </label>
+    </div>
+  {/if}
   {#if !loggedIn}
     <div class="login">
       <label>

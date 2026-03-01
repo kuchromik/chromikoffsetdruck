@@ -1,0 +1,43 @@
+{
+  "produkte": [
+    { "name": "Briefbogen", "id": "briefbogen", "grundpreis": 8 },
+    { "name": "Visitenkarten", "id": "visitenkarten", "grundpreis": 10 }
+  ],
+  "alleFormate": [
+    { "id": "format-a4", "name": "DIN A4", "formatfaktor": 1.0, "schneideaufwandsfaktor": 5 },
+    { "id": "format-85x55", "name": "8,5 x 5,5 cm", "formatfaktor": 0.1250, "schneideaufwandsfaktor": 13 }
+  ],
+  "alleMaterialien": [
+    { "id": "mat-senglatt308", "name": "Senator glatt 308 g/m²", "materialfaktor": 0.25 },
+    { "id": "mat-senlein246", "name": "Senator leinen 246 g/m²", "materialfaktor": 0.20 },
+    { "id": "mat-conqwovewhite300", "name": "Conqueror wove naturweiß 300 g/m²", "materialfaktor": 0.25 },
+    { "id": "mat-sopor350", "name": "Soporset 350 g/m²", "materialfaktor": 0.14 },
+    { "id": "mat-bild300", "name": "Bilderdruck matt 300 g/m²", "materialfaktor": 0.11 },
+    { "id": "mat-bild350", "name": "Bilderdruck matt 350 g/m²", "materialfaktor": 0.13 },
+    { "id": "mat-ina080", "name": " Inaset Plus Laser Digital 80 g/m²", "materialfaktor": 0.019 },
+    { "id": "mat-ina090", "name": " Inaset Plus Laser Digital 90 g/m²", "materialfaktor": 0.022 }
+  ],
+  "alleUmfaenge": [
+    { "id": "umfang-1s", "name": "1-seitig", "flaechenfaktor": 0.5 },
+    { "id": "umfang-2s", "name": "2-seitig", "flaechenfaktor": 1.0 }
+  ],
+  "alleFarbigkeit": [
+    { "id": "1-0-hks", "name": "1/0-HKS", "summand": 20 },
+    { "id": "1-0-pantone", "name": "1/0-Pantone", "summand": 30 }
+  ],
+  "formatUmfangAbweichungen": {},
+  "produktKonfiguration": {
+    "visitenkarten": {
+      "formate": ["format-85x55"],
+      "materialien": ["mat-senglatt308","mat-senlein246","mat-conqwovewhite300","mat-sopor350","mat-bild300","mat-bild350"],
+      "umfaenge": { "1-seitig": true, "2-seitig": true },
+      "farbigkeit": ["1-0-hks", "1-0-pantone"]
+    },
+    "briefbogen": {
+      "formate": ["format-a4"],
+      "materialien": ["mat-ina080","mat-ina090"],
+      "umfaenge": { "1-seitig": true, "2-seitig": true },
+      "farbigkeit": ["1-0-hks", "1-0-pantone"]
+    }
+  }
+}
