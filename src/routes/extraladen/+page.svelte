@@ -4,6 +4,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import { PDFDocument } from 'pdf-lib';
+	import hksToHex from '$lib/config/hksToHex.json';
 
 	// In Svelte runes mode use `$props()` instead of `export let`
 	const { data } = $props();
@@ -128,6 +129,33 @@
 		{ id: 'hks',     name: 'HKS',     summand: 20 },
 		{ id: 'pantone', name: 'Pantone', summand: 30 }
 	];
+
+	// Farbvorschau-Hilfsfunktionen
+	function getFarbHex(f) {
+		if (!f) return null;
+		if (f.farbart === 'schwarz') return '#000000';
+		if (f.farbart === 'hks') {
+			const entry = hksToHex.find(h => h.name === f.label);
+			return entry ? entry.hex : null;
+		}
+		return null; // Pantone: kein Hex-Wert im JSON
+	}
+
+	function hksPreviewHex(numStr) {
+		if (!numStr) return null;
+		const num = parseInt(numStr);
+		if (isNaN(num) || num < 1 || num > 99) return null;
+		const entry = hksToHex.find(h => h.name === `HKS ${num}`);
+		return entry ? entry.hex : null;
+	}
+
+	function hexTextColor(hex) {
+		if (!hex) return '#000000';
+		const r = parseInt(hex.slice(1, 3), 16);
+		const g = parseInt(hex.slice(3, 5), 16);
+		const b = parseInt(hex.slice(5, 7), 16);
+		return (0.299 * r + 0.587 * g + 0.114 * b) > 140 ? '#000000' : '#ffffff';
+	}
 
 	// Eingabewerte
 	let produktId = $state('');
@@ -940,7 +968,9 @@
 								{#if aktiveListe.length > 0}
 									<div class="farb-tags">
 										{#each aktiveListe as f, i}
+											{@const hex = getFarbHex(f)}
 											<span class="farb-tag">
+												{#if hex}<span class="farb-swatch-dot" style="background:{hex};"></span>{/if}
 												{f.label}
 												<button type="button" class="farb-tag-remove" onclick={() => farbEntfernen(aktSeite, i)}>&times;</button>
 											</span>
@@ -993,42 +1023,50 @@
 											/>
 										{/if}
 
-										{#if farbFehler}
-											<div class="farb-fehler">{farbFehler}</div>
+										<!-- Farbvorschau -->
+										{#if aktFarbart === 'schwarz'}
+											<div class="farb-preview">
+												<span class="farb-swatch-large" style="background:#000000;"></span>
+												<span class="farb-preview-label">Schwarz</span>
+											</div>
+										{:else if aktFarbart === 'hks' && aktFarbwert}
+											{@const previewHex = hksPreviewHex(aktFarbwert)}
+											{#if previewHex}
+												<div class="farb-preview">
+													<span class="farb-swatch-large" style="background:{previewHex};"></span>
+													<span class="farb-preview-label" style="color:{hexTextColor(previewHex)}; background:{previewHex}; padding: 2px 8px; border-radius: 4px;">HKS {parseInt(aktFarbwert)}</span>
+												</div>
+											{/if}
 										{/if}
 
-										<button
-											type="button"
-											class="btn btn-secondary farb-add-btn"
-											onclick={() => farbHinzufuegen(aktSeite)}
-											disabled={!aktFarbart || (aktFarbart !== 'schwarz' && !aktFarbwert)}
-										>Farbe hinzuf&uuml;gen</button>
+										{#if farbFehler}
+											<p class="farb-fehler">{farbFehler}</p>
+										{/if}
+										<button type="button" class="btn btn-secondary farb-hinzufuegen-btn" onclick={() => farbHinzufuegen(aktSeite)}>
+											Farbe hinzuf&uuml;gen
+										</button>
 									</div>
 								{/if}
-
-								<!-- Seite abschlie&szlig;en (erst nach min. 1 Farbe) -->
-								{#if aktiveListe.length > 0}
-									<button
-										type="button"
-										class="btn btn-primary farb-abschliessen-btn"
-										onclick={() => {
-											aktFarbart = ''; aktFarbwert = ''; farbFehler = '';
-											if (aktSeite === 'vorderseite') {
-												// 1-seitig: Rückseite überspringen
-												if (umfang === '1-seitig') {
-													farbenRueckseite = [];
-													farbwahlModus = 'fertig';
-												} else {
-													farbwahlModus = 'rueckseite_frage';
-												}
-											} else {
+								<button
+									type="button"
+									class="btn btn-primary farb-abschliessen-btn"
+									onclick={() => {
+										aktFarbart = ''; aktFarbwert = ''; farbFehler = '';
+										if (aktSeite === 'vorderseite') {
+											// 1-seitig: Rückseite überspringen
+											if (umfang === '1-seitig') {
+												farbenRueckseite = [];
 												farbwahlModus = 'fertig';
+											} else {
+												farbwahlModus = 'rueckseite_frage';
 											}
-										}}
-									>
-										{aktSeite === 'vorderseite' ? 'Vorderseite abschlie\u00dfen \u2192' : 'R\u00fcckseite abschlie\u00dfen \u2192'}
-									</button>
-								{/if}
+										} else {
+											farbwahlModus = 'fertig';
+										}
+									}}
+								>
+									{aktSeite === 'vorderseite' ? 'Vorderseite abschlie\u00dfen \u2192' : 'R\u00fcckseite abschlie\u00dfen \u2192'}
+								</button>
 
 							{:else if farbwahlModus === 'rueckseite_frage'}
 								<p class="farb-frage-text">Hat das Produkt gedruckte Farben auf der R&uuml;ckseite?</p>
@@ -1053,10 +1091,32 @@
 									</div>
 									<div class="farb-detail">
 										{#if farbenVorderseite.length > 0}
-											<div><strong>VS:</strong> {farbenVorderseite.map(f => f.label).join(' \u00b7 ')}</div>
+											<div class="farb-detail-zeile">
+												<strong>VS:</strong>
+												<span class="farb-chip-liste">
+													{#each farbenVorderseite as f}
+														{@const hex = getFarbHex(f)}
+														<span class="farb-chip">
+															{#if hex}<span class="farb-swatch-dot" style="background:{hex};"></span>{/if}
+															{f.label}
+														</span>
+													{/each}
+												</span>
+											</div>
 										{/if}
 										{#if farbenRueckseite.length > 0}
-											<div><strong>RS:</strong> {farbenRueckseite.map(f => f.label).join(' \u00b7 ')}</div>
+											<div class="farb-detail-zeile">
+												<strong>RS:</strong>
+												<span class="farb-chip-liste">
+													{#each farbenRueckseite as f}
+														{@const hex = getFarbHex(f)}
+														<span class="farb-chip">
+															{#if hex}<span class="farb-swatch-dot" style="background:{hex};"></span>{/if}
+															{f.label}
+														</span>
+													{/each}
+												</span>
+											</div>
 										{:else}
 											<div><strong>RS:</strong> keine Farben</div>
 										{/if}
@@ -1935,6 +1995,63 @@
 	}
 
 	.farb-neustart-btn { margin-top: 0.5rem; align-self: flex-start; }
+
+	.farb-swatch-dot {
+		display: inline-block;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		border: 1px solid rgba(0,0,0,0.25);
+		flex-shrink: 0;
+	}
+
+	.farb-preview {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.5rem 0.75rem;
+		background: #f8f8f8;
+		border-radius: 8px;
+		border: 1px solid var(--border);
+	}
+
+	.farb-swatch-large {
+		display: inline-block;
+		width: 36px;
+		height: 36px;
+		border-radius: 6px;
+		border: 1px solid rgba(0,0,0,0.2);
+		flex-shrink: 0;
+	}
+
+	.farb-preview-label {
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+
+	.farb-detail-zeile {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.farb-chip-liste {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.farb-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.2rem 0.55rem;
+		background: rgba(15,118,110,0.07);
+		border: 1px solid #5eead4;
+		border-radius: 999px;
+		font-size: 0.85rem;
+	}
 
 	/* ─────────────────────────────────────────────────────────────── */
 
