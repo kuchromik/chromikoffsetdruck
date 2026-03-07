@@ -983,8 +983,18 @@ if (typeof data?.source === 'string') {
 </script>
 
 <svelte:head>
-	<title>Fix&günstig - Chromik Offsetdruck</title>
-	<meta name="description" content="Schnelle und preiswerte Drucklösungen" />
+	<title>Visitenkarten, Flyer & Plakate mit Abrissperforation günstig drucken | Fix&günstig – Chromik Offsetdruck</title>
+	<meta name="description" content="Günstig drucken in Frankfurt (Oder): Visitenkarten, Flyer, Folder, Karten & Plakate DIN A3 mit Abrissperforation. Schnell und preiswert – online kalkulieren & direkt bestellen." />
+	<meta name="keywords" content="Visitenkarten drucken günstig, Flyer drucken, Plakate Abrissperforation, Abrisszettel Plakat DIN A3, Folder drucken, Klappkarten, Offsetdruck Frankfurt Oder, Karten drucken günstig, Druckerei Frankfurt Oder" />
+
+	<!-- Open Graph -->
+	<meta property="og:type" content="website" />
+	<meta property="og:locale" content="de_DE" />
+	<meta property="og:site_name" content="Chromik Offsetdruck" />
+	<meta property="og:title" content="Visitenkarten, Flyer & Plakate mit Abrissperforation günstig drucken | Fix&günstig" />
+	<meta property="og:description" content="Günstig drucken in Frankfurt (Oder): Visitenkarten, Flyer, Folder, Karten & Plakate mit Abrissperforation. Schnell und preiswert – direkt online bestellen." />
+	<meta property="og:image" content="/logo.png" />
+	<meta property="og:url" content="https://chromikoffsetdruck.de/fixguenstig" />
 </svelte:head>
 
 <div class="page-wrapper">

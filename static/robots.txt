@@ -1,3 +1,7 @@
 # allow crawling everything by default
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /api/
+Disallow: /bestellung/
+
+Sitemap: https://chromikoffsetdruck.de/sitemap.xml

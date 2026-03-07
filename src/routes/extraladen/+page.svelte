@@ -947,8 +947,18 @@
 </script>
 
 <svelte:head>
-	<title>Extraladen – Chromik Offsetdruck</title>
-	<meta name="description" content="Exklusive Druckprodukte im Sonderfarben-Offsetdruck: Briefbogen und Visitenkarten in HKS und Pantone" />
+	<title>Briefbogen & Visitenkarten mit HKS und Pantone Sonderfarben | Chromik Offsetdruck Frankfurt (Oder)</title>
+	<meta name="description" content="Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck in Frankfurt (Oder): HKS- und Pantone-Farben auf edlen Spezialpapieren. Mit Heißfolienprägung, Blindprägung & Stanzung – Preis online kalkulieren & bestellen." />
+	<meta name="keywords" content="Briefbogen HKS Pantone, Visitenkarten Sonderfarben, Offsetdruck Sonderfarben Frankfurt Oder, Briefpapier Pantone, Firmenbriefbogen HKS, Visitenkarten Offsetdruck, Heißfolienprägung, Blindprägung, Stanzung, Spezialpapiere Druck" />
+
+	<!-- Open Graph -->
+	<meta property="og:type" content="website" />
+	<meta property="og:locale" content="de_DE" />
+	<meta property="og:site_name" content="Chromik Offsetdruck" />
+	<meta property="og:title" content="Briefbogen & Visitenkarten mit HKS und Pantone Sonderfarben | Chromik Offsetdruck" />
+	<meta property="og:description" content="Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck: HKS & Pantone auf edlen Spezialpapieren. Heißfolienprägung, Blindprägung & Stanzung – in Frankfurt (Oder)." />
+	<meta property="og:image" content="/logo.png" />
+	<meta property="og:url" content="https://chromikoffsetdruck.de/extraladen" />
 </svelte:head>
 
 <div class="page-wrapper">
