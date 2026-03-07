@@ -62,13 +62,6 @@
 		return result;
 	});
 
-	// Kurzer Log, welche Datenquelle verwendet wurde
-	if (typeof data?.source === 'string') {
-		console.log(`Extraladen config source: ${data.source}`);
-	} else {
-		console.log('Extraladen config source: unknown');
-	}
-
 	// Hilfsfunktionen zum Abrufen der Datenobjekte
 
 	// Gibt für ein Produkt (id) den Flächengewichtsbereich als String zurück

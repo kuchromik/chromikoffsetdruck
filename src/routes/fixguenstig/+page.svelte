@@ -16,13 +16,6 @@ const {
 	produktKonfiguration
 } = data?.config || {};
 
-// Kurzer Log, welche Datenquelle verwendet wurde
-if (typeof data?.source === 'string') {
-	console.log(`FixGuenstig config source: ${data.source}`);
-} else {
-	console.log('FixGuenstig config source: unknown');
-}
-
 	// Hilfsfunktionen zum Abrufen der Datenobjekte
 
 	// Gibt für ein Produkt (id) den Flächengewichtsbereich als String zurück, z.B. "246 g/m² - 350 g/m²"
@@ -479,7 +472,6 @@ if (typeof data?.source === 'string') {
 			if (result.success) {
 				vorhandeneVersandadressen = result.addresses || [];
 				versandadressenGeladen = true;
-				console.log(`✓ ${vorhandeneVersandadressen.length} Versandadresse(n) geladen`);
 			} else {
 				console.error('Fehler beim Laden der Versandadressen:', result.error);
 			}
@@ -600,15 +592,12 @@ if (typeof data?.source === 'string') {
 				console.error('Fehler beim Polling:', error);
 			}
 		}, 5000); // Alle 5 Sekunden prüfen
-		
-		console.log('✓ E-Mail-Polling gestartet');
 	}
 
 	function stoppeEmailPolling() {
 		if (pollingInterval) {
 			clearInterval(pollingInterval);
 			pollingInterval = null;
-			console.log('✓ E-Mail-Polling gestoppt');
 		}
 	}
 
@@ -644,8 +633,6 @@ if (typeof data?.source === 'string') {
 				// Zeige Ergebnis und Bestellformular
 				zeigErgebnis = true;
 				zeigeBestellformular = true;
-				
-				console.log('✓ Bestellzustand wiederhergestellt:', orderState);
 			} catch (e) {
 				console.error('Fehler beim Wiederherstellen des Bestellzustands:', e);
 			}
@@ -663,8 +650,6 @@ if (typeof data?.source === 'string') {
 				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 		}, 500);
-		
-		console.log('✓ E-Mail automatisch verifiziert');
 	}
 
 	// Beim Laden der Seite prüfen, ob ein E-Mail-Token im URL ist

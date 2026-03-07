@@ -10,7 +10,6 @@ export async function load() {
     const docRef = db.collection('config').doc('extraladen');
     const doc = await docRef.get();
     if (doc.exists) {
-      console.log('Extraladen config loaded from Firestore');
       return { config: doc.data(), source: 'firebase' };
     }
   } catch (err) {
@@ -20,7 +19,6 @@ export async function load() {
   // Fallback: lokale JSON-Datei
   try {
     const mod = await import('$lib/config/extraladen.json');
-    console.log('Extraladen config loaded from local JSON fallback');
     return { config: mod.default || mod, source: 'local' };
   } catch (err) {
     console.error('Fehler beim Laden der lokalen Extraladen-Konfiguration:', err?.message || err);
