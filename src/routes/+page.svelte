@@ -7,14 +7,14 @@
 	const sections = [
 		{
 			id: 'thema1',
-			title: 'Qualität seit 1990',
-			description: 'Herzlich Willkommen, wo Gedrucktes noch handgemacht ist. Jeder Auftrag ist einzigartig und wird sorgfältig bearbeitet. Wir lieben die besonderen Dinge, den außergewöhnlichen Glanz und Gold für alle! Oder Silber. Oder Bronze.<br><br>Gern kümmern wir uns um das, was sonst das fünfte Rad am Wagen ist: Papiere und Kartons mit spannender Haptik, Nummerierungen, Stanzungen, Heißfolien- oder Blindprägungen.',
+			title: 'Tradition und Moderne vereint',
+			description: 'Jeder Auftrag ist einzigartig und wird sorgfältig bearbeitet. Wir lieben die besonderen Dinge, den außergewöhnlichen Glanz und Gold für alle! Oder Silber. Oder Bronze.<br><br>Gern kümmern wir uns um das, was sonst das fünfte Rad am Wagen ist: Papiere und Kartons mit spannender Haptik, Nummerierungen, Personalisierungen, Stanzungen, Heißfolien- oder Blindprägungen.',
 			reverse: false,
 			useSlider: true,
 			sliderFolder: 'heroSlider',
 			buttons: [
-			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', tooltip: 'Standardprodukte online kalkulieren & direkt bestellen' },
-			{ text: 'Zum Extraladen', link: '/extraladen', tooltip: 'Exklusive Premium-Produkte & Veredelungen entdecken' }
+			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', tooltip: 'Standardprodukte im Digitaldruck online kalkulieren & direkt bestellen' },
+			{ text: 'Zum Extraladen', link: '/extraladen', tooltip: 'Produkte im Offsetdruck mit Sonderfarben online kalkulieren & direkt bestellen' }
 			]
 		},
 		{

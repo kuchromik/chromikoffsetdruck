@@ -5,9 +5,9 @@
 	let scrolled = $state(false);
 	
 	const menuItems = [
+		{ id: 1, label: 'Qualität seit 1990', href: '/#thema1' },
 		{ id: 11, label: 'Fix & Günstig', href: '/fixguenstig' },
 		{ id: 12, label: 'Extraladen', href: '/extraladen' },
-		{ id: 1, label: 'Qualität seit 1990', href: '/#thema1' },
 		{ id: 2, label: 'Heißfolienprägung', href: '/#thema2' },
 		{ id: 3, label: 'Blindprägung', href: '/#thema3' },
 		{ id: 4, label: 'Stanzungen', href: '/#thema4' },
@@ -72,6 +72,7 @@
 			<!-- Mobile Menu Button -->
 			<button 
 				class="menu-toggle" 
+				class:open={mobileMenuOpen}
 				onclick={toggleMobileMenu} 
 				aria-label={mobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
 				aria-expanded={mobileMenuOpen}
@@ -230,16 +231,31 @@
 		width: 30px;
 		height: 3px;
 		background-color: var(--text-primary);
-		transition: all 0.4s ease;
-		/* Hardware-Beschleunigung */
-		transform: translateZ(0);
+		transition: transform 0.4s ease, opacity 0.3s ease, width 0.3s ease, height 0.3s ease;
+		transform-origin: center;
 	}
 
-	.header.scrolled .menu-toggle {
+	/* X-Animation: oberer Strich dreht nach unten */
+	.menu-toggle.open span:nth-child(1) {
+		transform: translateY(9px) rotate(45deg);
+	}
+
+	/* X-Animation: mittlerer Strich blendet aus */
+	.menu-toggle.open span:nth-child(2) {
+		opacity: 0;
+		transform: scaleX(0);
+	}
+
+	/* X-Animation: unterer Strich dreht nach oben */
+	.menu-toggle.open span:nth-child(3) {
+		transform: translateY(-9px) rotate(-45deg);
+	}
+
+	.header.scrolled .menu-toggle:not(.open) {
 		gap: 5px;
 	}
 
-	.header.scrolled .menu-toggle span {
+	.header.scrolled .menu-toggle:not(.open) span {
 		width: 25px;
 		height: 2px;
 	}
