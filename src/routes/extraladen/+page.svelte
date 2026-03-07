@@ -539,7 +539,7 @@
 							<td style="text-align: right; font-size: 0.9rem; color: #555;">${preisBerechnung.mwstBetrag.toFixed(2).replace('.', ',')} €</td>
 						</tr>
 						<tr style="border-top: 2px solid #0f766e;">
-							<td style="padding: 6px 0 3px; font-size: 1.2rem; font-weight: 700; color: #0f766e;">Gesamtpreis brutto</td>
+							<td style="padding: 6px 0 3px; font-size: 1.2rem; font-weight: 700; color: #0f766e;">Produktpreis brutto</td>
 							<td style="text-align: right; font-size: 1.2rem; font-weight: 700; color: #0f766e;">${preisBerechnung.gesamtpreisBrutto.toFixed(2).replace('.', ',')} €</td>
 						</tr>
 						<tr><td colspan="2" style="padding-top: 1rem; border-top: 1px solid #99f6e4;"></td></tr>
@@ -1757,6 +1757,23 @@
 										</div>
 									{/if}
 								</div>
+
+								{#if lieferart}
+									<div style="margin-top: 1.5rem; padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); border-radius: 12px; color: #fff;">
+										<div style="font-size: 0.85rem; opacity: 0.85; margin-bottom: 0.5rem;">
+											{#if lieferart === 'versand'}
+												Produktpreis brutto ({preisBerechnung.gesamtpreisBrutto.toFixed(2).replace('.', ',')} €) + Versandkosten ({preisBerechnung.versandkostenBrutto.toFixed(2).replace('.', ',')} €)
+											{:else}
+												Produktpreis brutto – Abholung, keine Versandkosten
+											{/if}
+										</div>
+										<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.25rem;">
+											<span style="font-size: 1.1rem; font-weight: 600;">Gesamtpreis brutto</span>
+											<span style="font-size: 2rem; font-weight: 700; letter-spacing: -0.5px;">{(preisBerechnung.gesamtpreisBrutto + (lieferart === 'versand' ? preisBerechnung.versandkostenBrutto : 0)).toFixed(2).replace('.', ',')} €</span>
+										</div>
+										<div style="font-size: 0.8rem; opacity: 0.75; margin-top: 0.25rem; text-align: right;">inkl. 19 % MwSt.</div>
+									</div>
+								{/if}
 
 								<div class="form-group" style="margin-top: 1.5rem;">
 									<label style="display: flex; align-items: flex-start; cursor: pointer;">
