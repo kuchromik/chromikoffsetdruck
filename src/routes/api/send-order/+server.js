@@ -58,7 +58,7 @@ export async function POST({ request }) {
 		});
 
 		const emailText = `
-Neue Bestellung über Fix&günstig
+Neue Bestellung über Extraladen (Offsetdruck)
 
 AUFTRAGSNAME: ${data.auftragsname}
 ========================================
@@ -68,28 +68,42 @@ PRODUKTINFORMATIONEN:
 Produkt: ${data.produktInfo.produkt}
 Format: ${data.produktInfo.format}
 Umfang: ${data.produktInfo.umfang}
-Auflage: ${data.produktInfo.auflage} Stück
+Farbigkeit: ${data.produktInfo.farbigkeit || '-'}
+${data.produktInfo.farbenVorderseite?.length ? `Farben Vorderseite: ${data.produktInfo.farbenVorderseite.join(', ')}
+` : ''}${data.produktInfo.farbenRueckseite?.length ? `Farben R\u00fcckseite: ${data.produktInfo.farbenRueckseite.join(', ')}
+` : ''}Auflage: ${data.produktInfo.auflage} St\u00fcck
 Material: ${data.produktInfo.material}
 
-PREISBERECHNUNG:
-----------------
-Gesamtpreis (netto): ${data.preise.gesamtpreisNetto.toFixed(2)} €
-MwSt. (19%): ${data.preise.mwstBetrag.toFixed(2)} €
-GESAMTPREIS (brutto): ${data.preise.gesamtpreisBrutto.toFixed(2)} €
+KALKULATION (vollst\u00e4ndig):
+----------------------------
+Grundpreis:         ${data.preise.grundpreis?.toFixed(2)} \u20ac
+Druckkosten:        ${data.preise.druckkosten?.toFixed(2)} \u20ac
+  (${data.preise.klickanzahl} + ${data.preise.andruckBogen} Andruckbogen = ${(data.preise.klickanzahl || 0) + (data.preise.andruckBogen || 0)} Klicks/Durchgang${data.preise.druckDurchgaenge > 1 ? ` x ${data.preise.druckDurchgaenge} Durchgaenge` : ''} x ${data.preise.faktoren?.klickkosten?.toFixed(2) ?? '0.02'} EUR)
+Materialkosten:     ${data.preise.materialkosten?.toFixed(2)} \u20ac
+  (${data.preise.anzahlDruckbogen} + ${data.preise.andruckBogen} Andruckbogen = ${(data.preise.anzahlDruckbogen || 0) + (data.preise.andruckBogen || 0)} Bogen)
+Schneidekosten:     ${data.preise.schneidekosten?.toFixed(2)} \u20ac
+  (${data.preise.schneidelagen} Lagen x Faktor ${data.preise.schneideaufwandsfaktor} x ${data.preise.kostenJeSchnitt?.toFixed(2)} EUR)
+${(data.preise.farbigkeitSummand > 0) ? `Farbwechselkosten:  ${data.preise.farbigkeitSummand?.toFixed(2)} EUR (${data.produktInfo.farbigkeit})
+` : ''}${(data.preise.anzahlDruckplatten > 0) ? `Druckplatten:       ${data.preise.druckplattenkosten?.toFixed(2)} EUR (${data.preise.anzahlDruckplatten} x ${data.preise.kostenJeDruckplatte?.toFixed(2)} EUR)
+` : ''}                    ----------
+Summe netto:        ${data.preise.gesamtpreisNetto?.toFixed(2)} \u20ac
+MwSt. 19 %:         ${data.preise.mwstBetrag?.toFixed(2)} \u20ac
+Gesamtpreis brutto: ${data.preise.gesamtpreisBrutto?.toFixed(2)} \u20ac
 
-${data.preise.versandkosten ? `VERSANDKOSTEN:
---------------
-Netto: ${data.preise.versandkosten.netto.toFixed(2)} €
-MwSt. (19%): ${data.preise.versandkosten.mwst.toFixed(2)} €
-Brutto: ${data.preise.versandkosten.brutto.toFixed(2)} €
+GEWICHT & VERSAND:
+------------------
+Gesamtgewicht: ${data.preise.gesamtgewichtKg?.toFixed(2)} kg
+${data.preise.versandkosten ? `Versand: ${data.preise.anzahlPakete} Paket(e) a max. ${data.preise.maxPaketgewichtKg} kg
+Versandkosten netto:  ${data.preise.versandkostenNetto?.toFixed(2)} EUR
+Versandkosten brutto: ${data.preise.versandkostenBrutto?.toFixed(2)} EUR
 
-GESAMTPREIS INKL. VERSAND:
---------------------------
-Netto: ${data.preise.gesamtpreisNettoMitVersand.toFixed(2)} €
-MwSt. (19%): ${data.preise.mwstBetragMitVersand.toFixed(2)} €
-BRUTTO: ${data.preise.gesamtpreisBruttoMitVersand.toFixed(2)} €
-
-` : ''}KUNDENDATEN:
+GESAMT INKL. VERSAND:
+Netto:  ${data.preise.gesamtpreisNettoMitVersand?.toFixed(2)} EUR
+MwSt.:  ${data.preise.mwstBetragMitVersand?.toFixed(2)} EUR
+Brutto: ${data.preise.gesamtpreisBruttoMitVersand?.toFixed(2)} EUR
+` : 'Lieferart: Abholung (keine Versandkosten)
+'}
+KUNDENDATEN:
 ------------
 Name: ${data.kunde.vorname} ${data.kunde.nachname}
 ${data.kunde.firma ? `Firma: ${data.kunde.firma}\n` : ''}Adresse: ${data.kunde.strasse}
@@ -99,7 +113,7 @@ E-Mail: ${data.kunde.email}
 LIEFERUNG:
 ----------
 ${data.lieferung.art === 'abholung' ? `Art: Abholung
-Abholadresse: Marie-Curie-Straße 8 in 15236 Frankfurt (Oder)
+Abholadresse: Marie-Curie-Stra\u00dfe 8 in 15236 Frankfurt (Oder)
 Abholzeiten: Montag bis Donnerstag, 9:00 - 15:00 Uhr oder nach Absprache` : 
 `Art: Versand per DPD
 ${data.lieferung.lieferadresse ? `Lieferadresse (abweichend von Rechnungsadresse):

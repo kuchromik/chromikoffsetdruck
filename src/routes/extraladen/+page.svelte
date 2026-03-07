@@ -527,24 +527,32 @@
 
 			ergebnisText += `
 				<strong>Auflage:</strong> ${auflage.toLocaleString('de-DE')} Stück<br>
-				<strong>Material:</strong> ${material}<br><br>
-				<div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid currentColor; font-family: monospace; font-size: 0.92em;">
-					<div style="margin-bottom: 0.25rem; font-weight: bold; font-family: sans-serif; font-size: 1.05em;">🔢 Kalkulation (Developer-Ansicht)</div>
-					<table style="width: 100%; border-collapse: collapse; margin-bottom: 0.75rem;">
-						<tr><td style="padding: 2px 0;">Grundpreis</td><td style="text-align: right;">${preisBerechnung.grundpreis.toFixed(2)} €</td></tr>
-						<tr><td style="padding: 2px 0;">Druckkosten (${preisBerechnung.klickanzahl} + ${preisBerechnung.faktoren.andruckBogen} Andruckbogen = ${preisBerechnung.klickanzahl + preisBerechnung.faktoren.andruckBogen} Klicks/Durchgang${preisBerechnung.druckDurchgaenge > 1 ? ` × ${preisBerechnung.druckDurchgaenge} Durchgänge` : ''} × ${preisBerechnung.faktoren.klickkosten.toFixed(2)} €)</td><td style="text-align: right;">${preisBerechnung.druckkosten.toFixed(2)} €</td></tr>
-						<tr><td style="padding: 2px 0;">Materialkosten (${preisBerechnung.anzahlDruckbogen} + ${preisBerechnung.faktoren.andruckBogen} Andruckbogen = ${preisBerechnung.anzahlDruckbogen + preisBerechnung.faktoren.andruckBogen} Bogen × ${preisBerechnung.faktoren.materialfaktor.toFixed(4)} €)</td><td style="text-align: right;">${preisBerechnung.materialkosten.toFixed(2)} €</td></tr>
-						<tr><td style="padding: 2px 0;">Schneidekosten (Faktor ${preisBerechnung.faktoren.schneideaufwandsfaktor} × ${preisBerechnung.faktoren.kostenJeSchnitt.toFixed(2)} €)</td><td style="text-align: right;">${preisBerechnung.schneidekosten.toFixed(2)} €</td></tr>
-						${preisBerechnung.farbigkeitSummand > 0 ? `<tr><td style="padding: 2px 0;">Farbwechselkosten (${farbigkeitAnzeige})</td><td style="text-align: right;">${preisBerechnung.farbigkeitSummand.toFixed(2)} €</td></tr>` : ''}
-						${preisBerechnung.anzahlDruckplatten > 0 ? `<tr><td style="padding: 2px 0;">Druckplatten (${preisBerechnung.anzahlDruckplatten} × ${preisBerechnung.faktoren.kostenJeDruckplatte.toFixed(2)} €)</td><td style="text-align: right;">${preisBerechnung.druckplattenkosten.toFixed(2)} €</td></tr>` : ''}
-						<tr style="border-top: 1px solid currentColor;"><td style="padding: 4px 0 2px; font-weight: bold; font-family: sans-serif;">Summe netto</td><td style="text-align: right; font-weight: bold;">${preisBerechnung.gesamtpreisNetto.toFixed(2)} €</td></tr>
-						<tr><td style="padding: 2px 0; font-size: 0.95em;">zzgl. 19% MwSt.</td><td style="text-align: right; font-size: 0.95em;">${preisBerechnung.mwstBetrag.toFixed(2)} €</td></tr>
-						<tr style="border-top: 1px solid currentColor;"><td style="padding: 4px 0 2px; font-weight: bold; font-family: sans-serif; font-size: 1.1em;">Gesamtpreis brutto</td><td style="text-align: right; font-weight: bold; font-size: 1.1em;">${preisBerechnung.gesamtpreisBrutto.toFixed(2)} €</td></tr>
-						<tr><td colspan="2" style="padding-top: 0.75rem;"></td></tr>
-						<tr><td style="padding: 2px 0; color: #666;">Gesamtgewicht (${auflage.toLocaleString('de-DE')} × ${preisBerechnung.faktoren.flaecheM2} m² × ${preisBerechnung.faktoren.flaechengewichtGM2} g/m²)</td><td style="text-align: right; color: #666;">${preisBerechnung.gesamtgewichtKg.toFixed(2)} kg</td></tr>
-						<tr><td style="padding: 2px 0; color: #666;">Versand bei Lieferung (${preisBerechnung.anzahlPakete} Paket${preisBerechnung.anzahlPakete !== 1 ? 'e' : ''} à max. ${preisBerechnung.faktoren.maxPaketgewichtKg} kg)</td><td style="text-align: right; color: #666;">${preisBerechnung.versandkostenNetto.toFixed(2)} € netto / ${preisBerechnung.versandkostenBrutto.toFixed(2)} € brutto</td></tr>
+				<strong>Material:</strong> ${material}<br>
+				<div style="margin-top: 1.25rem; padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #f0fdfa 0%, #e6faf6 100%); border-radius: 12px; border: 1px solid #5eead4;">
+					<table style="width: 100%; border-collapse: collapse;">
+						<tr>
+							<td style="padding: 3px 0; font-size: 1rem;">Nettobetrag</td>
+							<td style="text-align: right; font-size: 1rem;">${preisBerechnung.gesamtpreisNetto.toFixed(2).replace('.', ',')} €</td>
+						</tr>
+						<tr>
+							<td style="padding: 3px 0; font-size: 0.9rem; color: #555;">zzgl. 19 % MwSt.</td>
+							<td style="text-align: right; font-size: 0.9rem; color: #555;">${preisBerechnung.mwstBetrag.toFixed(2).replace('.', ',')} €</td>
+						</tr>
+						<tr style="border-top: 2px solid #0f766e;">
+							<td style="padding: 6px 0 3px; font-size: 1.2rem; font-weight: 700; color: #0f766e;">Gesamtpreis brutto</td>
+							<td style="text-align: right; font-size: 1.2rem; font-weight: 700; color: #0f766e;">${preisBerechnung.gesamtpreisBrutto.toFixed(2).replace('.', ',')} €</td>
+						</tr>
+						<tr><td colspan="2" style="padding-top: 1rem; border-top: 1px solid #99f6e4;"></td></tr>
+						<tr>
+							<td style="padding: 3px 0; font-size: 0.95rem;">Versandkosten netto</td>
+							<td style="text-align: right; font-size: 0.95rem;">${preisBerechnung.versandkostenNetto.toFixed(2).replace('.', ',')} €</td>
+						</tr>
+						<tr>
+							<td style="padding: 3px 0; font-size: 0.95rem;">Versandkosten brutto</td>
+							<td style="text-align: right; font-size: 0.95rem;">${preisBerechnung.versandkostenBrutto.toFixed(2).replace('.', ',')} €</td>
+						</tr>
 					</table>
-					<div style="font-size: 0.85em; color: #666; font-family: sans-serif;">Faktoren: Formatfaktor ${preisBerechnung.faktoren.formatfaktor}, Flächenfaktor ${preisBerechnung.faktoren.flaechenfaktor}</div>
+					<p style="margin: 0.75rem 0 0; font-size: 0.82rem; color: #555;">Bei Abholung entfallen die Versandkosten.</p>
 				</div>
 			`;
 			ergebnis = ergebnisText;
@@ -860,16 +868,29 @@
 				preise: {
 					anzahlDruckbogen: preisBerechnung.anzahlDruckbogen,
 					klickanzahl: preisBerechnung.klickanzahl,
+					druckDurchgaenge: preisBerechnung.druckDurchgaenge,
+					andruckBogen: preisBerechnung.faktoren.andruckBogen,
 					grundpreis: preisBerechnung.grundpreis,
 					druckkosten: preisBerechnung.druckkosten,
 					materialkosten: preisBerechnung.materialkosten,
 					schneidekosten: preisBerechnung.schneidekosten,
+					schneidelagen: Math.ceil(preisBerechnung.anzahlDruckbogen / 500),
+					schneideaufwandsfaktor: preisBerechnung.faktoren.schneideaufwandsfaktor,
+					kostenJeSchnitt: preisBerechnung.faktoren.kostenJeSchnitt,
 					farbigkeitSummand: preisBerechnung.farbigkeitSummand,
+					anzahlDruckplatten: preisBerechnung.anzahlDruckplatten,
+					druckplattenkosten: preisBerechnung.druckplattenkosten,
+					kostenJeDruckplatte: preisBerechnung.faktoren.kostenJeDruckplatte,
+					gesamtgewichtKg: preisBerechnung.gesamtgewichtKg,
+					anzahlPakete: preisBerechnung.anzahlPakete,
+					maxPaketgewichtKg: preisBerechnung.faktoren.maxPaketgewichtKg,
 					zusatzkosten: preisBerechnung.zusatzkosten,
 					zusatzkostenName: preisBerechnung.zusatzkostenName,
 					gesamtpreisNetto: preisBerechnung.gesamtpreisNetto,
 					mwstBetrag: preisBerechnung.mwstBetrag,
 					gesamtpreisBrutto: preisBerechnung.gesamtpreisBrutto,
+					versandkostenNetto: preisBerechnung.versandkostenNetto,
+					versandkostenBrutto: preisBerechnung.versandkostenBrutto,
 					versandkosten,
 					gesamtpreisNettoMitVersand,
 					mwstBetragMitVersand,
