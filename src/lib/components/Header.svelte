@@ -5,6 +5,8 @@
 	let scrolled = $state(false);
 	
 	const menuItems = [
+		{ id: 11, label: 'Fix & Günstig', href: '/fixguenstig' },
+		{ id: 12, label: 'Extraladen', href: '/extraladen' },
 		{ id: 1, label: 'Qualität seit 1990', href: '/#thema1' },
 		{ id: 2, label: 'Heißfolienprägung', href: '/#thema2' },
 		{ id: 3, label: 'Blindprägung', href: '/#thema3' },

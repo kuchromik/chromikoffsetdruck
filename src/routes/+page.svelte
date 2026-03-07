@@ -13,8 +13,8 @@
 			useSlider: true,
 			sliderFolder: 'heroSlider',
 			buttons: [
-			{ text: 'Zum Extraladen', link: '/extraladen', tooltip: 'Exklusive Premium-Produkte & Veredelungen entdecken' },
-			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', tooltip: 'Standardprodukte online kalkulieren & direkt bestellen' }
+			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', tooltip: 'Standardprodukte online kalkulieren & direkt bestellen' },
+			{ text: 'Zum Extraladen', link: '/extraladen', tooltip: 'Exklusive Premium-Produkte & Veredelungen entdecken' }
 			]
 		},
 		{
