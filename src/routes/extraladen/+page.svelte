@@ -1667,7 +1667,7 @@
 										<label style="display: flex; align-items: flex-start; cursor: pointer;">
 											<input type="radio" name="lieferart" value="versand" bind:group={lieferart} required style="margin-right: 0.75rem; margin-top: 0.25rem;" />
 											<div>
-												<strong style="font-size: 1em;">Versand per DPD (+{versandkostenNetto.toFixed(2)} € netto / +{versandkostenBrutto.toFixed(2)} € brutto)</strong><br>
+												<strong style="font-size: 1em;">Versand per Paketdienst (+{(preisBerechnung?.versandkostenNetto ?? versandkostenNetto).toFixed(2).replace('.', ',')} € netto / +{(preisBerechnung?.versandkostenBrutto ?? versandkostenBrutto).toFixed(2).replace('.', ',')} € brutto)</strong><br>
 												<span style="font-size: 0.9em; color: #666;">Lieferung innerhalb Deutschlands</span>
 											</div>
 										</label>
@@ -1748,10 +1748,11 @@
 											<div style="margin-top: 1.5rem; padding: 1rem; background-color: #ccfbf1; border: 1px solid #5eead4; border-radius: 4px;">
 												<strong style="font-size: 0.95em;">Versandkosten:</strong><br>
 												<span style="font-size: 0.9em;">
-													Netto: {versandkostenNetto.toFixed(2)} €<br>
-													zzgl. 19% MwSt.: {(versandkostenNetto * mehrwertsteuer).toFixed(2)} €<br>
-													<strong>Brutto: {versandkostenBrutto.toFixed(2)} €</strong>
+													Netto: {(preisBerechnung?.versandkostenNetto ?? versandkostenNetto).toFixed(2).replace('.', ',')} €<br>
+													zzgl. 19 % MwSt.: {((preisBerechnung?.versandkostenNetto ?? versandkostenNetto) * mehrwertsteuer).toFixed(2).replace('.', ',')} €<br>
+													<strong>Brutto: {(preisBerechnung?.versandkostenBrutto ?? versandkostenBrutto).toFixed(2).replace('.', ',')} €</strong>
 												</span>
+												<p style="margin: 0.6rem 0 0; font-size: 0.82rem; color: #555;">Zur Durchführung der Lieferung werden Ihre Versandadressdaten an den beauftragten Paketdienst weitergegeben.</p>
 											</div>
 										</div>
 									{/if}
