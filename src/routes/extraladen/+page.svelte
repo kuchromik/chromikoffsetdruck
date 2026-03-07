@@ -32,8 +32,35 @@
 		alleMaterialien,
 		alleUmfaenge,
 		formatUmfangAbweichungen,
-		produktKonfiguration
+		produktKonfiguration,
+		kalkulation,
+		auflagenSegmente
 	} = data?.config || {};
+
+	// Kostenvariablen aus extraladen.json → kalkulation
+	const {
+		klickkosten = 0.02,
+		kostenJeSchnitt = 0.5,
+		mehrwertsteuer = 0.19,
+		versandkostenNetto = 5.90,
+		maxPaketgewichtKg = 9,
+		kostenJeDruckplatte = 10,
+		farbenProDurchgang = 2,
+		andruckBogen = 50
+	} = kalkulation || {};
+
+	const versandkostenBrutto = versandkostenNetto * (1 + mehrwertsteuer);
+
+	// Auflage-Optionen aus extraladen.json → auflagenSegmente
+	const auflagenOptionen = (auflagenSegmente || [
+		{ von: 500,   bis: 5000,  schritt: 500  },
+		{ von: 6000,  bis: 10000, schritt: 1000 },
+		{ von: 12500, bis: 50000, schritt: 2500 }
+	]).flatMap(({ von, bis, schritt }) => {
+		const result = [];
+		for (let i = von; i <= bis; i += schritt) result.push(i);
+		return result;
+	});
 
 	// Kurzer Log, welche Datenquelle verwendet wurde
 	if (typeof data?.source === 'string') {
@@ -78,16 +105,6 @@
 		return umfangData?.flaechenfaktor || 1.0;
 	}
 
-	// Kostenvariablen
-	const klickkosten = 0.1;
-	const kostenJeSchnitt = 0.5;
-	const mehrwertsteuer = 0.19;
-	const maxKlick = 500;
-
-	// Versandkosten
-	const versandkostenNetto = 5.90;
-	const versandkostenBrutto = versandkostenNetto * (1 + mehrwertsteuer);
-
 	// Preisberechnungsfunktion
 	function berechneGesamtpreis() {
 		const produktData = produkte?.find(p => p.id === produktId);
@@ -105,23 +122,53 @@
 			: Math.ceil((auflage * formatData.formatfaktor * flaechenfaktor) / 2);
 
 		const klickanzahl = Math.ceil(auflage * formatData.formatfaktor * flaechenfaktor);
-		const berechneDruckkosten = klickanzahl * klickkosten;
-		const berechneMaterialkosten = anzahlDruckbogen * materialData.materialfaktor;
-		const berechneSchneidekosten = kostenJeSchnitt * formatData.schneideaufwandsfaktor;
+		// Druckdurchgänge: eine Seite mit mehr als farbenProDurchgang Farben braucht einen zusätzlichen Durchgang
+		const maxFarbenEinerSeite = Math.max(farbenVorderseite.length, farbenRueckseite.length);
+		const druckDurchgaenge = Math.max(1, Math.ceil(maxFarbenEinerSeite / farbenProDurchgang));
+		// Andruckbogen: zusätzliche Bogen für den Offsetdruck-Anlauf (fließen in Druck- und Materialkosten ein, nicht in Schneiden/Versand)
+		const klickanzahlMitAndruck = klickanzahl + andruckBogen; // pro Durchgang
+		const berechneDruckkosten = klickanzahlMitAndruck * klickkosten * druckDurchgaenge;
+		const anzahlDruckbogenMitAndruck = anzahlDruckbogen + andruckBogen;
+		const berechneMaterialkosten = anzahlDruckbogenMitAndruck * materialData.materialfaktor;
+		const anzahlSchneidelagen = Math.ceil(anzahlDruckbogen / 500);
+		const berechneSchneidekosten = kostenJeSchnitt * formatData.schneideaufwandsfaktor * anzahlSchneidelagen;
 
 		// Farbwechselkosten (Offsetdruck): reaktiver Wert aus der Farbwahl
 		const farbigkeitSummand = farbwechselkosten;
 
-		const gesamtpreisNetto = grundpreis + berechneDruckkosten + berechneMaterialkosten + berechneSchneidekosten + farbigkeitSummand;
+		// Druckplattenkosten: eine Platte je Farbe auf Vorder- und Rückseite
+		const anzahlDruckplatten = farbenVorderseite.length + farbenRueckseite.length;
+		const berechneDruckplattenkosten = anzahlDruckplatten * kostenJeDruckplatte;
+
+		// Gewichtsberechnung: Flächengewicht aus Materialname extrahieren
+		const grammageMatch = materialData.name.match(/(\d+)\s*g\/m/);
+		const flaechengewichtGM2 = grammageMatch ? parseInt(grammageMatch[1]) : 0;
+		const flaecheM2 = formatData.flaecheM2 || 0;
+		const gesamtgewichtGramm = auflage * flaecheM2 * flaechengewichtGM2;
+		const gesamtgewichtKg = gesamtgewichtGramm / 1000;
+
+		// Versandkosten gewichtsbasiert: pro angefangene maxPaketgewichtKg ein Paket
+		const anzahlPakete = Math.max(1, Math.ceil(gesamtgewichtKg / maxPaketgewichtKg));
+		const berechneteVersandkostenNetto = anzahlPakete * versandkostenNetto;
+		const berechneteVersandkostenBrutto = berechneteVersandkostenNetto * (1 + mehrwertsteuer);
+
+		const gesamtpreisNetto = grundpreis + berechneDruckkosten + berechneMaterialkosten + berechneSchneidekosten + farbigkeitSummand + berechneDruckplattenkosten;
 		const mwstBetrag = gesamtpreisNetto * mehrwertsteuer;
 		const gesamtpreisBrutto = gesamtpreisNetto + mwstBetrag;
 
 		return {
 			grundpreis,
 			druckkosten: berechneDruckkosten,
+			druckDurchgaenge,
 			materialkosten: berechneMaterialkosten,
 			schneidekosten: berechneSchneidekosten,
 			farbigkeitSummand,
+			druckplattenkosten: berechneDruckplattenkosten,
+			anzahlDruckplatten,
+			gesamtgewichtKg,
+			anzahlPakete,
+			versandkostenNetto: berechneteVersandkostenNetto,
+			versandkostenBrutto: berechneteVersandkostenBrutto,
 			zusatzkosten: 0,
 			zusatzkostenName: '',
 			gesamtpreisNetto,
@@ -131,11 +178,17 @@
 			klickanzahl,
 			faktoren: {
 				klickkosten,
+				farbenProDurchgang,
+				andruckBogen,
 				formatfaktor: formatData.formatfaktor,
 				flaechenfaktor,
+				flaecheM2,
+				flaechengewichtGM2,
+				maxPaketgewichtKg,
 				materialfaktor: materialData.materialfaktor,
 				schneideaufwandsfaktor: formatData.schneideaufwandsfaktor,
 				kostenJeSchnitt,
+				kostenJeDruckplatte,
 				auflage
 			}
 		};
@@ -344,20 +397,6 @@
 		material ? getMaterialData(material)?.beschreibung || '' : ''
 	);
 
-	// Berechne maximale Auflage basierend auf maxKlick
-	let maxAuflage = $derived.by(() => {
-		if (!format) return null;
-		if (zeigeUmfang && !umfang) return null;
-		const formatData = getFormatData(format);
-		if (!formatData) return null;
-		const flaechenfaktor = zeigeUmfang ? getFlaechenfaktor(format, umfang) : 1.0;
-		return Math.floor(maxKlick / (formatData.formatfaktor * flaechenfaktor));
-	});
-
-	let zeigeMaxAuflageHinweis = $derived(
-		format && (!zeigeUmfang || umfang) && maxAuflage !== null
-	);
-
 	// Werte zurücksetzen wenn für neues Produkt nicht verfügbar
 	$effect(() => {
 		if (produktId) {
@@ -385,7 +424,7 @@
 	function waehleProdukt(id) {
 		produktId = id;
 		zeigErgebnis = false;
-		format = '';
+		format = id === 'briefbogen' ? 'DIN A4' : id === 'visitenkarten' ? '8,5 x 5,5 cm' : '';
 	}
 
 	// ── Farbwahl-Funktionen ───────────────────────────────────────────────────
@@ -493,13 +532,17 @@
 					<div style="margin-bottom: 0.25rem; font-weight: bold; font-family: sans-serif; font-size: 1.05em;">🔢 Kalkulation (Developer-Ansicht)</div>
 					<table style="width: 100%; border-collapse: collapse; margin-bottom: 0.75rem;">
 						<tr><td style="padding: 2px 0;">Grundpreis</td><td style="text-align: right;">${preisBerechnung.grundpreis.toFixed(2)} €</td></tr>
-						<tr><td style="padding: 2px 0;">Druckkosten (${preisBerechnung.klickanzahl} Klicks × ${preisBerechnung.faktoren.klickkosten.toFixed(2)} €)</td><td style="text-align: right;">${preisBerechnung.druckkosten.toFixed(2)} €</td></tr>
-						<tr><td style="padding: 2px 0;">Materialkosten (${preisBerechnung.anzahlDruckbogen} Bogen × ${preisBerechnung.faktoren.materialfaktor.toFixed(4)} €)</td><td style="text-align: right;">${preisBerechnung.materialkosten.toFixed(2)} €</td></tr>
+						<tr><td style="padding: 2px 0;">Druckkosten (${preisBerechnung.klickanzahl} + ${preisBerechnung.faktoren.andruckBogen} Andruckbogen = ${preisBerechnung.klickanzahl + preisBerechnung.faktoren.andruckBogen} Klicks/Durchgang${preisBerechnung.druckDurchgaenge > 1 ? ` × ${preisBerechnung.druckDurchgaenge} Durchgänge` : ''} × ${preisBerechnung.faktoren.klickkosten.toFixed(2)} €)</td><td style="text-align: right;">${preisBerechnung.druckkosten.toFixed(2)} €</td></tr>
+						<tr><td style="padding: 2px 0;">Materialkosten (${preisBerechnung.anzahlDruckbogen} + ${preisBerechnung.faktoren.andruckBogen} Andruckbogen = ${preisBerechnung.anzahlDruckbogen + preisBerechnung.faktoren.andruckBogen} Bogen × ${preisBerechnung.faktoren.materialfaktor.toFixed(4)} €)</td><td style="text-align: right;">${preisBerechnung.materialkosten.toFixed(2)} €</td></tr>
 						<tr><td style="padding: 2px 0;">Schneidekosten (Faktor ${preisBerechnung.faktoren.schneideaufwandsfaktor} × ${preisBerechnung.faktoren.kostenJeSchnitt.toFixed(2)} €)</td><td style="text-align: right;">${preisBerechnung.schneidekosten.toFixed(2)} €</td></tr>
 						${preisBerechnung.farbigkeitSummand > 0 ? `<tr><td style="padding: 2px 0;">Farbwechselkosten (${farbigkeitAnzeige})</td><td style="text-align: right;">${preisBerechnung.farbigkeitSummand.toFixed(2)} €</td></tr>` : ''}
+						${preisBerechnung.anzahlDruckplatten > 0 ? `<tr><td style="padding: 2px 0;">Druckplatten (${preisBerechnung.anzahlDruckplatten} × ${preisBerechnung.faktoren.kostenJeDruckplatte.toFixed(2)} €)</td><td style="text-align: right;">${preisBerechnung.druckplattenkosten.toFixed(2)} €</td></tr>` : ''}
 						<tr style="border-top: 1px solid currentColor;"><td style="padding: 4px 0 2px; font-weight: bold; font-family: sans-serif;">Summe netto</td><td style="text-align: right; font-weight: bold;">${preisBerechnung.gesamtpreisNetto.toFixed(2)} €</td></tr>
 						<tr><td style="padding: 2px 0; font-size: 0.95em;">zzgl. 19% MwSt.</td><td style="text-align: right; font-size: 0.95em;">${preisBerechnung.mwstBetrag.toFixed(2)} €</td></tr>
 						<tr style="border-top: 1px solid currentColor;"><td style="padding: 4px 0 2px; font-weight: bold; font-family: sans-serif; font-size: 1.1em;">Gesamtpreis brutto</td><td style="text-align: right; font-weight: bold; font-size: 1.1em;">${preisBerechnung.gesamtpreisBrutto.toFixed(2)} €</td></tr>
+						<tr><td colspan="2" style="padding-top: 0.75rem;"></td></tr>
+						<tr><td style="padding: 2px 0; color: #666;">Gesamtgewicht (${auflage.toLocaleString('de-DE')} × ${preisBerechnung.faktoren.flaecheM2} m² × ${preisBerechnung.faktoren.flaechengewichtGM2} g/m²)</td><td style="text-align: right; color: #666;">${preisBerechnung.gesamtgewichtKg.toFixed(2)} kg</td></tr>
+						<tr><td style="padding: 2px 0; color: #666;">Versand bei Lieferung (${preisBerechnung.anzahlPakete} Paket${preisBerechnung.anzahlPakete !== 1 ? 'e' : ''} à max. ${preisBerechnung.faktoren.maxPaketgewichtKg} kg)</td><td style="text-align: right; color: #666;">${preisBerechnung.versandkostenNetto.toFixed(2)} € netto / ${preisBerechnung.versandkostenBrutto.toFixed(2)} € brutto</td></tr>
 					</table>
 					<div style="font-size: 0.85em; color: #666; font-family: sans-serif;">Faktoren: Formatfaktor ${preisBerechnung.faktoren.formatfaktor}, Flächenfaktor ${preisBerechnung.faktoren.flaechenfaktor}</div>
 				</div>
@@ -517,7 +560,7 @@
 	function zurücksetzen() {
 		auflage = '';
 		material = '';
-		format = '';
+		format = produktId === 'briefbogen' ? 'DIN A4' : produktId === 'visitenkarten' ? '8,5 x 5,5 cm' : '';
 		umfang = '';
 		ergebnis = '';
 		zeigErgebnis = false;
@@ -790,9 +833,9 @@
 			if (!finalerAuftragsname) finalerAuftragsname = `${produktName} - ${new Date().toLocaleDateString('de-DE')}`;
 
 			const versandkosten = lieferart === 'versand' ? {
-				netto: versandkostenNetto,
-				mwst: versandkostenNetto * mehrwertsteuer,
-				brutto: versandkostenBrutto
+				netto: preisBerechnung.versandkostenNetto,
+				mwst: preisBerechnung.versandkostenNetto * mehrwertsteuer,
+				brutto: preisBerechnung.versandkostenBrutto
 			} : null;
 
 			const gesamtpreisNettoMitVersand = preisBerechnung.gesamtpreisNetto + (versandkosten ? versandkosten.netto : 0);
@@ -955,12 +998,19 @@
 				<form class="calculator-form" onsubmit={berechneErgebnis}>
 					<div class="form-group">
 						<label for="format">Format</label>
-						<select id="format" bind:value={format} required>
-							<option value="">Bitte wählen...</option>
-							{#each verfuegbareFormate as fmt}
-								<option value={fmt.name}>{fmt.name}</option>
-							{/each}
-						</select>
+						{#if produktId === 'briefbogen'}
+							<input type="text" id="format" value="DIN A4" disabled />
+						{:else if produktId === 'visitenkarten'}
+							<input type="text" id="format" value="8,5 x 5,5 cm" disabled />
+							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">Quer- oder Hochformat, geringfügig abweichende Maße wie z.&nbsp;B. 9,0 × 5,0&nbsp;cm sind möglich – das Dateiformat ist relevant.</p>
+						{:else}
+							<select id="format" bind:value={format} required>
+								<option value="">Bitte wählen...</option>
+								{#each verfuegbareFormate as fmt}
+									<option value={fmt.name}>{fmt.name}</option>
+								{/each}
+							</select>
+						{/if}
 					</div>
 
 					{#if zeigeUmfang}
@@ -1203,7 +1253,7 @@
 						<label for="auflage">Auflage (Stück)</label>
 						<select id="auflage" bind:value={auflage} required>
 							<option value="">Bitte wählen...</option>
-							{#each [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000,8500,9000,9500,10000] as stk}
+							{#each auflagenOptionen as stk}
 								<option value={stk}>{stk.toLocaleString('de-DE')}</option>
 							{/each}
 						</select>
@@ -1853,7 +1903,8 @@
 	}
 
 	select,
-	input[type="number"] {
+	input[type="number"],
+	input[type="text"] {
 		width: 100%;
 		padding: 0.875rem 1rem;
 		font-size: 1rem;
@@ -1872,10 +1923,18 @@
 	}
 
 	select:focus,
-	input[type="number"]:focus {
+	input[type="number"]:focus,
+	input[type="text"]:focus {
 		outline: none;
 		border-color: #0f766e;
 		box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+	}
+
+	input[type="text"]:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+		background: var(--bg-secondary);
+		color: var(--text-secondary);
 	}
 
 	input[type="number"]::placeholder {

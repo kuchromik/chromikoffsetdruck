@@ -1,11 +1,26 @@
 {
+  "kalkulation": {
+    "klickkosten": 0.02,
+    "kostenJeSchnitt": 0.5,
+    "mehrwertsteuer": 0.19,
+    "versandkostenNetto": 5.90,
+    "maxPaketgewichtKg": 9,
+    "kostenJeDruckplatte": 10,
+    "farbenProDurchgang": 2,
+    "andruckBogen": 50
+  },
+  "auflagenSegmente": [
+    { "von": 500,   "bis": 5000,  "schritt": 500  },
+    { "von": 6000,  "bis": 10000, "schritt": 1000 },
+    { "von": 12500, "bis": 50000, "schritt": 2500 }
+  ],
   "produkte": [
-    { "name": "Briefbogen", "id": "briefbogen", "grundpreis": 8 },
-    { "name": "Visitenkarten", "id": "visitenkarten", "grundpreis": 10 }
+    { "name": "Briefbogen", "id": "briefbogen", "grundpreis": 20 },
+    { "name": "Visitenkarten", "id": "visitenkarten", "grundpreis": 20 }
   ],
   "alleFormate": [
-    { "id": "format-a4", "name": "DIN A4", "formatfaktor": 1.0, "schneideaufwandsfaktor": 5 },
-    { "id": "format-85x55", "name": "8,5 x 5,5 cm", "formatfaktor": 0.1250, "schneideaufwandsfaktor": 13 }
+    { "id": "format-a4",    "name": "DIN A4",       "flaecheM2": 0.06237, "formatfaktor": 1.0,    "schneideaufwandsfaktor": 5  },
+    { "id": "format-85x55", "name": "8,5 x 5,5 cm", "flaecheM2": 0.004675, "formatfaktor": 0.1250, "schneideaufwandsfaktor": 13 }
   ],
   "alleMaterialien": [
     { "id": "mat-senglatt308", "name": "Senator glatt 308 g/m²", "materialfaktor": 0.25 },
