@@ -1821,6 +1821,23 @@ if (typeof data?.source === 'string') {
 						{/if}
 					</div>
 
+					{#if lieferart}
+						<div style="margin: 1.5rem 0; padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); border-radius: 12px; color: #fff; box-shadow: 0 4px 16px rgba(15,118,110,0.18);">
+							<div style="font-size: 0.85rem; opacity: 0.85; margin-bottom: 0.4rem;">
+								{#if lieferart === 'versand'}
+									Produktpreis brutto ({preisBerechnung.gesamtpreisBrutto.toFixed(2).replace('.', ',')} €) + Versandkosten ({versandkostenBrutto.toFixed(2).replace('.', ',')} €)
+								{:else}
+									Produktpreis brutto – Abholung, keine Versandkosten
+								{/if}
+							</div>
+							<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem;">
+								<span style="font-size: 1.1rem; font-weight: 600;">Gesamtpreis brutto</span>
+								<span style="font-size: 2rem; font-weight: 700;">{(preisBerechnung.gesamtpreisBrutto + (lieferart === 'versand' ? versandkostenBrutto : 0)).toFixed(2).replace('.', ',')} €</span>
+							</div>
+							<div style="font-size: 0.8rem; opacity: 0.75; text-align: right;">inkl. 19 % MwSt.</div>
+						</div>
+					{/if}
+
 					<div class="form-group" style="margin-top: 1.5rem;">
 								<label style="display: flex; align-items: flex-start; cursor: pointer;">
 									<input 
