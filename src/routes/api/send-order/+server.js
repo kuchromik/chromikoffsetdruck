@@ -101,8 +101,7 @@ GESAMT INKL. VERSAND:
 Netto:  ${data.preise.gesamtpreisNettoMitVersand?.toFixed(2)} EUR
 MwSt.:  ${data.preise.mwstBetragMitVersand?.toFixed(2)} EUR
 Brutto: ${data.preise.gesamtpreisBruttoMitVersand?.toFixed(2)} EUR
-` : 'Lieferart: Abholung (keine Versandkosten)
-'}
+` : 'Lieferart: Abholung (keine Versandkosten)\n'}
 KUNDENDATEN:
 ------------
 Name: ${data.kunde.vorname} ${data.kunde.nachname}
