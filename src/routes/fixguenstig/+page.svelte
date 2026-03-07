@@ -1668,7 +1668,7 @@ if (typeof data?.source === 'string') {
 											style="margin-right: 0.75rem; margin-top: 0.25rem;"
 										/>
 										<div>
-											<strong style="font-size: 1em;">Versand per DPD (+{versandkostenNetto.toFixed(2)} € netto / +{versandkostenBrutto.toFixed(2)} € brutto)</strong><br>
+											<strong style="font-size: 1em;">Versand per Paketdienst (+{versandkostenNetto.toFixed(2).replace('.', ',')} € netto / +{versandkostenBrutto.toFixed(2).replace('.', ',')} € brutto)</strong><br>
 											<span style="font-size: 0.9em; color: #666;">
 												Lieferung innerhalb Deutschlands
 											</span>
@@ -1811,10 +1811,11 @@ if (typeof data?.source === 'string') {
 								<div style="margin-top: 1.5rem; padding: 1rem; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px;">
 									<strong style="font-size: 0.95em;">Versandkosten:</strong><br>
 									<span style="font-size: 0.9em;">
-										Netto: {versandkostenNetto.toFixed(2)} €<br>
-										zzgl. 19% MwSt.: {(versandkostenNetto * mehrwertsteuer).toFixed(2)} €<br>
-										<strong>Brutto: {versandkostenBrutto.toFixed(2)} €</strong>
+										Netto: {versandkostenNetto.toFixed(2).replace('.', ',')} €<br>
+										zzgl. 19 % MwSt.: {(versandkostenNetto * mehrwertsteuer).toFixed(2).replace('.', ',')} €<br>
+										<strong>Brutto: {versandkostenBrutto.toFixed(2).replace('.', ',')} €</strong>
 									</span>
+									<p style="margin: 0.6rem 0 0; font-size: 0.82rem; color: #555;">Zur Durchführung der Lieferung werden Ihre Versandadressdaten an den beauftragten Paketdienst weitergegeben.</p>
 								</div>
 							</div>
 						{/if}
@@ -1836,7 +1837,7 @@ if (typeof data?.source === 'string') {
 
 							<div style="font-size: 0.85em; color: #666; margin: 1.5rem 0; padding: 1rem; background-color: #f0f0f0; border-radius: 4px;">
 								<strong>Hinweis zum Datenschutz:</strong><br>
-								Die von Ihnen eingegebenen Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage verwendet und gemäß der Datenschutzgrundverordnung (DSGVO) verarbeitet. Ihre Daten werden nicht an Dritte weitergegeben. Sie haben jederzeit das Recht auf Auskunft, Berichtigung, Löschung oder Einschränkung der Verarbeitung Ihrer personenbezogenen Daten.
+								Die von Ihnen eingegebenen Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage verwendet und gemäß der Datenschutzgrundverordnung (DSGVO) verarbeitet. Ihre Daten werden nicht an Dritte weitergegeben{#if lieferart === 'versand'}, mit Ausnahme Ihrer Versandadresse, die zur Lieferabwicklung an den beauftragten Paketdienst übermittelt wird{/if}. Sie haben jederzeit das Recht auf Auskunft, Berichtigung, Löschung oder Einschränkung der Verarbeitung Ihrer personenbezogenen Daten.
 							</div>
 
 							<div class="button-group" style="margin-top: 2rem;">

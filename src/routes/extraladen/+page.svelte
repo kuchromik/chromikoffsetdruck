@@ -1768,9 +1768,7 @@
 
 								<div style="font-size: 0.85em; color: #666; margin: 1.5rem 0; padding: 1rem; background-color: #f0fdfa; border-radius: 4px;">
 									<strong>Hinweis zum Datenschutz:</strong><br>
-									Die von Ihnen eingegebenen Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage verwendet und gemäß der Datenschutzgrundverordnung (DSGVO) verarbeitet. Ihre Daten werden nicht an Dritte weitergegeben.
-								</div>
-
+							Die von Ihnen eingegebenen Daten werden ausschließlich zur Bearbeitung Ihrer Anfrage verwendet und gemäß der Datenschutzgrundverordnung (DSGVO) verarbeitet. Ihre Daten werden nicht an Dritte weitergegeben{#if lieferart === 'versand'}, mit Ausnahme Ihrer Versandadresse, die zur Lieferabwicklung an den beauftragten Paketdienst übermittelt wird{/if}.
 								<div class="button-group" style="margin-top: 2rem;">
 									<button type="submit" class="btn btn-primary" disabled={bestellStatus === 'sending'} style="font-size: 1.1em;">
 										{bestellStatus === 'sending' ? 'Wird gesendet...' : 'Verbindlich bestellen'}
