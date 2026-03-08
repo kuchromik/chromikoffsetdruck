@@ -373,8 +373,11 @@ const {
 		produktId = id;
 		zeigErgebnis = false;
 		// Für 'Plakate mit Abrissperforation' ist das Format immer DIN A3
+		// Für 'Visitenkarten' ist das Format immer 8,5 x 5,5 cm
 		if (id === 'plakate-abriss') {
 			format = 'DIN A3';
+		} else if (id === 'visitenkarten') {
+			format = '8,5 x 5,5 cm';
 		} else {
 			format = '';
 		}
@@ -1057,7 +1060,13 @@ const {
 				</div>
 
 				<form class="calculator-form" onsubmit={berechneErgebnis}>
-					{#if produktId !== 'plakate-abriss'}
+					{#if produktId === 'visitenkarten'}
+						<div class="form-group">
+							<label for="format">Format</label>
+							<input type="text" id="format" value="8,5 x 5,5 cm" disabled />
+							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: #666; line-height: 1.4;">Quer- oder Hochformat, geringfügig abweichende Maße wie z.&nbsp;B. 9,0 × 5,0&nbsp;cm sind möglich – das Dateiformat ist relevant.</p>
+						</div>
+					{:else if produktId !== 'plakate-abriss'}
 						<div class="form-group">
 							<label for="format">{formatLabel}</label>
 							<select id="format" bind:value={format} required>
