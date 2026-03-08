@@ -337,7 +337,7 @@ const {
 		if (!formatData) return null;
 		
 		const flaechenfaktor = zeigeUmfang ? getFlaechenfaktor(format, umfang) : 1.0;
-		const maxAufl = Math.floor(maxKlick / (formatData.formatfaktor * flaechenfaktor));
+		const maxAufl = Math.ceil(Math.floor(maxKlick / (formatData.formatfaktor * flaechenfaktor)) / 10) * 10;
 		
 		return maxAufl;
 	});
