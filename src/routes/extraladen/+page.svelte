@@ -1389,9 +1389,9 @@
 							<hr style="margin: 1rem 0; border: none; border-top: 1px solid #ddd;">
 							<p><strong>Produktpreis (brutto):</strong> {preisBerechnung.gesamtpreisBrutto.toFixed(2)} €</p>
 							{#if lieferart === 'versand'}
-								<p><strong>Versandkosten (brutto):</strong> {versandkostenBrutto.toFixed(2)} €</p>
+								<p><strong>Versandkosten (brutto):</strong> {preisBerechnung.versandkostenBrutto.toFixed(2)} €</p>
 								<hr style="margin: 1rem 0; border: none; border-top: 1px solid #ddd;">
-								<p style="font-size: 1.1em;"><strong>Gesamtpreis inkl. Versand (brutto): {(preisBerechnung.gesamtpreisBrutto + versandkostenBrutto).toFixed(2)} €</strong></p>
+								<p style="font-size: 1.1em;"><strong>Gesamtpreis inkl. Versand (brutto): {(preisBerechnung.gesamtpreisBrutto + preisBerechnung.versandkostenBrutto).toFixed(2)} €</strong></p>
 							{:else}
 								<p style="font-size: 1.1em;"><strong>Gesamtpreis (brutto): {preisBerechnung.gesamtpreisBrutto.toFixed(2)} €</strong></p>
 							{/if}
