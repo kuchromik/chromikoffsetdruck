@@ -2033,7 +2033,8 @@ const {
 	}
 
 	select,
-	input[type="number"] {
+	input[type="number"],
+	input[type="text"] {
 		width: 100%;
 		padding: 0.875rem 1rem;
 		font-size: 1rem;
@@ -2049,6 +2050,13 @@ const {
 		opacity: 0.5;
 		cursor: not-allowed;
 		background: var(--bg-secondary);
+	}
+
+	input[type="text"]:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+		background: var(--bg-secondary);
+		color: var(--text-secondary);
 	}
 
 	select:focus,
