@@ -164,7 +164,8 @@ export async function POST({ request }) {
 			shipmentAddressId: shipmentAddressId,
 			customerId: customerId,
 			billingAddress: data.abweichendeRechnungsadresse || null,
-			billingEmail: data.abweichendeRechnungsEmail || null
+			billingEmail: data.abweichendeRechnungsEmail || null,
+			shippingCosts: data.preise.versandkosten || null
 		});
 		
 		if (jobResult.success) {

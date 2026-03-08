@@ -1242,9 +1242,6 @@
 											<div><strong>RS:</strong> keine Farben</div>
 										{/if}
 									</div>
-									<div class="farb-ergebnis-zeile">
-										<strong>Farbwechselkosten:</strong> {farbwechselkosten.toFixed(2)}&nbsp;&euro;
-									</div>
 									<button type="button" class="btn btn-secondary farb-neustart-btn" onclick={farbwahlZuruecksetzen}>
 										Farben neu eingeben
 									</button>

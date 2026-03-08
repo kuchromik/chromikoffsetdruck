@@ -124,6 +124,11 @@ export async function createJob(jobData) {
 			jobDoc.billingEmail = jobData.billingEmail;
 		}
 
+		// Versandkosten hinzufügen (falls vorhanden)
+		if (jobData.shippingCosts) {
+			jobDoc.shippingCosts = jobData.shippingCosts;
+		}
+
 		// Job in Firestore speichern
 		const docRef = await db.collection('Jobs').add(jobDoc);
 		

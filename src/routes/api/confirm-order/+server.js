@@ -247,7 +247,8 @@ Web: www.chromikoffsetdruck.de
 			producer: 'doe', // Digitaldruck
 			toShip: data.lieferung.art === 'versand',
 			shipmentAddressId: shipmentAddressId,
-			customerId: customerId
+			customerId: customerId,
+			shippingCosts: data.preise.versandkosten || null
 		});
 		
 		if (jobResult.success) {
