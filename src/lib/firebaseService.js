@@ -92,6 +92,7 @@ export async function createJob(jobData) {
 			paper_ready: false,
 			print_ready: false,
 			shipped_ready: false,
+			dataChecked: false,
 			
 			// Versand/Abholung
 			toShip: jobData.toShip || false,
