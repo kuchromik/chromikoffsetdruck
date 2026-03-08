@@ -1064,7 +1064,7 @@ const {
 						<div class="form-group">
 							<label for="format">Format</label>
 							<input type="text" id="format" value="8,5 x 5,5 cm" disabled />
-							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: #666; line-height: 1.4;">Quer- oder Hochformat, geringfügig abweichende Maße wie z.&nbsp;B. 9,0 × 5,0&nbsp;cm sind möglich – das Dateiformat ist relevant.</p>
+							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">Quer- oder Hochformat, geringfügig abweichende Maße wie z.&nbsp;B. 9,0 × 5,0&nbsp;cm sind möglich – das Dateiformat ist relevant.</p>
 						</div>
 					{:else if produktId !== 'plakate-abriss'}
 						<div class="form-group">
