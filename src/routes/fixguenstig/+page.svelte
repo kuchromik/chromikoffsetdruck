@@ -1243,6 +1243,10 @@ const {
 								Der Link ist 24 Stunden gültig.
 							</p>
 						</div>
+						<div style="display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0; padding: 1rem 1.25rem; background-color: #d4edda; border-radius: 8px; border: 1px solid #c3e6cb;">
+							<div class="spinner" style="flex-shrink: 0;"></div>
+							<span style="color: #155724; font-weight: 500;">Warten auf Verifizierung (siehe Mail) …</span>
+						</div>
 						<div class="button-group">
 							<button class="btn btn-secondary" onclick={() => { emailVerifikationStatus = ''; emailZurVerifizierung = ''; }}>
 								Andere E-Mail-Adresse verwenden

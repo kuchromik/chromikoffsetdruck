@@ -1317,6 +1317,10 @@
 								</div>
 								<p style="color: #666; margin: 0.75rem 0 0; font-size: 0.9em;">Der Link ist 24 Stunden gültig.</p>
 							</div>
+							<div style="display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0; padding: 1rem 1.25rem; background-color: #f0fdfa; border-radius: 8px; border: 1px solid #99f6e4;">
+								<div class="spinner" style="flex-shrink: 0;"></div>
+								<span style="color: #0f4e47; font-weight: 500;">Warten auf Verifizierung (siehe Mail) …</span>
+							</div>
 							<div class="button-group">
 								<button class="btn btn-secondary" onclick={() => { emailVerifikationStatus = ''; emailZurVerifizierung = ''; }}>
 									Andere E-Mail-Adresse verwenden
