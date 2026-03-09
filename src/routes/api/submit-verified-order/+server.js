@@ -165,7 +165,7 @@ export async function POST({ request }) {
 			customerId: customerId,
 			billingAddress: data.abweichendeRechnungsadresse || null,
 			billingEmail: data.abweichendeRechnungsEmail || null,
-			shippingCosts: data.preise.versandkosten || null
+			shippingCosts: data.preise.versandkosten ? data.preise.versandkosten.netto : null
 		});
 		
 		if (jobResult.success) {
