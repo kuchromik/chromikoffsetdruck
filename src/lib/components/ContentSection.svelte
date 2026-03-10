@@ -170,6 +170,12 @@
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
+		/* Prevent descenders (g, y, p, q) from being clipped */
+		overflow: visible;
+		display: inline-block;
+		contain: none;
+		padding-bottom: 0.12em;
+		line-height: 1.15;
 	}
 
 	.text-content p {
