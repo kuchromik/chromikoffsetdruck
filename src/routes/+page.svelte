@@ -44,7 +44,7 @@
 		{
 			id: 'thema5',
 			title: 'Pantone & HKS',
-			description: 'Farben, die im Gedächtnis bleiben! Mit Sonderfarben nach Pantone und HKS verleihen wir Ihren Drucksachen eine Brillanz, die der herkömmliche Vierfarbdruck nicht erreichen kann. Ob leuchtendes Orange, tiefes Violett oder Ihr individueller Firmenfarbton – jeder Auftrag wird mit exakter Farbkonstanz produziert. Heute und morgen, in hunderten oder tausenden Exemplaren. Nehmen Sie die Intensität der Farben wahr, die nicht verblassen, sondern strahlen - Verlässlichkeit in ihrer schönsten Form.',
+			description: 'Farben, die im Gedächtnis bleiben! Mit Sonderfarben nach Pantone und HKS verleihen wir Ihren Drucksachen eine Brillanz, die der herkömmliche Vierfarbdruck nicht erreichen kann. Ob leuchtendes Orange, tiefes Violett oder Ihr individueller Firmenfarbton – jeder Auftrag wird mit exakter Farbkonstanz produziert, heute und morgen, in hunderten oder tausenden Exemplaren. Nehmen Sie die Intensität der Farben wahr, die nicht verblassen, sondern strahlen - Verlässlichkeit in ihrer schönsten Form.',
 			reverse: false,
 			useSlider: true,
 			sliderFolder: 'pantoneSlider'
