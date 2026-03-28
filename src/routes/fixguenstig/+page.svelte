@@ -262,12 +262,7 @@ const {
 			? produktKonfiguration[produktId].materialien
 				.map(id => alleMaterialien.find(m => m.id === id))
 				.filter(Boolean)
-				.sort((a, b) => {
-					// Extrahiere Flächengewicht aus ID (z.B. 308 aus 'mat-opal308')
-					const gewichtA = parseInt(a.id.match(/\d+$/)?.[0] || '0');
-					const gewichtB = parseInt(b.id.match(/\d+$/)?.[0] || '0');
-					return gewichtA - gewichtB;
-				})
+				.sort((a, b) => a.name.localeCompare(b.name, 'de'))
 			: []
 	);
 
