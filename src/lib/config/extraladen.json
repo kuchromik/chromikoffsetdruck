@@ -23,14 +23,14 @@
     { "id": "format-85x55", "name": "8,5 x 5,5 cm", "flaecheM2": 0.004675, "formatfaktor": 0.1250, "schneideaufwandsfaktor": 13 }
   ],
   "alleMaterialien": [
-    { "id": "mat-senglatt308", "name": "Senator glatt 308 g/m²", "materialfaktor": 0.25 },
-    { "id": "mat-senlein246", "name": "Senator leinen 246 g/m²", "materialfaktor": 0.20 },
-    { "id": "mat-conqwovewhite300", "name": "Conqueror wove naturweiß 300 g/m²", "materialfaktor": 0.25 },
-    { "id": "mat-sopor350", "name": "Soporset 350 g/m²", "materialfaktor": 0.14 },
-    { "id": "mat-bild300", "name": "Bilderdruck matt 300 g/m²", "materialfaktor": 0.11 },
-    { "id": "mat-bild350", "name": "Bilderdruck matt 350 g/m²", "materialfaktor": 0.13 },
-    { "id": "mat-ina080", "name": " Inaset Plus Laser Digital 80 g/m²", "materialfaktor": 0.019 },
-    { "id": "mat-ina090", "name": " Inaset Plus Laser Digital 90 g/m²", "materialfaktor": 0.022 }
+    { "id": "mat-senglatt308", "name": "Senator glatt 308 g/m²", "materialfaktor": 0.25, "beschreibung": "Straff weißer Karton mit glatter Oberfläche für kontrastreiche HKS- und Pantone-Sonderfarben auf Visitenkarten." },
+    { "id": "mat-senlein246", "name": "Senator leinen 246 g/m²", "materialfaktor": 0.20, "beschreibung": "Weißer Karton mit feiner Leinenprägung für edle Haptik bei Visitenkarten im Sonderfarben-Offsetdruck." },
+    { "id": "mat-conqwovewhite300", "name": "Conqueror wove naturweiß 300 g/m²", "materialfaktor": 0.25, "beschreibung": "Hochwertiges naturweißes Designpapier der Marke Conqueror mit feiner Wove-Oberfläche. Ideal für repräsentative Visitenkarten und Briefbogen mit besonderem Anspruch." },
+    { "id": "mat-sopor350", "name": "Soporset 350 g/m²", "materialfaktor": 0.14, "beschreibung": "Hochweißer, fester Karton mit leicht rauer Oberfläche für besonders stabile Visitenkarten." },
+    { "id": "mat-bild300", "name": "Bilderdruck matt 300 g/m²", "materialfaktor": 0.11, "beschreibung": "Klassischer matter Bilderdruckkarton, vielseitig einsetzbar mit sehr guter Farbwiedergabe." },
+    { "id": "mat-bild350", "name": "Bilderdruck matt 350 g/m²", "materialfaktor": 0.13, "beschreibung": "Stärkerer Bilderdruckkarton mit matter Oberfläche, besonders stabil und hochwertig." },
+    { "id": "mat-ina080", "name": "Inaset Plus Laser Digital 80 g/m²", "materialfaktor": 0.019, "beschreibung": "Hochwertiges Offsetpapier für einseitige und zweiseitige Briefbogen in HKS- und Pantone-Sonderfarben." },
+    { "id": "mat-ina090", "name": "Inaset Plus Laser Digital 90 g/m²", "materialfaktor": 0.022, "beschreibung": "Etwas schwereres Briefbogenpapier mit angenehmer Haptik für repräsentative Geschäftskorrespondenz." }
   ],
   "alleUmfaenge": [
     { "id": "umfang-1s", "name": "1-seitig", "flaechenfaktor": 0.5 },

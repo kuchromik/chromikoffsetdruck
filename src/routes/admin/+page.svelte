@@ -114,6 +114,7 @@ onMount(() => {
 
 <svelte:head>
   <title>Admin - Konfiguration</title>
+  <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="admin-page">

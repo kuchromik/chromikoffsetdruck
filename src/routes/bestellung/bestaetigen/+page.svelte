@@ -49,6 +49,7 @@
 
 <svelte:head>
 	<title>Bestellung bestätigen - Chromik Offsetdruck</title>
+	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <Header />

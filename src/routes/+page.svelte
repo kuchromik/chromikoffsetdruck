@@ -61,6 +61,7 @@
 </script>
 <svelte:head>
 	<title>Offsetdruckerei Frankfurt (Oder) | Briefbogen, Visitenkarten & Sonderfarben – Chromik Offsetdruck</title>
+	<link rel="canonical" href="https://www.chromikoffsetdruck.de/" />
 	<meta name="description" content="Chromik Offsetdruck in Frankfurt (Oder) – Ihr Spezialist für Briefbogen und Visitenkarten in HKS- & Pantone-Sonderfarben. Heißfolienprägung, Blindprägung, Stanzung & edle Spezialpapiere. Qualität seit 1990." />
 	<meta name="keywords" content="Offsetdruckerei Frankfurt Oder, Briefbogen drucken, Visitenkarten HKS Pantone, Sonderfarben Offsetdruck, Heißfolienprägung, Blindprägung, Stanzung, Briefpapier drucken, Firmenbriefbogen, Druckerei Frankfurt Oder" />
 
@@ -71,7 +72,7 @@
 	<meta property="og:title" content="Offsetdruckerei Frankfurt (Oder) | Briefbogen, Visitenkarten & Sonderfarben" />
 	<meta property="og:description" content="Chromik Offsetdruck – Briefbogen und Visitenkarten in HKS- & Pantone-Sonderfarben, Heißfolienprägung, Blindprägung und Stanzung. Qualität seit 1990 in Frankfurt (Oder)." />
 	<meta property="og:image" content="/logo.png" />
-	<meta property="og:url" content="https://chromikoffsetdruck.de/" />
+	<meta property="og:url" content="https://www.chromikoffsetdruck.de/" />
 
 	<!-- JSON-LD: LocalBusiness -->
 	{@html `<script type="application/ld+json">${JSON.stringify({
@@ -79,7 +80,7 @@
 		"@type": "LocalBusiness",
 		"name": "Chromik Offsetdruck",
 		"description": "Offsetdruckerei in Frankfurt (Oder) – spezialisiert auf Briefbogen und Visitenkarten in HKS- und Pantone-Sonderfarben, Heißfolienprägung, Blindprägung, Stanzungen und edle Spezialpapiere. Qualität seit 1990.",
-		"url": "https://chromikoffsetdruck.de",
+		"url": "https://www.chromikoffsetdruck.de",
 		"telephone": "+4915152457061",
 		"email": "kai.chromik@online.de",
 		"address": {

@@ -6,7 +6,9 @@
 
 <svelte:head>
 	<title>Impressum - Chromik Offsetdruck</title>
+	<link rel="canonical" href="https://www.chromikoffsetdruck.de/impressum" />
 	<meta name="description" content="Impressum von Chromik Offsetdruck" />
+	<meta name="robots" content="noindex, follow" />
 </svelte:head>
 
 <div class="page-wrapper">

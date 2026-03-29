@@ -6,7 +6,9 @@
 
 <svelte:head>
 	<title>Datenschutz - Chromik Offsetdruck</title>
+	<link rel="canonical" href="https://www.chromikoffsetdruck.de/datenschutz" />
 	<meta name="description" content="Datenschutzerklärung von Chromik Offsetdruck" />
+	<meta name="robots" content="noindex, follow" />
 </svelte:head>
 
 <div class="page-wrapper">

@@ -937,8 +937,9 @@
 
 <svelte:head>
 	<title>Briefbogen & Visitenkarten mit HKS und Pantone Sonderfarben | Chromik Offsetdruck Frankfurt (Oder)</title>
-	<meta name="description" content="Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck in Frankfurt (Oder): HKS- und Pantone-Farben auf edlen Spezialpapieren. Mit Heißfolienprägung, Blindprägung & Stanzung – Preis online kalkulieren & bestellen." />
-	<meta name="keywords" content="Briefbogen HKS Pantone, Visitenkarten Sonderfarben, Offsetdruck Sonderfarben Frankfurt Oder, Briefpapier Pantone, Firmenbriefbogen HKS, Visitenkarten Offsetdruck, Heißfolienprägung, Blindprägung, Stanzung, Spezialpapiere Druck" />
+	<link rel="canonical" href="https://www.chromikoffsetdruck.de/extraladen" />
+	<meta name="description" content="Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck in Frankfurt (Oder): HKS- und Pantone-Farben auf Conqueror, Senator oder Inaset Plus. Mit Heißfolienprägung, Blindprägung & Stanzung – Preis online kalkulieren & bestellen." />
+	<meta name="keywords" content="Briefbogen HKS Pantone, Visitenkarten Sonderfarben, Conqueror Visitenkarten drucken, Senator Karton Druck, Inaset Plus Briefbogen, Soporset Druck, Offsetdruck Sonderfarben Frankfurt Oder, Briefpapier Pantone, Firmenbriefbogen HKS, Visitenkarten Offsetdruck, Heißfolienprägung, Blindprägung, Stanzung, Spezialpapiere Druck" />
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
@@ -947,7 +948,7 @@
 	<meta property="og:title" content="Briefbogen & Visitenkarten mit HKS und Pantone Sonderfarben | Chromik Offsetdruck" />
 	<meta property="og:description" content="Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck: HKS & Pantone auf edlen Spezialpapieren. Heißfolienprägung, Blindprägung & Stanzung – in Frankfurt (Oder)." />
 	<meta property="og:image" content="/logo.png" />
-	<meta property="og:url" content="https://chromikoffsetdruck.de/extraladen" />
+	<meta property="og:url" content="https://www.chromikoffsetdruck.de/extraladen" />
 </svelte:head>
 
 <div class="page-wrapper">
@@ -1799,6 +1800,23 @@
 				{/if}
 			{/if}
 		</section>
+
+		{#if alleMaterialien?.length > 0}
+		<section class="seo-materialien" aria-label="Verfügbare Papiere und Materialien">
+			<h2>Papiere &amp; Materialien im Extraladen</h2>
+			<p>Für Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck stehen Ihnen folgende hochwertige Papiere und Kartone zur Auswahl:</p>
+			<ul>
+				{#each alleMaterialien as mat}
+					<li>
+						<strong>{mat.name}</strong>
+						{#if mat.beschreibung} – {mat.beschreibung}{/if}
+					</li>
+				{/each}
+			</ul>
+			<h3>Farbigkeit: HKS- und Pantone-Sonderfarben</h3>
+			<p>Alle Produkte im Extraladen werden im einfarbigen Sonderfarben-Offsetdruck gefertigt – wahlweise in einer <strong>HKS-Sonderfarbe</strong> (z.&nbsp;B. HKS 43, HKS 57) oder einer <strong>Pantone-Sonderfarbe</strong> (z.&nbsp;B. Pantone 485 C, Pantone Warm Red C). Sonderfarben garantieren exakte Farbkonstanz über alle Auflagen hinweg und erzielen Leuchtkraft, die der Vierfarbdruck nicht erreicht.</p>
+		</section>
+		{/if}
 	</main>
 
 	<Footer />
@@ -1820,6 +1838,36 @@
 		max-width: 700px;
 		margin: 0 auto;
 		padding: 0 1rem;
+	}
+
+	.seo-materialien {
+		max-width: 700px;
+		margin: 3rem auto 0;
+		padding: 2rem 1rem;
+		border-top: 1px solid #e2e8f0;
+		color: #374151;
+	}
+
+	.seo-materialien h2 {
+		font-size: 1.5rem;
+		margin-bottom: 0.75rem;
+		color: #0f766e;
+	}
+
+	.seo-materialien h3 {
+		font-size: 1.15rem;
+		margin: 1.25rem 0 0.5rem;
+		color: #0f766e;
+	}
+
+	.seo-materialien ul {
+		margin: 0.75rem 0 1rem 1.25rem;
+		line-height: 1.7;
+	}
+
+	.seo-materialien p {
+		line-height: 1.7;
+		margin-bottom: 0.5rem;
 	}
 
 	h1 {
