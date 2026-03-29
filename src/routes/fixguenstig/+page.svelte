@@ -1898,7 +1898,7 @@ const {
 			<h2>Papiere &amp; Materialien bei Fix&amp;günstig</h2>
 			<p>Für Visitenkarten, Karten und Klappkarten stehen Ihnen hochwertige Kartone zur Auswahl. Für Flyer, Folder und Plakate verwenden wir klassischen Bilderdruckkarton:</p>
 			<ul>
-				{#each alleMaterialien as mat}
+			{#each [...alleMaterialien].sort((a, b) => a.name.localeCompare(b.name, 'de')) as mat}
 					<li>
 						<strong>{mat.name}</strong>
 						{#if mat.beschreibung} – {mat.beschreibung}{/if}

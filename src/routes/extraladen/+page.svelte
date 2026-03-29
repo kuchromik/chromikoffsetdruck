@@ -1806,7 +1806,7 @@
 			<h2>Papiere &amp; Materialien im Extraladen</h2>
 			<p>Für Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck stehen Ihnen folgende hochwertige Papiere und Kartone zur Auswahl:</p>
 			<ul>
-				{#each alleMaterialien as mat}
+			{#each [...alleMaterialien].sort((a, b) => a.name.localeCompare(b.name, 'de')) as mat}
 					<li>
 						<strong>{mat.name}</strong>
 						{#if mat.beschreibung} – {mat.beschreibung}{/if}
