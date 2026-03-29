@@ -1819,6 +1819,17 @@
 		{/if}
 	</main>
 
+	<section class="crosspromo" aria-label="Weitere Druckangebote">
+		<div class="crosspromo-inner">
+			<div class="crosspromo-content">
+				<p class="crosspromo-kicker">Auch bei Chromik Offsetdruck</p>
+				<h2 class="crosspromo-headline">Wir können auch fix &amp; günstig</h2>
+				<p class="crosspromo-desc">Flyer, Folder, Visitenkarten und Plakate zu günstigen Festpreisen – schnell online kalkuliert und sicher bestellt.</p>
+			</div>
+			<a href="/fixguenstig" class="crosspromo-btn">Fix &amp; günstig entdecken →</a>
+		</div>
+	</section>
+
 	<Footer />
 </div>
 
@@ -2544,5 +2555,79 @@
 		background: #e0faf5;
 		color: #888;
 		cursor: not-allowed;
+	}
+
+	/* ── Cross-Promo ──────────────────────────────────────────────── */
+	.crosspromo {
+		background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+		padding: 3rem 1.5rem;
+		color: white;
+	}
+
+	.crosspromo-inner {
+		max-width: 700px;
+		margin: 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
+		flex-wrap: wrap;
+	}
+
+	.crosspromo-content {
+		flex: 1;
+		min-width: 220px;
+	}
+
+	.crosspromo-kicker {
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		opacity: 0.65;
+		margin-bottom: 0.4rem;
+	}
+
+	.crosspromo-headline {
+		font-size: 1.6rem;
+		font-weight: 700;
+		margin: 0 0 0.5rem;
+		color: white;
+		-webkit-text-fill-color: white;
+		background: none;
+		-webkit-background-clip: unset;
+		background-clip: unset;
+	}
+
+	.crosspromo-desc {
+		font-size: 0.95rem;
+		line-height: 1.55;
+		opacity: 0.87;
+		margin: 0;
+	}
+
+	.crosspromo-btn {
+		display: inline-block;
+		background: white;
+		color: #1e293b;
+		padding: 0.8rem 2rem;
+		border-radius: 999px;
+		font-weight: 700;
+		font-size: 0.95rem;
+		text-decoration: none;
+		white-space: nowrap;
+		flex-shrink: 0;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+		transition: transform 0.18s ease, box-shadow 0.18s ease;
+	}
+
+	.crosspromo-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+	}
+
+	@media (max-width: 640px) {
+		.crosspromo { padding: 2.5rem 1.25rem; }
+		.crosspromo-headline { font-size: 1.35rem; }
+		.crosspromo-btn { width: 100%; text-align: center; }
 	}
 </style>
