@@ -1814,7 +1814,7 @@
 				{/each}
 			</ul>
 			<h3>Farbigkeit: HKS- und Pantone-Sonderfarben</h3>
-			<p>Alle Produkte im Extraladen werden im einfarbigen Sonderfarben-Offsetdruck gefertigt – wahlweise in einer <strong>HKS-Sonderfarbe</strong> (z.&nbsp;B. HKS 43, HKS 57) oder einer <strong>Pantone-Sonderfarbe</strong> (z.&nbsp;B. Pantone 485 C, Pantone Warm Red C). Sonderfarben garantieren exakte Farbkonstanz über alle Auflagen hinweg und erzielen Leuchtkraft, die der Vierfarbdruck nicht erreicht.</p>
+			<p>Alle Produkte im Extraladen werden im Sonderfarben-Offsetdruck gefertigt – wahlweise in <strong>HKS-Sonderfarben</strong> (z.&nbsp;B. HKS 43, HKS 57) oder eine <strong>Pantone-Sonderfarben</strong> (z.&nbsp;B. Pantone 485 C, Pantone Warm Red C). Sonderfarben garantieren exakte Farbkonstanz über alle Auflagen hinweg und erzielen Leuchtkraft, die der Vierfarbdruck nicht erreicht.</p>
 		</section>
 		{/if}
 	</main>
