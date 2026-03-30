@@ -1896,7 +1896,7 @@ const {
 		{#if alleMaterialien?.length > 0}
 		<section class="seo-materialien" aria-label="Verfügbare Papiere und Materialien">
 			<h2>Papiere &amp; Materialien bei Fix&amp;günstig</h2>
-			<p>Für Visitenkarten, Karten und Klappkarten stehen Ihnen hochwertige Kartone zur Auswahl. Für Flyer, Folder und Plakate verwenden wir klassischen Bilderdruckkarton:</p>
+			<p>Für Visitenkarten, Karten und Klappkarten stehen Ihnen hochwertige Kartone zur Auswahl. Für Flyer, Folder und Plakate verwenden wir klassische Bilderdruck- oder Offsetpapiere:</p>
 			<ul>
 			{#each [...alleMaterialien].sort((a, b) => a.name.localeCompare(b.name, 'de')) as mat}
 					<li>
