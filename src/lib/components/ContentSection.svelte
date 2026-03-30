@@ -186,9 +186,42 @@
 	}
 
 	.button-group {
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		gap: 1rem;
-		flex-wrap: wrap;
+		width: 100%;
+	}
+
+	.button-group .cta-button {
+		display: flex !important;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45em;
+		padding: 0.9rem 1.25rem !important;
+		font-size: 0.92rem !important;
+		border-radius: 50px !important;
+		letter-spacing: 0.03em;
+		text-align: center;
+	}
+
+	.button-group .cta-button::after {
+		content: '→';
+		display: inline-block;
+		transition: transform 0.3s ease;
+	}
+
+	.button-group .cta-button:hover {
+		transform: translateY(-3px) !important;
+	}
+
+	.button-group .cta-button:hover::after {
+		transform: translateX(5px);
+	}
+
+	@media (max-width: 480px) {
+		.button-group {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	.cta-button-small {

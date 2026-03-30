@@ -298,15 +298,33 @@
 	}
 
 	.mobile-menu li a {
-		display: block;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		padding: 1rem;
 		font-size: 1.1rem;
 		font-weight: 500;
 		border-bottom: 1px solid var(--border);
-		transition: background-color 0.2s ease;
+		border-radius: 8px;
+		transition: background-color 0.2s ease, padding-left 0.25s ease;
+	}
+
+	.mobile-menu li a::after {
+		content: '→';
+		opacity: 0;
+		transform: translateX(-8px);
+		transition: opacity 0.25s ease, transform 0.25s ease;
+		font-size: 1rem;
+		flex-shrink: 0;
 	}
 
 	.mobile-menu li a:hover {
 		background-color: var(--hover-bg);
+		padding-left: 1.4rem;
+	}
+
+	.mobile-menu li a:hover::after {
+		opacity: 1;
+		transform: translateX(0);
 	}
 </style>
