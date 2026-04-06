@@ -13,8 +13,29 @@ const {
 	alleMaterialien,
 	alleUmfaenge,
 	formatUmfangAbweichungen,
-	produktKonfiguration
+	produktKonfiguration,
+	kalkulation
 } = data?.config || {};
+
+	const {
+		klickkosten = 0.1,
+		kostenJeSchnitt = 0.5,
+		mehrwertsteuer = 0.19,
+		versandkostenNetto = 5.90,
+		maxPaketgewichtKg = 9,
+		maxKlick = 500,
+		grundpreisFalzen4Seitig = 5,
+		grundpreisFalzen6Seitig = 5,
+		grundpreisRillen4Seitig = 3,
+		grundpreisRillen6Seitig = 5,
+		kostenJeStueckFalzen = 0.01,
+		kostenJeStueckRillen4Seitig = 0.05,
+		kostenJeStueckRillen6Seitig = 0.09,
+		abrissGrundpreis = 40,
+		abrissPreisJeStueck = 0.05
+	} = kalkulation || {};
+
+	const versandkostenBrutto = versandkostenNetto * (1 + mehrwertsteuer);
 
 	// Hilfsfunktionen zum Abrufen der Datenobjekte
 
@@ -58,22 +79,7 @@ const {
 		return umfangData?.flaechenfaktor || 1.0;
 	}
 
-	// Kostenvariablen (Platzhalter-Werte, werden später angepasst)
-	const klickkosten = 0.1; // Kosten pro Klick
-	const kostenJeSchnitt = 0.5; // Kosten je Schnitt
-	const mehrwertsteuer = 0.19; // Mehrwertsteuer 19%
-	const maxKlick = 500; // Maximale Klickanzahl aus wirtschaftlichen Gründen
-	const grundpreisFalzen4Seitig = 5; // Grundpreis Falzen 4-seitig
-	const grundpreisFalzen6Seitig = 5; // Grundpreis Falzen 6-seitig
-	const grundpreisRillen4Seitig = 3; // Grundpreis Rillen 4-seitig
-	const grundpreisRillen6Seitig = 5; // Grundpreis Rillen 6-seitig
-	const kostenJeStueckFalzen = 0.01; // Kosten je Stück beim Falzen
-	const kostenJeStueckRillen4Seitig = 0.05; // Kosten je Stück beim Rillen 4-seitig
-	const kostenJeStueckRillen6Seitig = 0.09; // Kosten je Stück beim Rillen 6-seitig
-
-	// Abrissperforation (Plakate mit Abriss)
-	const abrissGrundpreis = 40; // fixer Grundpreis (einmalig, auflagenunabhängig)
-	const abrissPreisJeStueck = 0.05; // Preis je Stück abhängig von der Auflage
+	// Kostenvariablen → alle Werte kommen aus kalkulation (config/fixguenstig in Firebase)
 
 	// Preisberechnungsfunktion
 	function berechneGesamtpreis() {
@@ -84,8 +90,7 @@ const {
 
 		if (!produktData || !formatData || !materialData) return null;
 
-		// Grundpreis
-		const grundpreis = produktData.grundpreis;
+		const grundpreis = Number(produktData.grundpreis);
 
 		// Ermittle Flächenfaktor (berücksichtigt Format-Umfang-Kombinationen)
 		const flaechenfaktor = getFlaechenfaktor(format, umfang);
@@ -118,30 +123,30 @@ const {
 			// Bestimme Falzkosten basierend auf dem Umfang
 			let grundpreisFalzen = 0;
 			if (umfang === '4-seitig') {
-				grundpreisFalzen = grundpreisFalzen4Seitig;
+				grundpreisFalzen = Number(grundpreisFalzen4Seitig);
 			} else if (umfang === '6-seitig') {
-				grundpreisFalzen = grundpreisFalzen6Seitig;
+				grundpreisFalzen = Number(grundpreisFalzen6Seitig);
 			}
 			// Falzkosten = Grundpreis + (Auflage * Kosten je Stück)
-			zusatzkosten = grundpreisFalzen + (auflage * kostenJeStueckFalzen);
+			zusatzkosten = grundpreisFalzen + (auflage * Number(kostenJeStueckFalzen));
 			zusatzkostenName = 'Falzkosten';
 		} else if (produktId === 'klappkarten') {
 			// Bestimme Rillkosten basierend auf dem Umfang
 			let grundpreisRillen = 0;
 			let kostenJeStueckRillen = 0;
 			if (umfang === '4-seitig') {
-				grundpreisRillen = grundpreisRillen4Seitig;
-				kostenJeStueckRillen = kostenJeStueckRillen4Seitig;
+				grundpreisRillen = Number(grundpreisRillen4Seitig);
+				kostenJeStueckRillen = Number(kostenJeStueckRillen4Seitig);
 			} else if (umfang === '6-seitig') {
-				grundpreisRillen = grundpreisRillen6Seitig;
-				kostenJeStueckRillen = kostenJeStueckRillen6Seitig;
+				grundpreisRillen = Number(grundpreisRillen6Seitig);
+				kostenJeStueckRillen = Number(kostenJeStueckRillen6Seitig);
 			}
 			// Rillkosten = Grundpreis + (Auflage * Kosten je Stück)
 			zusatzkosten = grundpreisRillen + (auflage * kostenJeStueckRillen);
 			zusatzkostenName = 'Rillkosten';
 		} else if (produktId === 'plakate-abriss') {
 			// Abrissperforation: fixer Grundpreis + auflagenabhängiger Preis je Stück
-			zusatzkosten = abrissGrundpreis + (auflage * abrissPreisJeStueck);
+			zusatzkosten = Number(abrissGrundpreis) + (auflage * Number(abrissPreisJeStueck));
 			zusatzkostenName = 'Abrissperforation';
 		}
 
@@ -249,9 +254,7 @@ const {
 	let rechnungsEmail = $state('');
 	let versandadressenGeladen = $state(false);
 	
-	// Versandkosten
-	const versandkostenNetto = 5.90;
-	const versandkostenBrutto = versandkostenNetto * (1 + mehrwertsteuer);
+	// Versandkosten (berechnet aus kalkulation)
 
 	// Verfügbare Falzarten
 	const alleFalzarten = ['Wickelfalz', 'Zickzackfalz'];

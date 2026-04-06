@@ -1,4 +1,4 @@
-import { getDb } from '$lib/firebaseService.js';
+import { getDb, sanitizeFirestoreData } from '$lib/firebaseService.js';
 
 /**
  * Lädt die Konfiguration für die FixGuenstig-Route aus Firestore.
@@ -10,8 +10,8 @@ export async function load() {
     const docRef = db.collection('config').doc('fixguenstig');
     const doc = await docRef.get();
     if (doc.exists) {
-      console.log('FixGuenstig config loaded from Firestore');
-      return { config: doc.data(), source: 'firebase' };
+      const sanitized = sanitizeFirestoreData(doc.data());
+      return { config: sanitized, source: 'firebase' };
     }
   } catch (err) {
     console.error('Fehler beim Laden der FixGuenstig-Konfiguration aus Firestore:', err?.message || err);

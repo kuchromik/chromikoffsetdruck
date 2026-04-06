@@ -63,7 +63,12 @@
 									class="cta-button cta-button-small" 
 									class:cta-button-gray={btn.variant === 'gray'}
 									title={btn.tooltip || ''}
-								>{btn.text}</a>
+							>
+								<span class="btn-main-text">{btn.text}</span>
+								{#if btn.hint}
+									<span class="btn-hint">{btn.hint}</span>
+								{/if}
+							</a>
 							{/each}
 						</div>
 					{/if}
@@ -190,32 +195,31 @@
 		grid-template-columns: 1fr 1fr;
 		gap: 1rem;
 		width: 100%;
+		align-items: stretch;
 	}
 
 	.button-group .cta-button {
 		display: flex !important;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 0.45em;
-		padding: 0.9rem 1.25rem !important;
+		gap: 0.15em;
+		padding: 0.65rem 1rem !important;
 		font-size: 0.92rem !important;
 		border-radius: 50px !important;
 		letter-spacing: 0.03em;
 		text-align: center;
 	}
 
-	.button-group .cta-button::after {
-		content: '→';
-		display: inline-block;
-		transition: transform 0.3s ease;
+	.btn-hint {
+		font-size: 0.72rem;
+		font-weight: 400;
+		opacity: 0.82;
+		letter-spacing: 0.01em;
 	}
 
 	.button-group .cta-button:hover {
 		transform: translateY(-3px) !important;
-	}
-
-	.button-group .cta-button:hover::after {
-		transform: translateX(5px);
 	}
 
 	@media (max-width: 480px) {

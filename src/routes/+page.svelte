@@ -14,7 +14,7 @@
 			sliderFolder: 'heroSlider',
 			buttons: [
 			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', tooltip: 'Standardprodukte im Digitaldruck online kalkulieren & direkt bestellen' },
-			{ text: 'Zum Extraladen', link: '/extraladen', tooltip: 'Produkte im Offsetdruck mit Sonderfarben online kalkulieren & direkt bestellen' }
+			{ text: 'Zum Extraladen', link: '/extraladen', hint: 'mit optionaler Heißfolienprägung', tooltip: 'Produkte im Offsetdruck mit Sonderfarben online kalkulieren & direkt bestellen' }
 			]
 		},
 		{
@@ -144,6 +144,19 @@
 				buttons={section.buttons}
 			/>
 		{/each}
+
+		<!-- Feature-Strip: Heißfolienprägung online buchbar -->
+		<section class="foil-strip" aria-label="Heißfolienprägung jetzt online buchbar">
+			<div class="foil-strip-inner">
+				<div class="foil-strip-icon" aria-hidden="true">✨</div>
+				<div class="foil-strip-content">
+					<span class="foil-strip-badge">Jetzt online buchbar</span>
+					<h2 class="foil-strip-headline">Hei&szlig;folienpr&auml;gung direkt mitkonfigurieren</h2>
+					<p class="foil-strip-copy">Veredeln Sie Ihre Visitenkarten, Karten oder Briefbogen mit edler Gold- oder Silberfolie &ndash; ganz ohne Umwege. Im Extraladen geben Sie einfach die Pr&auml;gefl&auml;che an und der Preis wird sofort berechnet.</p>
+				</div>
+				<a href="/extraladen" class="foil-strip-btn">Jetzt im Extraladen konfigurieren &rarr;</a>
+			</div>
+		</section>
 	</main>
 
 	<Footer />
@@ -158,5 +171,115 @@
 
 	main {
 		flex: 1;
+	}
+
+	/* ── Heißfolienprägung Feature-Strip ─────────────────────────── */
+
+	@keyframes foil-shimmer {
+		0%   { background-position: -200% center; }
+		100% { background-position: 200% center; }
+	}
+
+	.foil-strip {
+		padding: 3.5rem 1.5rem;
+		background: linear-gradient(135deg, #1a0a00 0%, #2d1a00 35%, #1a0a00 100%);
+		position: relative;
+		overflow: hidden;
+	}
+	.foil-strip::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(105deg,
+			transparent 30%,
+			rgba(212, 175, 55, 0.18) 45%,
+			rgba(245, 208, 96, 0.32) 50%,
+			rgba(212, 175, 55, 0.18) 55%,
+			transparent 70%);
+		background-size: 250% 100%;
+		animation: foil-shimmer 4s linear 2;
+		pointer-events: none;
+	}
+
+	.foil-strip-inner {
+		max-width: 1100px;
+		margin: 0 auto;
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		position: relative;
+		z-index: 1;
+	}
+
+	.foil-strip-icon {
+		font-size: 2.8rem;
+		line-height: 1;
+		flex-shrink: 0;
+		filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.7));
+	}
+
+	.foil-strip-content {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.foil-strip-badge {
+		display: inline-block;
+		background: linear-gradient(90deg, #d4af37, #f5d060, #d4af37);
+		color: #3a2200;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding: 0.2rem 0.65rem;
+		border-radius: 20px;
+		margin-bottom: 0.6rem;
+	}
+
+	.foil-strip-headline {
+		margin: 0 0 0.5rem;
+		font-size: 1.55rem;
+		color: #fdf3d0;
+		font-weight: 700;
+		line-height: 1.2;
+	}
+
+	.foil-strip-copy {
+		margin: 0;
+		font-size: 0.95rem;
+		color: rgba(253, 243, 208, 0.75);
+		line-height: 1.55;
+	}
+
+	.foil-strip-btn {
+		flex-shrink: 0;
+		background: linear-gradient(135deg, #d4af37 0%, #f5d060 50%, #d4af37 100%);
+		background-size: 200% 100%;
+		color: #3a2200;
+		font-weight: 700;
+		font-size: 0.95rem;
+		padding: 0.85rem 1.5rem;
+		border-radius: 8px;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: background-position 0.3s, box-shadow 0.3s;
+		box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
+	}
+	.foil-strip-btn:hover {
+		background-position: right center;
+		box-shadow: 0 6px 24px rgba(212, 175, 55, 0.55);
+	}
+
+	@media (max-width: 700px) {
+		.foil-strip-inner {
+			flex-direction: column;
+			text-align: center;
+			gap: 1.25rem;
+		}
+		.foil-strip-btn {
+			width: 100%;
+			text-align: center;
+		}
+		.foil-strip-headline { font-size: 1.25rem; }
 	}
 </style>

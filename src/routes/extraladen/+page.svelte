@@ -34,7 +34,8 @@
 		formatUmfangAbweichungen,
 		produktKonfiguration,
 		kalkulation,
-		auflagenSegmente
+		auflagenSegmente,
+		praegefarben = ['Gold', 'Silber']
 	} = data?.config || {};
 
 	// Kostenvariablen aus extraladen.json → kalkulation
@@ -46,7 +47,11 @@
 		maxPaketgewichtKg = 9,
 		kostenJeDruckplatte = 10,
 		farbenProDurchgang = 2,
-		andruckBogen = 50
+		andruckBogen = 50,
+		rillkostenGrundpreis4Seitig = 3,
+		rillkostenGrundpreis6Seitig = 5,
+		rillkostenJeStueck4Seitig = 0.05,
+		rillkostenJeStueck6Seitig = 0.09
 	} = kalkulation || {};
 
 	const versandkostenBrutto = versandkostenNetto * (1 + mehrwertsteuer);
@@ -106,7 +111,7 @@
 
 		if (!produktData || !formatData || !materialData) return null;
 
-		const grundpreis = produktData.grundpreis;
+		const grundpreis = Number(produktData.grundpreis);
 		const flaechenfaktor = getFlaechenfaktor(format, umfang);
 
 		const ist1Seitig = umfang === '1-seitig' || !umfang;
@@ -145,9 +150,36 @@
 		const berechneteVersandkostenNetto = anzahlPakete * versandkostenNetto;
 		const berechneteVersandkostenBrutto = berechneteVersandkostenNetto * (1 + mehrwertsteuer);
 
-		const gesamtpreisNetto = grundpreis + berechneDruckkosten + berechneMaterialkosten + berechneSchneidekosten + farbigkeitSummand + berechneDruckplattenkosten;
-		const mwstBetrag = gesamtpreisNetto * mehrwertsteuer;
-		const gesamtpreisBrutto = gesamtpreisNetto + mwstBetrag;
+		// Rillkosten für Klappkarten
+		let rillkosten = 0;
+		if (produktId === 'klappkarten') {
+			if (umfang === '4-seitig') {
+				rillkosten = Number(rillkostenGrundpreis4Seitig) + auflage * Number(rillkostenJeStueck4Seitig);
+			} else if (umfang === '6-seitig') {
+				rillkosten = Number(rillkostenGrundpreis6Seitig) + auflage * Number(rillkostenJeStueck6Seitig);
+			}
+		}
+
+		const gesamtpreisNetto = grundpreis + berechneDruckkosten + berechneMaterialkosten + berechneSchneidekosten + farbigkeitSummand + berechneDruckplattenkosten + rillkosten;
+
+		// Heißfolienprägung (optional) – Formel: GP = 0,5 × Fläche + 80; je Stück = 0,05 × (1 + Fläche/100)
+		let praegekosten = 0;
+		let praegekostenInfo = null;
+		if (heissfolieAktiv && praegeFlaeche > 0) {
+			praegekosten = praegekostenGrundpreis + praegekostenJeStueck * auflage;
+			praegekostenInfo = {
+				grundpreis: praegekostenGrundpreis,
+				kostenJeStueck: praegekostenJeStueck,
+				flaeche: praegeFlaeche,
+				breiteMm: Number(praegeBreite),
+				hoeheMm: Number(praegeHoehe),
+				farbe: praegefarbe
+			};
+		}
+
+		const gesamtpreisNettoMitPraegung = gesamtpreisNetto + praegekosten;
+		const mwstBetragMitPraegung = gesamtpreisNettoMitPraegung * mehrwertsteuer;
+		const gesamtpreisBruttoMitPraegung = gesamtpreisNettoMitPraegung + mwstBetragMitPraegung;
 
 		return {
 			grundpreis,
@@ -158,15 +190,19 @@
 			farbigkeitSummand,
 			druckplattenkosten: berechneDruckplattenkosten,
 			anzahlDruckplatten,
+			rillkosten,
+			praegekosten,
+			praegekostenInfo,
 			gesamtgewichtKg,
 			anzahlPakete,
 			versandkostenNetto: berechneteVersandkostenNetto,
 			versandkostenBrutto: berechneteVersandkostenBrutto,
 			zusatzkosten: 0,
 			zusatzkostenName: '',
-			gesamtpreisNetto,
-			mwstBetrag,
-			gesamtpreisBrutto,
+			gesamtpreisNetto: gesamtpreisNettoMitPraegung,
+			mwstBetrag: mwstBetragMitPraegung,
+			gesamtpreisBrutto: gesamtpreisBruttoMitPraegung,
+			gesamtpreisNettoOhnePraegung: gesamtpreisNetto,
 			anzahlDruckbogen,
 			klickanzahl,
 			faktoren: {
@@ -182,6 +218,10 @@
 				schneideaufwandsfaktor: formatData.schneideaufwandsfaktor,
 				kostenJeSchnitt,
 				kostenJeDruckplatte,
+				rillkostenGrundpreis4Seitig,
+				rillkostenGrundpreis6Seitig,
+				rillkostenJeStueck4Seitig,
+				rillkostenJeStueck6Seitig,
 				auflage
 			}
 		};
@@ -249,6 +289,12 @@
 	// Verhindert dass der Reset-Effect beim Wiederherstellen des Bestellzustands greift
 	let _restoringState = false;
 
+	// Heißfolienprägung
+	let heissfolieAktiv   = $state(false);
+	let praegeBreite      = $state('');
+	let praegeHoehe       = $state('');
+	let praegefarbe       = $state('');
+
 	// Bestellprozess
 	let zeigeBestellformular = $state(false);
 	let preisBerechnung = $state(null);
@@ -284,6 +330,12 @@
 	let pdfSeitenInfo = $state(null);
 	let fileInputElement = $state(null);
 	let auftragsname = $state('');
+
+	// Kostendetail-Aufklapper
+	let zeigKostendetails = $state(false);
+
+	// Druckvorlagen-Infobox für Heißfolienprägung
+	let zeigeVorlagenInfo = $state(false);
 
 	// Lieferung/Abholung
 	let lieferart = $state('');
@@ -333,7 +385,7 @@
 				}
 			}
 		}
-		return verfuegbar;
+		return verfuegbar.sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
 	});
 
 	let zeigeUmfang = $derived(
@@ -373,8 +425,27 @@
 
 	let farbwahlAbgeschlossen = $derived(farbwahlModus === 'fertig');
 
+	// Seitenbezeichnungen: für Klappkarten Außen-/Innenseiten, sonst Vorder-/Rückseite
+	let seiteLabel1 = $derived(produktId === 'klappkarten' ? 'Außenseiten' : 'Vorderseite');
+	let seiteLabel2 = $derived(produktId === 'klappkarten' ? 'Innenseiten' : 'Rückseite');
+	let seiteLabelKurz1 = $derived(produktId === 'klappkarten' ? 'AS' : 'VS');
+	let seiteLabelKurz2 = $derived(produktId === 'klappkarten' ? 'IS' : 'RS');
+
 	// Farbwahl zeigen wenn Produkt + Format (+ ggf. Umfang) gewählt
 	let zeigeFarbwahl = $derived(!!(produktId && format && (!zeigeUmfang || umfang)));
+
+	// Heißfolienprägung: Fläche in cm² aus mm-Eingaben, Kosten per Formel
+	let praegeFlaeche = $derived(
+		heissfolieAktiv && Number(praegeBreite) > 0 && Number(praegeHoehe) > 0
+			? (Number(praegeBreite) * Number(praegeHoehe)) / 100
+			: 0
+	);
+	let praegekostenGrundpreis = $derived(
+		praegeFlaeche > 0 ? 0.5 * praegeFlaeche + 80 : 0
+	);
+	let praegekostenJeStueck = $derived(
+		praegeFlaeche > 0 ? 0.05 * (1 + praegeFlaeche / 100) : 0
+	);
 
 	// Produktname für Anzeige
 	let produktName = $derived(
@@ -506,12 +577,16 @@
 			}
 			if (farbigkeitAnzeige) {
 				ergebnisText += `<strong>Farbigkeit:</strong> ${farbigkeitAnzeige}<br>`;
-				ergebnisText += `<span style="font-size:0.9em;">Vorderseite: ${farbenVorderseite.map(f => f.label).join(', ')}</span><br>`;
+				ergebnisText += `<span style="font-size:0.9em;">${seiteLabel1}: ${farbenVorderseite.map(f => f.label).join(', ')}</span><br>`;
 				if (farbenRueckseite.length > 0) {
-					ergebnisText += `<span style="font-size:0.9em;">Rückseite: ${farbenRueckseite.map(f => f.label).join(', ')}</span><br>`;
+					ergebnisText += `<span style="font-size:0.9em;">${seiteLabel2}: ${farbenRueckseite.map(f => f.label).join(', ')}</span><br>`;
 				} else {
-					ergebnisText += `<span style="font-size:0.9em;">Rückseite: keine Farben</span><br>`;
+					ergebnisText += `<span style="font-size:0.9em;">${seiteLabel2}: keine Farben</span><br>`;
 				}
+			}
+
+			if (heissfolieAktiv && praegeFlaeche > 0 && praegefarbe) {
+				ergebnisText += `<strong>Hei&szlig;folienpr&auml;gung:</strong> ${praegefarbe}, ${praegeFlaeche.toFixed(2).replace('.', ',')} cm&sup2; (${Number(praegeBreite)}&thinsp;mm &times; ${Number(praegeHoehe)}&thinsp;mm)<br>`;
 			}
 
 			ergebnisText += `
@@ -957,7 +1032,7 @@
 	<main id="main-content" class="container">
 		<section class="form-section">
 			<h1>Extraladen</h1>
-			<p class="intro">Exklusive Druckprodukte im Sonderfarben-Offsetdruck – Briefbogen und Visitenkarten in HKS und Pantone:</p>
+			<p class="intro">Exklusive Druckprodukte im Sonderfarben-Offsetdruck in HKS und Pantone mit optionaler Heißfolienprägung in diversen Folienfarben:</p>
 
 			{#if emailVerifikationStatus === 'verified-close-tab'}
 				<div class="email-verification-box" style="margin-top: 2rem; padding: 2rem; background-color: #f0fdfa; border-radius: 8px;">
@@ -1051,9 +1126,9 @@
 							<!-- Kopfzeile -->
 							<div class="farb-wizard-header">
 								{#if farbwahlModus === 'vorderseite'}
-									<h4 class="farb-wizard-titel">Farben &mdash; Vorderseite</h4>
+									<h4 class="farb-wizard-titel">Farben &mdash; {seiteLabel1}</h4>
 								{:else if farbwahlModus === 'rueckseite_frage' || farbwahlModus === 'rueckseite'}
-									<h4 class="farb-wizard-titel">Farben &mdash; R&uuml;ckseite</h4>
+									<h4 class="farb-wizard-titel">Farben &mdash; {seiteLabel2}</h4>
 								{:else if farbwahlModus === 'fertig'}
 									<h4 class="farb-wizard-titel">Farbigkeit</h4>
 								{/if}
@@ -1062,7 +1137,7 @@
 							<!-- Erinnerung: VS-Farben während RS-Eingabe -->
 							{#if farbwahlModus === 'rueckseite' && farbenVorderseite.length > 0}
 								<div class="farb-vs-erinnerung">
-									<span class="farb-vs-erinnerung-label">VS:</span>
+									<span class="farb-vs-erinnerung-label">{seiteLabelKurz1}:</span>
 									<span class="farb-chip-liste">
 										{#each farbenVorderseite as f}
 											{@const hex = getFarbHex(f)}
@@ -1177,7 +1252,7 @@
 									</div>
 								{/if}
 {#if aktSeite === 'rueckseite' && farbenRueckseite.length === 0}
-								<p class="farb-hinweis">Bitte mindestens eine Farbe f&uuml;r die R&uuml;ckseite eingeben.</p>
+								<p class="farb-hinweis">Bitte mindestens eine Farbe f&uuml;r die {seiteLabel2} eingeben.</p>
 							{/if}
 							<button
 								type="button"
@@ -1198,7 +1273,7 @@
 									}
 								}}
 							>
-								{aktSeite === 'vorderseite' ? 'Vorderseite abschlie\u00dfen \u2192' : 'R\u00fcckseite abschlie\u00dfen \u2192'}
+								{aktSeite === 'vorderseite' ? `${seiteLabel1} abschließen →` : `${seiteLabel2} abschließen →`}
 							</button>
 
 							{:else if farbwahlModus === 'fertig'}
@@ -1210,7 +1285,7 @@
 									<div class="farb-detail">
 										{#if farbenVorderseite.length > 0}
 											<div class="farb-detail-zeile">
-												<strong>VS:</strong>
+												<strong>{seiteLabelKurz1}:</strong>
 												<span class="farb-chip-liste">
 													{#each farbenVorderseite as f}
 														{@const hex = getFarbHex(f)}
@@ -1224,7 +1299,7 @@
 										{/if}
 										{#if farbenRueckseite.length > 0}
 											<div class="farb-detail-zeile">
-												<strong>RS:</strong>
+												<strong>{seiteLabelKurz2}:</strong>
 												<span class="farb-chip-liste">
 													{#each farbenRueckseite as f}
 														{@const hex = getFarbHex(f)}
@@ -1236,7 +1311,7 @@
 												</span>
 											</div>
 										{:else}
-											<div><strong>RS:</strong> keine Farben</div>
+											<div><strong>{seiteLabelKurz2}:</strong> keine Farben</div>
 										{/if}
 									</div>
 									<button type="button" class="btn btn-secondary farb-neustart-btn" onclick={farbwahlZuruecksetzen}>
@@ -1267,6 +1342,100 @@
 
 					</div>
 
+					<!-- Heißfolienprägung (optional) -->
+						<div class="praegung-section">
+						<div class="praegung-header-row">
+							<label class="praegung-toggle">
+								<input
+									type="checkbox"
+									bind:checked={heissfolieAktiv}
+									onchange={() => { praegeBreite = ''; praegeHoehe = ''; praegefarbe = ''; ergebnis = ''; zeigErgebnis = false; preisBerechnung = null; }}
+								/>
+								<span>Hei&szlig;folienpr&auml;gung hinzuf&uuml;gen</span>
+								<span class="praegung-badge">optional</span>
+							</label>
+							<button
+								type="button"
+								class="praegung-info-btn"
+								onclick={() => zeigeVorlagenInfo = true}
+								title="Hinweise zur Druckvorlage"
+								aria-label="Hinweise zur Druckvorlagenanlage für Heißfolienprägung"
+							>&#9432; Druckvorlage vorbereiten</button>
+						</div>
+
+						{#if heissfolieAktiv}
+							<div class="praegung-felder">
+								<p class="praegung-hinweis">Eine Heißfolienprägung ist wie das edelste Gewürz in einem perfekten Gericht. Sie verleiht Ihrem Design diesen ganz besonderen, magischen Glanz, der sofort ins Auge fällt.
+Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie wie ein gezieltes Highlight einzusetzen – am besten punktuell auf der Vorderseite. Wenn das Licht auf einzelne, fein akzentuierte Details trifft, wirkt das Design besonders wertvoll und stilsicher. Ein zu großflächiger Einsatz kann die feine Ästhetik schnell überlagern; weniger ist hier oft mehr, um den „Wow-Effekt“ elegant und zeitlos zu bewahren. <b>Geben Sie die Abmessungen der zu pr&auml;genden Fl&auml;che an (in mm):</b></p>
+								
+
+								<div class="praegung-masse">
+									<div class="form-group praegung-mass-group">
+										<label for="praegeBreite">Breite (mm)</label>
+										<input
+											type="number"
+											id="praegeBreite"
+											min="1"
+											step="1"
+											bind:value={praegeBreite}
+											placeholder="z.B. 40"
+										/>
+									</div>
+									<span class="praegung-mal">&times;</span>
+									<div class="form-group praegung-mass-group">
+										<label for="praegeHoehe">H&ouml;he (mm)</label>
+										<input
+											type="number"
+											id="praegeHoehe"
+											min="1"
+											step="1"
+											bind:value={praegeHoehe}
+											placeholder="z.B. 20"
+										/>
+									</div>
+									{#if praegeFlaeche > 0}
+										<span class="praegung-flaeche-anzeige">
+											= {praegeFlaeche.toFixed(2).replace('.', ',')} cm&sup2;
+										</span>
+									{/if}
+								</div>
+								<!--
+								{#if praegeFlaeche > 0}
+									<p class="praegung-stufe-info">
+										Grundpreis: {praegekostenGrundpreis.toFixed(2).replace('.', ',')} &euro;
+										&nbsp;&middot;&nbsp;
+										je St&uuml;ck: {praegekostenJeStueck.toFixed(4).replace('.', ',')} &euro;
+									</p>
+								{/if}
+								-->
+								<div class="form-group">
+									<span class="praegung-farben-label">Folienfarbe</span>
+									<div class="praegung-farben">
+										{#each praegefarben as farbe}
+											<button
+												type="button"
+												class="praegung-farbe-btn"
+												class:aktiv={praegefarbe === farbe}
+												data-farbe={farbe.toLowerCase()}
+												onclick={() => praegefarbe = farbe}
+											>{farbe}</button>
+										{/each}
+									</div>
+								</div>
+								<div class="praegung-howto-img">
+									<img
+										src="/howToSize.webp"
+										alt="Anleitung zur Maßangabe der Prägefläche"
+										width="600"
+										height="400"
+										loading="lazy"
+										decoding="async"
+									/>
+								</div>
+							</div>
+						{/if}
+					</div>
+
 					<div class="form-group">
 						<label for="auflage">Auflage (Stück)</label>
 						<select id="auflage" bind:value={auflage} required>
@@ -1278,7 +1447,11 @@
 					</div>
 
 					<div class="button-group">
-						<button type="submit" class="btn btn-primary">Ergebnis</button>
+						<button
+							type="submit"
+							class="btn btn-primary"
+							disabled={heissfolieAktiv && (!praegeFlaeche || !praegefarbe)}
+						>Ergebnis</button>
 						<button type="button" class="btn btn-secondary" onclick={zurücksetzen}>Zurücksetzen</button>
 					</div>
 				</form>
@@ -1286,6 +1459,142 @@
 				{#if zeigErgebnis}
 					<div class="result-box">
 						{@html ergebnis}
+						<!--
+						{#if preisBerechnung}
+							<div style="margin-top: 1.25rem;">
+								<button
+									type="button"
+									class="btn btn-secondary"
+									style="font-size: 0.9rem; padding: 0.4rem 1rem;"
+									onclick={() => zeigKostendetails = !zeigKostendetails}
+								>
+									{zeigKostendetails ? '▲ Kostenaufstellung ausblenden' : '▼ Kostenaufstellung einblenden'}
+								</button>
+
+								{#if zeigKostendetails}
+									{@const pb = preisBerechnung}
+									{@const f = pb.faktoren}
+									{@const klicksMitAndruck = pb.klickanzahl + f.andruckBogen}
+									{@const bogenMitAndruck = pb.anzahlDruckbogen + f.andruckBogen}
+									{@const schneidelagen = Math.ceil(pb.anzahlDruckbogen / 500)}
+									<div class="kostendetails">
+										<h4>Berechnungsgrundlagen</h4>
+										<table class="kd-table">
+											<tbody>
+												<tr><td>Auflage</td><td>{f.auflage.toLocaleString('de-DE')} Stück</td></tr>
+												<tr><td>Formatfaktor</td><td>{f.formatfaktor}</td></tr>
+												<tr><td>Flächenfaktor</td><td>{f.flaechenfaktor}</td></tr>
+												<tr><td>Fläche je Bogen</td><td>{f.flaecheM2} m²</td></tr>
+												<tr><td>Flächengewicht</td><td>{f.flaechengewichtGM2} g/m²</td></tr>
+												<tr><td>Druckbogen (netto)</td><td>{pb.anzahlDruckbogen.toLocaleString('de-DE')}</td></tr>
+												<tr><td>Andruckbogen</td><td>{f.andruckBogen}</td></tr>
+												<tr><td>Druckbogen (mit Andruck)</td><td>{bogenMitAndruck.toLocaleString('de-DE')}</td></tr>
+												<tr><td>Klicks (netto)</td><td>{pb.klickanzahl.toLocaleString('de-DE')}</td></tr>
+												<tr><td>Klicks (mit Andruck)</td><td>{klicksMitAndruck.toLocaleString('de-DE')}</td></tr>
+												<tr><td>Druckdurchgänge</td><td>{pb.druckDurchgaenge}</td></tr>
+												<tr><td>Schneidelagen</td><td>{schneidelagen}</td></tr>
+												<tr><td>Druckplatten</td><td>{pb.anzahlDruckplatten}</td></tr>
+												<tr><td>Gesamtgewicht</td><td>{pb.gesamtgewichtKg.toFixed(3).replace('.', ',')} kg</td></tr>
+												<tr><td>Pakete (max. {f.maxPaketgewichtKg} kg/Paket)</td><td>{pb.anzahlPakete}</td></tr>
+											</tbody>
+										</table>
+
+										<h4 style="margin-top: 1.25rem;">Kostenaufstellung (netto)</h4>
+										<table class="kd-table kd-kosten">
+											<thead>
+												<tr><th>Position</th><th>Formel</th><th style="text-align:right;">Betrag</th></tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>Grundpreis</td>
+													<td class="kd-formel">–</td>
+													<td class="kd-betrag">{pb.grundpreis.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td>Druckkosten</td>
+													<td class="kd-formel">{klicksMitAndruck.toLocaleString('de-DE')} Klicks × {f.klickkosten.toFixed(3).replace('.', ',')} € × {pb.druckDurchgaenge} Durchg.</td>
+													<td class="kd-betrag">{pb.druckkosten.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td>Materialkosten</td>
+													<td class="kd-formel">{bogenMitAndruck.toLocaleString('de-DE')} Bogen × {f.materialfaktor.toFixed(4).replace('.', ',')} €/Bogen</td>
+													<td class="kd-betrag">{pb.materialkosten.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td>Schneidekosten</td>
+													<td class="kd-formel">{schneidelagen} Lagen × {f.schneideaufwandsfaktor} Aufwandsfakt. × {f.kostenJeSchnitt.toFixed(2).replace('.', ',')} €/Schnitt</td>
+													<td class="kd-betrag">{pb.schneidekosten.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td>Farbwechselkosten</td>
+													<td class="kd-formel">aus Farbauswahl</td>
+													<td class="kd-betrag">{pb.farbigkeitSummand.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td>Druckplattenkosten</td>
+													<td class="kd-formel">{pb.anzahlDruckplatten} Platten × {f.kostenJeDruckplatte.toFixed(2).replace('.', ',')} €/Platte</td>
+													<td class="kd-betrag">{pb.druckplattenkosten.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												{#if pb.rillkosten > 0}
+												<tr>
+													<td>Rillkosten</td>
+													<td class="kd-formel">
+														{umfang === '4-seitig'
+															? `${f.rillkostenGrundpreis4Seitig.toFixed(2).replace('.', ',')} € + ${f.auflage.toLocaleString('de-DE')} × ${f.rillkostenJeStueck4Seitig.toFixed(2).replace('.', ',')} €/Stk.`
+															: `${f.rillkostenGrundpreis6Seitig.toFixed(2).replace('.', ',')} € + ${f.auflage.toLocaleString('de-DE')} × ${f.rillkostenJeStueck6Seitig.toFixed(2).replace('.', ',')} €/Stk.`}
+													</td>
+													<td class="kd-betrag">{pb.rillkosten.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												{/if}
+											{#if pb.praegekosten > 0 && pb.praegekostenInfo}
+												{@const pi = pb.praegekostenInfo}
+												<tr class="kd-separator"><td colspan="3"></td></tr>
+												<tr>
+													<td>Prägung Grundpreis ({pi.farbe})</td>
+													<td class="kd-formel">0,50 × {pi.flaeche.toFixed(2).replace('.', ',')} cm² + 80,00 € &nbsp;[Fläche: {pi.breiteMm} × {pi.hoeheMm} mm]</td>
+													<td class="kd-betrag">{pi.grundpreis.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td>Prägung Mengenkosten</td>
+													<td class="kd-formel">{f.auflage.toLocaleString('de-DE')} × 0,05 × (1 + {pi.flaeche.toFixed(2).replace('.', ',')} / 100) = {f.auflage.toLocaleString('de-DE')} × {pi.kostenJeStueck.toFixed(4).replace('.', ',')} €/Stk.</td>
+													<td class="kd-betrag">{(pi.kostenJeStueck * f.auflage).toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td><strong>Prägung gesamt</strong></td>
+													<td class="kd-formel">Grundpreis + Mengenkosten</td>
+													<td class="kd-betrag"><strong>{pb.praegekosten.toFixed(2).replace('.', ',')} €</strong></td>
+												</tr>
+												{/if}
+												<tr class="kd-summe">
+													<td colspan="2">Netto gesamt{pb.praegekosten > 0 ? ' (inkl. Prägung)' : ''}</td>
+													<td class="kd-betrag">{pb.gesamtpreisNetto.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td colspan="2">zzgl. MwSt. 19 %</td>
+													<td class="kd-betrag">{pb.mwstBetrag.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr class="kd-summe kd-brutto">
+													<td colspan="2">Brutto gesamt (Produkt)</td>
+													<td class="kd-betrag">{pb.gesamtpreisBrutto.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr class="kd-separator"><td colspan="3"></td></tr>
+												<tr>
+													<td>Versandkosten netto</td>
+													<td class="kd-formel">{pb.anzahlPakete} Paket(e) × {f.maxPaketgewichtKg} kg max.</td>
+													<td class="kd-betrag">{pb.versandkostenNetto.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+												<tr>
+													<td>Versandkosten brutto</td>
+													<td class="kd-formel">inkl. 19 % MwSt.</td>
+													<td class="kd-betrag">{pb.versandkostenBrutto.toFixed(2).replace('.', ',')} €</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								{/if}
+							</div>
+						{/if}
+						-->
 						<div style="margin-top: 1.5rem; text-align: center;">
 							<button class="btn btn-primary" onclick={startBestellprozess} style="font-size: 1.1em; padding: 0.75rem 2rem;">
 								Weiter zum Bestellformular
@@ -1833,6 +2142,64 @@
 	<Footer />
 </div>
 
+<!-- Modal: Druckvorlagen-Leitfaden Heißfolienprägung -->
+{#if zeigeVorlagenInfo}
+	<div
+		class="praegung-modal-backdrop"
+		role="presentation"
+		onclick={(e) => { if (e.target === e.currentTarget) zeigeVorlagenInfo = false; }}
+		onkeydown={(e) => { if (e.key === 'Escape') zeigeVorlagenInfo = false; }}
+	>
+		<div
+			class="praegung-modal"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="praegung-modal-titel"
+			tabindex="-1"
+		>
+			<div class="praegung-modal-header">
+				<h2 class="praegung-modal-titel" id="praegung-modal-titel">
+					&#10024; Druckvorlage f&uuml;r Hei&szlig;folienpr&auml;gung
+				</h2>
+				<button
+					type="button"
+					class="praegung-modal-close"
+					onclick={() => zeigeVorlagenInfo = false}
+					aria-label="Schlie&szlig;en"
+				>&times;</button>
+			</div>
+			<div class="praegung-modal-body">
+				<p style="font-size:0.9rem; color:#555; margin:0 0 1rem;">
+					Damit Ihre Hei&szlig;folienpr&auml;gung sauber umgesetzt werden kann, muss die Druckdatei (PDF) pr&auml;zise vorbereitet sein. Hier sind die wichtigsten technischen Leitplanken:
+				</p>
+
+				<h3>&#9312; Anlage der Pr&auml;geelemente</h3>
+				<ul>
+					<li><strong>Sonderfarbe:</strong> Erstellen Sie f&uuml;r alle Elemente, die gepr&auml;gt werden sollen, eine Volltonfarbe (Sonderfarbe). Benennen Sie diese eindeutig, z.&thinsp;B. <em>„Heissfolie"</em> oder <em>„Veredelung"</em>.</li>
+					<li><strong>&Uuml;berdrucken:</strong> Stellen Sie diese Sonderfarbe unbedingt auf <em>&uuml;berdrucken</em>. Andernfalls w&uuml;rde das darunterliegende Druckbild ausgeklammert, was bei kleinsten Passungenauigkeiten zu wei&szlig;en Blitzern f&uuml;hrt.</li>
+					<li><strong>Vektoren:</strong> Pr&auml;geelemente m&uuml;ssen zwingend als Vektorgrafiken angelegt sein &ndash; Pixelbilder sind nicht geeignet.</li>
+				</ul>
+
+				<h3>&#9313; Mindestma&szlig;e</h3>
+				<ul>
+					<li><strong>Linienst&auml;rke:</strong> Mindestens <strong>0,3&thinsp;mm</strong>. Zu feine Linien rei&szlig;en ab oder nehmen die Folie nicht an.</li>
+					<li><strong>Negativabstand:</strong> Zwischen zwei gepr&auml;gten Elementen (oder bei Aussparungen in einer Fl&auml;che) mindestens <strong>0,4&thinsp;mm</strong>, damit Zwischenr&auml;ume nicht &bdquo;zulaufen&ldquo;.</li>
+					<li><strong>Schriftgr&ouml;&szlig;e:</strong> Vermeiden Sie sehr feine Serifenschriften unter <strong>6&ndash;8 Punkt</strong>.</li>
+				</ul>
+
+				<h3>&#9314; Positionierung</h3>
+				<ul>
+					<li><strong>Sicherheitsabstand:</strong> Mindestens <strong>3&thinsp;mm</strong> zum Rand (Beschnitt) und zu Falzlinien einhalten &ndash; das Material kann durch Hitze und Druck leicht arbeiten.</li>
+				</ul>
+
+				<p class="praegung-modal-hint">
+					Bei Fragen zur Vorlagenanlage sprechen Sie uns gerne an &ndash; wir pr&uuml;fen Ihre Datei vorab kostenfrei.
+				</p>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <style>
 	.page-wrapper {
 		min-height: 100vh;
@@ -2049,6 +2416,262 @@
 		color: var(--text-secondary);
 		animation: slideIn 0.3s ease;
 	}
+
+
+	/* ── Heißfolienprägung Sektion ────────────────────────────────── */
+
+	.praegung-section {
+		margin-bottom: 1.75rem;
+		padding: 1.25rem;
+		background: linear-gradient(135deg, rgba(161, 115, 0, 0.04) 0%, rgba(161, 115, 0, 0.10) 100%);
+		border: 2px solid #d4af37;
+		border-radius: 10px;
+	}
+
+	.praegung-howto-img {
+		margin-top: 1.25rem;
+		border-radius: 8px;
+		overflow: hidden;
+		border: 1px solid rgba(212, 175, 55, 0.25);
+	}
+	.praegung-howto-img img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	.praegung-toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		cursor: pointer;
+		font-weight: 600;
+		font-size: 1rem;
+	}
+
+	.praegung-toggle input[type="checkbox"] {
+		width: 1.1em;
+		height: 1.1em;
+		cursor: pointer;
+		accent-color: #b8860b;
+	}
+
+	.praegung-badge {
+		font-size: 0.72rem;
+		font-weight: 600;
+		background: #d4af37;
+		color: #fff;
+		padding: 2px 8px;
+		border-radius: 20px;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.praegung-felder {
+		margin-top: 1rem;
+		padding-top: 1rem;
+		border-top: 1px solid #d4af3780;
+	}
+
+	.praegung-hinweis {
+		font-size: 0.9rem;
+		color: #555;
+		margin: 0 0 0.75rem;
+		line-height: 1.2;
+	}
+
+	.praegung-masse {
+		display: flex;
+		align-items: flex-end;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.75rem;
+	}
+
+	.praegung-mass-group {
+		margin-bottom: 0 !important;
+		flex: 0 0 auto;
+	}
+
+	.praegung-mass-group input {
+		width: 6rem;
+	}
+
+	.praegung-mal {
+		font-size: 1.3rem;
+		font-weight: 600;
+		color: #b8860b;
+		padding-bottom: 0.4rem;
+	}
+
+	.praegung-flaeche-anzeige {
+		font-weight: 700;
+		color: #b8860b;
+		font-size: 1rem;
+		padding-bottom: 0.4rem;
+	}
+
+	.praegung-stufe-info {
+		font-size: 0.85rem;
+		color: #b8860b;
+		font-weight: 600;
+		margin: 0 0 0.75rem;
+	}
+
+	.praegung-farben {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin-top: 0.4rem;
+	}
+
+	.praegung-farben-label {
+		display: block;
+		font-weight: 500;
+		margin-bottom: 0.25rem;
+		font-size: 0.95rem;
+	}
+
+	.praegung-farbe-btn {
+		padding: 0.45rem 1.2rem;
+		border-radius: 20px;
+		border: 2px solid #d4af37;
+		background: #fff;
+		color: #7a5c00;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+
+	.praegung-farbe-btn:hover,
+	.praegung-farbe-btn.aktiv {
+		background: #d4af37;
+		color: #fff;
+	}
+
+	/* ── Druckvorlagen-Infobox Trigger-Zeile ─────────────────────── */
+
+	.praegung-header-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.praegung-info-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		background: none;
+		border: 1px solid #d4af37;
+		color: #b8860b;
+		border-radius: 20px;
+		padding: 0.2rem 0.75rem;
+		font-size: 0.82rem;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+		white-space: nowrap;
+	}
+	.praegung-info-btn:hover {
+		background: #fdf3d0;
+		color: #7a5a00;
+	}
+
+	/* ── Druckvorlagen-Modal ─────────────────────────────────────── */
+
+	.praegung-modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.45);
+		z-index: 1000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+	}
+
+	.praegung-modal {
+		background: #fff;
+		border-radius: 12px;
+		max-width: 640px;
+		width: 100%;
+		max-height: 90vh;
+		overflow-y: auto;
+		box-shadow: 0 8px 40px rgba(0, 0, 0, 0.22);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.praegung-modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1.25rem 1.5rem 1rem;
+		border-bottom: 1px solid #f3e6b0;
+		background: linear-gradient(135deg, #fdf8e1, #fff9ec);
+		border-radius: 12px 12px 0 0;
+		gap: 1rem;
+	}
+
+	.praegung-modal-titel {
+		margin: 0;
+		font-size: 1.1rem;
+		color: #7a5a00;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.praegung-modal-close {
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		color: #999;
+		line-height: 1;
+		padding: 0.1rem 0.3rem;
+		border-radius: 4px;
+	}
+	.praegung-modal-close:hover { color: #333; }
+
+	.praegung-modal-body {
+		padding: 1.25rem 1.5rem 1.5rem;
+	}
+
+	.praegung-modal-body h3 {
+		font-size: 0.95rem;
+		color: #b8860b;
+		margin: 1.25rem 0 0.4rem;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+	.praegung-modal-body h3:first-child { margin-top: 0; }
+
+	.praegung-modal-body ul {
+		padding-left: 1.3rem;
+		margin: 0 0 0.5rem;
+	}
+	.praegung-modal-body li {
+		margin-bottom: 0.45rem;
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+	.praegung-modal-body li strong {
+		color: #4a3200;
+	}
+	.praegung-modal-hint {
+		margin-top: 1rem;
+		font-size: 0.82rem;
+		color: #888;
+		border-top: 1px solid #f0e8c8;
+		padding-top: 0.75rem;
+	}
+
+	.praegung-farbe-btn[data-farbe="gold"] { border-color: #d4af37; }
+	.praegung-farbe-btn[data-farbe="gold"].aktiv { background: linear-gradient(135deg, #d4af37, #f5d060); color: #5a3e00; }
+	.praegung-farbe-btn[data-farbe="silber"] { border-color: #aaa; color: #555; }
+	.praegung-farbe-btn[data-farbe="silber"].aktiv { background: linear-gradient(135deg, #aaa, #ddd); color: #222; }
 
 	/* ── Farbwahl-Wizard ──────────────────────────────────────────── */
 
@@ -2371,6 +2994,74 @@
 
 	.result-box :global(strong) {
 		color: var(--text-primary);
+	}
+
+	/* ── Kostendetails ──────────────────────────── */
+	.kostendetails {
+		margin-top: 1rem;
+		padding: 1.25rem 1.5rem;
+		background: #fff;
+		border-radius: 8px;
+		border: 1px solid #99f6e4;
+		font-size: 0.88rem;
+	}
+
+	.kostendetails h4 {
+		margin: 0 0 0.6rem;
+		color: #0f766e;
+		font-size: 0.92rem;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+	}
+
+	.kd-table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.kd-table td,
+	.kd-table th {
+		padding: 3px 6px;
+		vertical-align: top;
+	}
+
+	.kd-table td:first-child {
+		color: #555;
+		white-space: nowrap;
+		padding-right: 1rem;
+	}
+
+	.kd-table th {
+		font-weight: 600;
+		color: #444;
+		border-bottom: 1px solid #cce;
+		padding-bottom: 4px;
+	}
+
+	.kd-kosten .kd-formel {
+		color: #888;
+		font-size: 0.82em;
+	}
+
+	.kd-betrag {
+		text-align: right;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.kd-summe td {
+		font-weight: 700;
+		border-top: 1px solid #aaa;
+		padding-top: 5px;
+	}
+
+	.kd-brutto td {
+		color: #0f766e;
+		border-top: 2px solid #0f766e;
+	}
+
+	.kd-separator td {
+		height: 0.75rem;
 	}
 
 	.spinner {

@@ -1,4 +1,21 @@
 {
+  "kalkulation": {
+    "klickkosten": 0.1,
+    "kostenJeSchnitt": 0.5,
+    "mehrwertsteuer": 0.19,
+    "versandkostenNetto": 5.90,
+    "maxPaketgewichtKg": 9,
+    "maxKlick": 500,
+    "grundpreisFalzen4Seitig": 5,
+    "grundpreisFalzen6Seitig": 5,
+    "grundpreisRillen4Seitig": 3,
+    "grundpreisRillen6Seitig": 5,
+    "kostenJeStueckFalzen": 0.01,
+    "kostenJeStueckRillen4Seitig": 0.05,
+    "kostenJeStueckRillen6Seitig": 0.09,
+    "abrissGrundpreis": 40,
+    "abrissPreisJeStueck": 0.05
+  },
   "produkte": [
     { "name": "Visitenkarten", "id": "visitenkarten", "grundpreis": 10 },
     { "name": "Flyer", "id": "flyer", "grundpreis": 10 },

@@ -1,4 +1,10 @@
 {
+  "praegeStufen": [
+    { "maxQcm": 10, "grundpreis": 25, "kostenJeStueck": 0.15 },
+    { "maxQcm": 20, "grundpreis": 35, "kostenJeStueck": 0.20 },
+    { "maxQcm": 30, "grundpreis": 45, "kostenJeStueck": 0.25 }
+  ],
+  "praegefarben": ["Gold", "Silber"],
   "kalkulation": {
     "klickkosten": 0.02,
     "kostenJeSchnitt": 0.5,
@@ -7,7 +13,11 @@
     "maxPaketgewichtKg": 9,
     "kostenJeDruckplatte": 10,
     "farbenProDurchgang": 2,
-    "andruckBogen": 50
+    "andruckBogen": 50,
+    "rillkostenGrundpreis4Seitig": 3,
+    "rillkostenGrundpreis6Seitig": 5,
+    "rillkostenJeStueck4Seitig": 0.05,
+    "rillkostenJeStueck6Seitig": 0.09
   },
   "auflagenSegmente": [
     { "von": 500,   "bis": 5000,  "schritt": 500  },

@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { dev } from '$app/environment';
-import { getDb } from '$lib/firebaseService.js';
+import { getDb, sanitizeFirestoreData } from '$lib/firebaseService.js';
 
 /**
  * Lädt die Konfiguration für die Extraladen-Route aus Firestore.
@@ -18,7 +18,14 @@ export async function load() {
     const docRef = db.collection('config').doc('extraladen');
     const doc = await docRef.get();
     if (doc.exists) {
-      return { config: doc.data(), source: 'firebase' };
+      const sanitized = sanitizeFirestoreData(doc.data());
+
+      // Fallback für Prägungsfarben falls noch nicht in Firebase
+      if (!Array.isArray(sanitized.praegefarben) || sanitized.praegefarben.length === 0) {
+        sanitized.praegefarben = ['Gold', 'Silber'];
+      }
+
+      return { config: sanitized, source: 'firebase' };
     }
   } catch (err) {
     console.error('Fehler beim Laden der Extraladen-Konfiguration aus Firestore:', err?.message || err);

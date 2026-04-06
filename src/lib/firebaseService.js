@@ -36,6 +36,53 @@ export function getDb() {
 }
 
 /**
+ * Konvertiert Firestore-Daten in reine plain-JS-Primitives.
+ *
+ * Firestore Admin SDK v12 gibt Zahlenwerte als { _value: <number> }-Wrapper-Objekte
+ * zurück. SvelteKit's devalue-Serializer kann diese nicht korrekt übertragen.
+ *
+ * Lösung: JSON.stringify mit einem Replacer, der alle bekannten Firestore-Wrapper
+ * in primitive JS-Typen umwandelt + JSON.parse für ein sauberes plain-Objekt.
+ *
+ * @param {unknown} data - Roh-Daten aus doc.data()
+ * @returns {unknown} - Saubere plain-JS-Daten
+ */
+export function sanitizeFirestoreData(data) {
+	const replacer = (key, val) => {
+		// BigInt (Node.js native)
+		if (typeof val === 'bigint') return Number(val);
+
+		if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+			// Firestore Long-Objekt (hat toNumber())
+			if (typeof val.toNumber === 'function') return val.toNumber();
+
+			// Firestore Timestamp (hat toDate())
+			if (typeof val.toDate === 'function') return val.toDate().toISOString();
+
+			// Firestore numeric wrapper: { _value: <number|string|bigint> }
+			// – tritt bei Double und INT64 in firebase-admin v12 auf
+			if (Object.prototype.hasOwnProperty.call(val, '_value')) {
+				const v = val._value;
+				if (typeof v === 'number') return v;
+				if (typeof v === 'bigint') return Number(v);
+				if (typeof v === 'string') {
+					const n = Number(v);
+					return isNaN(n) ? v : n;
+				}
+			}
+		}
+		return val;
+	};
+
+	try {
+		return JSON.parse(JSON.stringify(data, replacer));
+	} catch (err) {
+		console.error('[sanitizeFirestoreData] Serialisierung fehlgeschlagen:', err.message);
+		return {};
+	}
+}
+
+/**
  * Verifiziert ein ID-Token und prüft, ob der Nutzer ein Admin ist.
  * @param {string} idToken
  * @returns {Promise<{success: boolean, uid?: string, claims?: object, error?: string}>}
