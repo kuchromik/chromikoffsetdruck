@@ -63,7 +63,7 @@
 	<title>Offsetdruckerei Frankfurt (Oder) | Briefbogen, Visitenkarten & Sonderfarben – Chromik Offsetdruck</title>
 	<link rel="canonical" href="https://www.chromikoffsetdruck.de/" />
 	<meta name="description" content="Chromik Offsetdruck in Frankfurt (Oder) – Ihr Spezialist für Briefbogen und Visitenkarten in HKS- & Pantone-Sonderfarben. Heißfolienprägung, Blindprägung, Stanzung & edle Spezialpapiere. Qualität seit 1990." />
-	<meta name="keywords" content="Offsetdruckerei Frankfurt Oder, Briefbogen drucken, Visitenkarten HKS Pantone, Sonderfarben Offsetdruck, Heißfolienprägung, Blindprägung, Stanzung, Briefpapier drucken, Firmenbriefbogen, Druckerei Frankfurt Oder" />
+	<meta name="keywords" content="Offsetdruckerei Frankfurt Oder, Briefbogen drucken, Visitenkarten HKS Pantone, Sonderfarben Offsetdruck, Heißfolienprägung, Goldprägung, Silberprägung, Kupferprägung, Visitenkarten Goldfolie, Briefbogen Goldprägung, Folienprägung, Blindprägung, Stanzung, Briefpapier drucken, Firmenbriefbogen, Druckerei Frankfurt Oder" />
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
@@ -109,7 +109,9 @@
 				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Briefbogen in HKS- und Pantone-Sonderfarben" } },
 				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Visitenkarten in HKS- und Pantone-Sonderfarben" } },
 				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Plakate mit Abrissperforation DIN A3" } },
-				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Heißfolienprägung" } },
+					{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Heißfolienprägung in Gold, Silber und Kupfer" } },
+					{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Visitenkarten mit Goldprägung" } },
+					{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Briefbogen mit Heißfolienprägung" } },
 				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Blindprägung" } },
 				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Stanzungen" } }
 			]

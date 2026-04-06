@@ -1027,19 +1027,93 @@
 </script>
 
 <svelte:head>
-	<title>Briefbogen & Visitenkarten mit HKS und Pantone Sonderfarben | Chromik Offsetdruck Frankfurt (Oder)</title>
+	<title>Heißfolienprägung Gold, Silber & Kupfer | Briefbogen & Visitenkarten Offsetdruck – Chromik Frankfurt (Oder)</title>
 	<link rel="canonical" href="https://www.chromikoffsetdruck.de/extraladen" />
-	<meta name="description" content="Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck in Frankfurt (Oder): HKS- und Pantone-Farben auf Conqueror, Senator oder Inaset Plus. Mit Heißfolienprägung, Blindprägung & Stanzung – Preis online kalkulieren & bestellen." />
-	<meta name="keywords" content="Briefbogen HKS Pantone, Visitenkarten Sonderfarben, Conqueror Visitenkarten drucken, Senator Karton Druck, Inaset Plus Briefbogen, Soporset Druck, Offsetdruck Sonderfarben Frankfurt Oder, Briefpapier Pantone, Firmenbriefbogen HKS, Visitenkarten Offsetdruck, Heißfolienprägung, Blindprägung, Stanzung, Spezialpapiere Druck" />
+	<meta name="description" content="Visitenkarten & Briefbogen mit Heißfolienprägung in Gold, Silber oder Kupfer – plus HKS- & Pantone-Sonderfarbendruck. Preis sofort online berechnen & direkt bestellen. Chromik Offsetdruck Frankfurt (Oder)." />
+	<meta name="keywords" content="Heißfolienprägung, Goldprägung, Silberprägung, Kupferprägung, Folienprägung, Visitenkarten Goldfolie, Visitenkarten Goldprägung, Briefbogen Goldprägung, Karten Goldprägung, Klappkarten Goldprägung, Heißfolie Visitenkarten, Heißfolie Briefbogen, Goldfolie drucken, Silberfolie drucken, Kupferfolie drucken, Briefbogen HKS Pantone, Visitenkarten Sonderfarben, Conqueror Visitenkarten drucken, Senator Karton Druck, Inaset Plus Briefbogen, Offsetdruck Sonderfarben Frankfurt Oder, Heißfolienprägung online konfigurieren, Prägekosten berechnen" />
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
 	<meta property="og:locale" content="de_DE" />
 	<meta property="og:site_name" content="Chromik Offsetdruck" />
-	<meta property="og:title" content="Briefbogen & Visitenkarten mit HKS und Pantone Sonderfarben | Chromik Offsetdruck" />
-	<meta property="og:description" content="Briefbogen und Visitenkarten im Sonderfarben-Offsetdruck: HKS & Pantone auf edlen Spezialpapieren. Heißfolienprägung, Blindprägung & Stanzung – in Frankfurt (Oder)." />
+	<meta property="og:title" content="Heißfolienprägung Gold, Silber & Kupfer | Briefbogen & Visitenkarten – Chromik Offsetdruck" />
+	<meta property="og:description" content="Visitenkarten & Briefbogen mit Heißfolienprägung in Gold, Silber oder Kupfer. HKS- & Pantone-Sonderfarbendruck. Preis sofort online berechnen & bestellen." />
 	<meta property="og:image" content="/logo.png" />
 	<meta property="og:url" content="https://www.chromikoffsetdruck.de/extraladen" />
+
+	<!-- JSON-LD: Service (Heißfolienprägung & Offsetdruck) -->
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "Service",
+		"name": "Heißfolienprägung & Sonderfarben-Offsetdruck",
+		"description": "Visitenkarten und Briefbogen im HKS- und Pantone-Sonderfarbendruck mit optionaler Heißfolienprägung in Gold, Silber oder Kupfer. Karten, Klappkarten, Briefbogen und Visitenkarten – Preis online konfigurieren und sofort bestellen.",
+		"url": "https://www.chromikoffsetdruck.de/extraladen",
+		"provider": {
+			"@type": "LocalBusiness",
+			"name": "Chromik Offsetdruck",
+			"url": "https://www.chromikoffsetdruck.de",
+			"telephone": "+4915152457061",
+			"address": {
+				"@type": "PostalAddress",
+				"streetAddress": "Marie-Curie-Straße 8",
+				"addressLocality": "Frankfurt (Oder)",
+				"postalCode": "15236",
+				"addressCountry": "DE"
+			}
+		},
+		"serviceType": "Druckdienstleistung",
+		"areaServed": { "@type": "Country", "name": "Deutschland" },
+		"hasOfferCatalog": {
+			"@type": "OfferCatalog",
+			"name": "Druckprodukte mit Heißfolienprägung",
+			"itemListElement": [
+				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Visitenkarten mit Heißfolienprägung in Gold, Silber oder Kupfer" } },
+				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Briefbogen mit Heißfolienprägung in Gold, Silber oder Kupfer" } },
+				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Karten & Klappkarten mit Goldprägung" } },
+				{ "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Briefbogen & Visitenkarten in HKS- und Pantone-Sonderfarben" } }
+			]
+		}
+	})}</script>`}
+
+	<!-- JSON-LD: FAQPage (Heißfolienprägung) -->
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "FAQPage",
+		"mainEntity": [
+			{
+				"@type": "Question",
+				"name": "Welche Folienfarben sind für die Heißfolienprägung verfügbar?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Wir bieten Heißfolienprägung in Gold, Silber und Kupfer an. Die Prägung ist für Visitenkarten, Briefbogen, Karten und Klappkarten zubuchbar."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Wie wird der Preis für die Heißfolienprägung berechnet?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Der Preis richtet sich nach der Prägefläche in cm\u00b2 und der Auflage. Im Extraladen geben Sie Breite und Höhe der Prägeform in Millimeter ein – der Preis wird sofort berechnet."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Für welche Produkte ist die Heißfolienprägung erhältlich?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Heißfolienprägung kann bei der Bestellung von Visitenkarten, Briefbogen, Karten und Klappkarten optional hinzugefügt werden. Die Konfiguration und Preisberechnung erfolgt direkt online im Extraladen."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Was ist der Unterschied zwischen Goldprägung, Silberprägung und Kupferprägung?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Bei der Heißfolienprägung wird eine metallische Folie unter Wärme und Druck auf das Papier übertragen. Gold wirkt klassisch und festlich, Silber modern und kühl, Kupfer trendig und warm. Alle drei Varianten veredeln Ihr Druckprodukt mit einem hochwertigen metallischen Glanz."
+				}
+			}
+		]
+	})}</script>`}
 </svelte:head>
 
 <div class="page-wrapper">
