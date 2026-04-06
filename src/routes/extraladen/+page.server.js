@@ -7,11 +7,12 @@ import { getDb, sanitizeFirestoreData } from '$lib/firebaseService.js';
  * Fallback: lokal gespeicherte JSON unter src/lib/config/extraladen.json
  */
 export async function load() {
-  // Wartungsmodus: Im Production-Build für alle Besucher blockieren.
+  // Wartungsmodus: Im Production-Build für alle Besucher blockieren ((!dev) => redirect)
   // Nur im lokalen Dev-Mode (npm run dev) ist die Seite erreichbar.
-  if (!dev) {
-    redirect(302, '/extraladen/wartung');
-  }
+  // TEMPORÄR DEAKTIVIERT:
+  // if (!dev) {
+  //   redirect(302, '/extraladen/wartung');
+  // }
 
   try {
     const db = getDb();

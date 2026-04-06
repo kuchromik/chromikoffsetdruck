@@ -212,8 +212,8 @@
 	}
 
 	.btn-hint {
-		font-size: 0.72rem;
-		font-weight: 400;
+		font-size: 0.8rem;
+		font-weight: 600;
 		opacity: 0.82;
 		letter-spacing: 0.01em;
 	}
