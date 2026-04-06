@@ -23,7 +23,7 @@ export async function load() {
 
       // Fallback für Prägungsfarben falls noch nicht in Firebase
       if (!Array.isArray(sanitized.praegefarben) || sanitized.praegefarben.length === 0) {
-        sanitized.praegefarben = ['Gold', 'Silber'];
+        sanitized.praegefarben = ['Gold', 'Silber', 'Kupfer'];
       }
 
       return { config: sanitized, source: 'firebase' };

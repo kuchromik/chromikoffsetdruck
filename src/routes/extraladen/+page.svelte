@@ -294,6 +294,7 @@
 	let praegeBreite      = $state('');
 	let praegeHoehe       = $state('');
 	let praegefarbe       = $state('');
+	let zeigeHowToImg     = $state(false);
 
 	// Bestellprozess
 	let zeigeBestellformular = $state(false);
@@ -637,6 +638,11 @@
 		ergebnis = '';
 		zeigErgebnis = false;
 		zeigeBestellformular = false;
+		heissfolieAktiv = false;
+		praegeBreite = '';
+		praegeHoehe = '';
+		praegefarbe = '';
+		zeigeHowToImg = false;
 	}
 
 	function startBestellprozess() {
@@ -838,6 +844,7 @@
 		kundenDaten = { vorname: '', nachname: '', firma: '', strasse: '', plz: '', ort: '', email: '', datenschutz: false };
 		pdfDateien = []; pdfSeitenInfo = null; auftragsname = '';
 		if (fileInputElement) fileInputElement.value = '';
+		heissfolieAktiv = false; praegeBreite = ''; praegeHoehe = ''; praegefarbe = ''; zeigeHowToImg = false;
 		lieferart = ''; lieferadresseGleichRechnungsadresse = true;
 		lieferadresse = { name: '', strasse: '', plz: '', ort: '' };
 		vorhandeneVersandadressen = []; gewaehlteAdresseId = 'neu'; versandadressenGeladen = false;
@@ -1431,15 +1438,25 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 										{/each}
 									</div>
 								</div>
-								<div class="praegung-howto-img">
-									<img
-										src="/howToSize.webp"
-										alt="Anleitung zur Maßangabe der Prägefläche"
-										width="600"
-										height="400"
-										loading="lazy"
-										decoding="async"
-									/>
+								<div class="praegung-howto-wrap">
+									<button
+										type="button"
+										class="praegung-howto-btn"
+										onclick={() => zeigeHowToImg = !zeigeHowToImg}
+										aria-expanded={zeigeHowToImg}
+									>&#128207; Wie messe ich Breite und H&ouml;he der Pr&auml;geform? {zeigeHowToImg ? '▲' : '▼'}</button>
+									{#if zeigeHowToImg}
+										<div class="praegung-howto-img">
+											<img
+												src="/howToSize.webp"
+												alt="Anleitung zur Maßangabe der Prägefläche"
+												width="600"
+												height="400"
+												loading="lazy"
+												decoding="async"
+											/>
+										</div>
+									{/if}
 								</div>
 							</div>
 						{/if}
@@ -2503,7 +2520,7 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 	}
 
 	.praegung-mass-group input {
-		width: 6rem;
+		width: 8.5rem;
 	}
 
 	.praegung-mal {
@@ -2681,6 +2698,30 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 	.praegung-farbe-btn[data-farbe="gold"].aktiv { background: linear-gradient(135deg, #d4af37, #f5d060); color: #5a3e00; }
 	.praegung-farbe-btn[data-farbe="silber"] { border-color: #aaa; color: #555; }
 	.praegung-farbe-btn[data-farbe="silber"].aktiv { background: linear-gradient(135deg, #aaa, #ddd); color: #222; }
+	.praegung-farbe-btn[data-farbe="kupfer"] { border-color: #b87333; color: #7a3c00; }
+	.praegung-farbe-btn[data-farbe="kupfer"].aktiv { background: linear-gradient(135deg, #b87333, #da8a47); color: #fff; }
+
+	.praegung-howto-wrap {
+		margin-top: 1.25rem;
+	}
+
+	.praegung-howto-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		background: none;
+		border: 1px solid #b87333;
+		color: #7a3c00;
+		border-radius: 20px;
+		padding: 0.3rem 0.9rem;
+		font-size: 0.85rem;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+	}
+	.praegung-howto-btn:hover {
+		background: #fdf0e0;
+		color: #5a2800;
+	}
 
 	/* ── Farbwahl-Wizard ──────────────────────────────────────────── */
 
