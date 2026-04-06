@@ -927,7 +927,13 @@
 					farbenRueckseite: farbenRueckseite.map(f => f.label),
 					farbwechselkosten,
 					auflage,
-					material
+					material,
+					heissfoliepraegung: heissfolieAktiv && praegeFlaeche > 0 ? {
+						breiteMm: Number(praegeBreite),
+						hoeheMm: Number(praegeHoehe),
+						flaecheCm2: praegeFlaeche,
+						farbe: praegefarbe
+					} : null
 				},
 				preise: {
 					anzahlDruckbogen: preisBerechnung.anzahlDruckbogen,
@@ -948,6 +954,9 @@
 					gesamtgewichtKg: preisBerechnung.gesamtgewichtKg,
 					anzahlPakete: preisBerechnung.anzahlPakete,
 					maxPaketgewichtKg: preisBerechnung.faktoren.maxPaketgewichtKg,
+					praegekosten: preisBerechnung.praegekosten ?? 0,
+					praegekostenGrundpreis: preisBerechnung.praegekostenInfo?.grundpreis ?? 0,
+					praegekostenJeStueck: preisBerechnung.praegekostenInfo?.kostenJeStueck ?? 0,
 					zusatzkosten: preisBerechnung.zusatzkosten,
 					zusatzkostenName: preisBerechnung.zusatzkostenName,
 					gesamtpreisNetto: preisBerechnung.gesamtpreisNetto,

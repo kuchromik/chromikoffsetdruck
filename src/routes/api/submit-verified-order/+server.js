@@ -149,7 +149,8 @@ export async function POST({ request }) {
 				data.produktInfo.format,
 				...(data.produktInfo.umfang && data.produktInfo.umfang !== '-' ? [data.produktInfo.umfang] : []),
 				farbigkeitLabel || data.produktInfo.farbigkeit,
-				data.produktInfo.material
+				data.produktInfo.material,
+				...(data.produktInfo.heissfoliepraegung ? [`Hei\u00dffolienpr\u00e4gung ${data.produktInfo.heissfoliepraegung.farbe}`] : [])
 			].join(', ')
 			: formatJobDetails(data.produktInfo);
 
@@ -198,7 +199,7 @@ Grundpreis: ${data.preise.grundpreis.toFixed(2)} €
 Druckkosten: ${data.preise.druckkosten.toFixed(2)} €
 Materialkosten: ${data.preise.materialkosten.toFixed(2)} €
 Schneidekosten: ${data.preise.schneidekosten.toFixed(2)} €
-${data.preise.farbigkeitSummand > 0 ? `Farbwechselkosten: ${data.preise.farbigkeitSummand.toFixed(2)} €\n` : ''}${data.preise.zusatzkosten > 0 ? `${data.preise.zusatzkostenName}: ${data.preise.zusatzkosten.toFixed(2)} €\n` : ''}
+${data.preise.farbigkeitSummand > 0 ? `Farbwechselkosten: ${data.preise.farbigkeitSummand.toFixed(2)} €\n` : ''}${data.preise.zusatzkosten > 0 ? `${data.preise.zusatzkostenName}: ${data.preise.zusatzkosten.toFixed(2)} €\n` : ''}${data.preise.praegekosten > 0 ? `Hei\u00dffolienpr\u00e4gung: ${data.preise.praegekosten.toFixed(2)} €\n  (${data.produktInfo.heissfoliepraegung?.flaecheCm2?.toFixed(1)} cm\u00b2 | ${data.produktInfo.heissfoliepraegung?.farbe} | GP ${data.preise.praegekostenGrundpreis?.toFixed(2)} € + ${data.preise.praegekostenJeStueck?.toFixed(4)} €/Stk.)\n` : ''}
 --------------------
 Produktpreis netto: ${data.preise.gesamtpreisNetto.toFixed(2)} €
 ${data.preise.versandkosten ? `Versandkosten netto: ${data.preise.versandkosten.netto.toFixed(2)} €\n` : ''}${data.preise.versandkosten ? `--------------------\nGesamtpreis netto: ${data.preise.gesamtpreisNettoMitVersand.toFixed(2)} €\n` : ''}
@@ -262,7 +263,7 @@ Produkt: ${data.produktInfo.produkt}
 Format: ${data.produktInfo.format}
 ${data.produktInfo.umfang && data.produktInfo.umfang !== '-' ? `Umfang: ${data.produktInfo.umfang}\n` : ''}${data.produktInfo.falzart && data.produktInfo.falzart !== '-' ? `Falzart: ${data.produktInfo.falzart}\n` : ''}${farbigkeitLabel ? `Farbigkeit: ${farbigkeitLabel}\n` : ''}Auflage: ${data.produktInfo.auflage} Stück
 Material: ${data.produktInfo.material}
-
+${data.produktInfo.heissfoliepraegung ? `Hei\u00dffolienpr\u00e4gung: ${data.produktInfo.heissfoliepraegung.flaecheCm2.toFixed(1)} cm\u00b2 ${data.produktInfo.heissfoliepraegung.farbe} (${data.produktInfo.heissfoliepraegung.breiteMm}\u202fmm \u00d7 ${data.produktInfo.heissfoliepraegung.hoeheMm}\u202fmm)\n` : ''}
 PREIS:
 ------
 Produktpreis (brutto): ${data.preise.gesamtpreisBrutto.toFixed(2)} €

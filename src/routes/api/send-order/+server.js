@@ -84,8 +84,8 @@ Materialkosten:     ${data.preise.materialkosten?.toFixed(2)} \u20ac
 Schneidekosten:     ${data.preise.schneidekosten?.toFixed(2)} \u20ac
   (${data.preise.schneidelagen} Lagen x Faktor ${data.preise.schneideaufwandsfaktor} x ${data.preise.kostenJeSchnitt?.toFixed(2)} EUR)
 ${(data.preise.farbigkeitSummand > 0) ? `Farbwechselkosten:  ${data.preise.farbigkeitSummand?.toFixed(2)} EUR (${data.produktInfo.farbigkeit})
-` : ''}${(data.preise.anzahlDruckplatten > 0) ? `Druckplatten:       ${data.preise.druckplattenkosten?.toFixed(2)} EUR (${data.preise.anzahlDruckplatten} x ${data.preise.kostenJeDruckplatte?.toFixed(2)} EUR)
-` : ''}                    ----------
+` : ''}${(data.preise.anzahlDruckplatten > 0) ? `Druckplatten:       ${data.preise.druckplattenkosten?.toFixed(2)} EUR (${data.preise.anzahlDruckplatten} x ${data.preise.kostenJeDruckplatte?.toFixed(2)} EUR)` : ''}${data.preise.praegekosten > 0 ? `Heißfolienprägung:  ${data.preise.praegekosten?.toFixed(2)} EUR
+  (${data.produktInfo.heissfoliepraegung?.flaecheCm2?.toFixed(1)} cm² | ${data.produktInfo.heissfoliepraegung?.farbe} | GP ${data.preise.praegekostenGrundpreis?.toFixed(2)} € + ${data.preise.praegekostenJeStueck?.toFixed(4)} €/Stk.)` : ''}                    ----------
 Summe netto:        ${data.preise.gesamtpreisNetto?.toFixed(2)} \u20ac
 MwSt. 19 %:         ${data.preise.mwstBetrag?.toFixed(2)} \u20ac
 Gesamtpreis brutto: ${data.preise.gesamtpreisBrutto?.toFixed(2)} \u20ac

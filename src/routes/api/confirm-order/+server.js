@@ -70,7 +70,7 @@ Format: ${data.produktInfo.format}
 Umfang: ${data.produktInfo.umfang}
 Auflage: ${data.produktInfo.auflage} Stück
 Material: ${data.produktInfo.material}
-
+${data.produktInfo.heissfoliepraegung ? `Hei\u00dffolienpr\u00e4gung: ${data.produktInfo.heissfoliepraegung.flaecheCm2?.toFixed(1)} cm\u00b2 ${data.produktInfo.heissfoliepraegung.farbe} (${data.produktInfo.heissfoliepraegung.breiteMm}\u202fmm \u00d7 ${data.produktInfo.heissfoliepraegung.hoeheMm}\u202fmm) | ${data.preise.praegekosten?.toFixed(2) ?? '0.00'} €\n` : ''}
 PREISBERECHNUNG:
 ----------------
 Gesamtpreis (netto): ${data.preise.gesamtpreisNetto.toFixed(2)} €
@@ -244,7 +244,7 @@ Web: www.chromikoffsetdruck.de
 			customer: formatCustomerName(data.kunde),
 			details: formatJobDetails(data.produktInfo),
 			quantity: data.produktInfo.auflage,
-			producer: 'doe', // Digitaldruck
+			producer: data.producer || 'doe', // Digitaldruck (Fallback) oder aus Bestelldaten
 			toShip: data.lieferung.art === 'versand',
 			shipmentAddressId: shipmentAddressId,
 			customerId: customerId,
