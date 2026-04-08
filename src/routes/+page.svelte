@@ -184,7 +184,10 @@
 
 	.foil-strip {
 		padding: 3.5rem 1.5rem;
-		background: linear-gradient(135deg, #1a0a00 0%, #2d1a00 35%, #1a0a00 100%);
+		background: linear-gradient(135deg, #fdf9f0 0%, #fefcf5 40%, #fdf9f0 100%);
+		border-top: 2px solid #f9423a;
+		border-bottom: 2px solid #f9423a;
+		box-shadow: 0 8px 25px rgba(252, 54, 20, 0.15);
 		position: relative;
 		overflow: hidden;
 	}
@@ -194,9 +197,9 @@
 		inset: 0;
 		background: linear-gradient(105deg,
 			transparent 30%,
-			rgba(212, 175, 55, 0.18) 45%,
-			rgba(245, 208, 96, 0.32) 50%,
-			rgba(212, 175, 55, 0.18) 55%,
+			rgba(249, 66, 58, 0.08) 45%,
+			rgba(250, 85, 78, 0.14) 50%,
+			rgba(249, 66, 58, 0.08) 55%,
 			transparent 70%);
 		background-size: 250% 100%;
 		animation: foil-shimmer 4s linear 2;
@@ -217,7 +220,7 @@
 		font-size: 2.8rem;
 		line-height: 1;
 		flex-shrink: 0;
-		filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.7));
+		filter: drop-shadow(0 0 8px rgba(249, 66, 58, 0.45));
 	}
 
 	.foil-strip-content {
@@ -227,8 +230,8 @@
 
 	.foil-strip-badge {
 		display: inline-block;
-		background: linear-gradient(90deg, #d4af37, #f5d060, #d4af37);
-		color: #3a2200;
+		background: linear-gradient(135deg, #f9423a, #fa554e);
+		color: #fff;
 		font-size: 0.72rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
@@ -241,7 +244,7 @@
 	.foil-strip-headline {
 		margin: 0 0 0.5rem;
 		font-size: 1.55rem;
-		color: #fdf3d0;
+		color: #3a2200;
 		font-weight: 700;
 		line-height: 1.2;
 	}
@@ -249,15 +252,15 @@
 	.foil-strip-copy {
 		margin: 0;
 		font-size: 0.95rem;
-		color: rgba(253, 243, 208, 0.75);
+		color: #7a5c20;
 		line-height: 1.55;
 	}
 
 	.foil-strip-btn {
 		flex-shrink: 0;
-		background: linear-gradient(135deg, #d4af37 0%, #f5d060 50%, #d4af37 100%);
+		background: linear-gradient(135deg, #f9423a, #fa554e);
 		background-size: 200% 100%;
-		color: #3a2200;
+		color: #fff;
 		font-weight: 700;
 		font-size: 0.95rem;
 		padding: 0.85rem 1.5rem;
@@ -265,11 +268,11 @@
 		text-decoration: none;
 		white-space: nowrap;
 		transition: background-position 0.3s, box-shadow 0.3s;
-		box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
+		box-shadow: 0 8px 25px rgba(252, 54, 20, 0.40);
 	}
 	.foil-strip-btn:hover {
 		background-position: right center;
-		box-shadow: 0 6px 24px rgba(212, 175, 55, 0.55);
+		box-shadow: 0 10px 30px rgba(252, 54, 20, 0.55);
 	}
 
 	@media (max-width: 700px) {

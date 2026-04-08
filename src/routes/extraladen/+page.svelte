@@ -35,8 +35,19 @@
 		produktKonfiguration,
 		kalkulation,
 		auflagenSegmente,
-		praegefarben = ['Gold', 'Silber']
+		praegefarben = ['Gold', 'Silber', 'Kupfer', 'Blau-Metallic', 'Grün-Metallic', 'Rot-Metallic', 'Rosé-Metallic', 'Holo-JungleSelect']
 	} = data?.config || {};
+
+	const folieImgMap = {
+		'Gold':            'FolieGold.webp',
+		'Silber':          'FolieSilber.webp',
+		'Kupfer':          'FolieKupfer.webp',
+		'Blau-Metallic':   'FolieBlau.webp',
+		'Grün-Metallic':   'FolieGruen.webp',
+		'Rot-Metallic':    'FolieRot.webp',
+		'Rosé-Metallic':   'FolieRose.webp',
+		'Holo-JungleSelect': 'FolieHolo.webp',
+	};
 
 	// Kostenvariablen aus extraladen.json → kalkulation
 	const {
@@ -1508,7 +1519,22 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 												class:aktiv={praegefarbe === farbe}
 												data-farbe={farbe.toLowerCase()}
 												onclick={() => praegefarbe = farbe}
-											>{farbe}</button>
+												title={farbe}
+											>
+												<img
+													src="/{folieImgMap[farbe] ?? 'FolieGold.webp'}"
+													alt={farbe}
+													class="praegung-farbe-img"
+													width="72"
+													height="72"
+													loading="lazy"
+													decoding="async"
+												/>
+												<span class="praegung-farbe-name">{farbe}</span>
+												{#if praegefarbe === farbe}
+													<span class="praegung-farbe-check" aria-hidden="true">✓</span>
+												{/if}
+											</button>
 										{/each}
 									</div>
 								</div>
@@ -2619,10 +2645,10 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 	}
 
 	.praegung-farben {
-		display: flex;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-		margin-top: 0.4rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+		gap: 0.6rem;
+		margin-top: 0.5rem;
 	}
 
 	.praegung-farben-label {
@@ -2633,20 +2659,66 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 	}
 
 	.praegung-farbe-btn {
-		padding: 0.45rem 1.2rem;
-		border-radius: 20px;
-		border: 2px solid #d4af37;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.4rem 0.4rem 0.5rem;
+		border-radius: 10px;
+		border: 2px solid #e0d5c0;
 		background: #fff;
-		color: #7a5c00;
-		font-weight: 600;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+		width: 100%;
 	}
 
-	.praegung-farbe-btn:hover,
+	.praegung-farbe-btn:hover {
+		border-color: #d4af37;
+		box-shadow: 0 2px 10px rgba(212, 175, 55, 0.28);
+		transform: translateY(-2px);
+	}
+
 	.praegung-farbe-btn.aktiv {
+		border-color: #d4af37;
+		box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.35);
+		transform: translateY(-2px);
+		background: #fffdf5;
+	}
+
+	.praegung-farbe-img {
+		width: 100%;
+		aspect-ratio: 1;
+		object-fit: cover;
+		border-radius: 6px;
+		display: block;
+	}
+
+	.praegung-farbe-name {
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: #4a3c00;
+		text-align: center;
+		line-height: 1.25;
+		word-break: break-word;
+		hyphens: auto;
+	}
+
+	.praegung-farbe-check {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
 		background: #d4af37;
 		color: #fff;
+		font-size: 0.7rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		line-height: 1;
 	}
 
 	/* ── Druckvorlagen-Infobox Trigger-Zeile ─────────────────────── */
@@ -2768,12 +2840,29 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 		padding-top: 0.75rem;
 	}
 
-	.praegung-farbe-btn[data-farbe="gold"] { border-color: #d4af37; }
-	.praegung-farbe-btn[data-farbe="gold"].aktiv { background: linear-gradient(135deg, #d4af37, #f5d060); color: #5a3e00; }
-	.praegung-farbe-btn[data-farbe="silber"] { border-color: #aaa; color: #555; }
-	.praegung-farbe-btn[data-farbe="silber"].aktiv { background: linear-gradient(135deg, #aaa, #ddd); color: #222; }
-	.praegung-farbe-btn[data-farbe="kupfer"] { border-color: #b87333; color: #7a3c00; }
-	.praegung-farbe-btn[data-farbe="kupfer"].aktiv { background: linear-gradient(135deg, #b87333, #da8a47); color: #fff; }
+	/* Hover-Akzentfarbe je Folie */
+	.praegung-farbe-btn[data-farbe="silber"]:hover,
+	.praegung-farbe-btn[data-farbe="silber"].aktiv { border-color: #999; box-shadow: 0 0 0 3px rgba(160,160,160,0.30); }
+	.praegung-farbe-btn[data-farbe="kupfer"]:hover,
+	.praegung-farbe-btn[data-farbe="kupfer"].aktiv { border-color: #b87333; box-shadow: 0 0 0 3px rgba(184,115,51,0.30); }
+	.praegung-farbe-btn[data-farbe="blau-metallic"]:hover,
+	.praegung-farbe-btn[data-farbe="blau-metallic"].aktiv { border-color: #2e6db4; box-shadow: 0 0 0 3px rgba(46,109,180,0.28); }
+	.praegung-farbe-btn[data-farbe="grün-metallic"]:hover,
+	.praegung-farbe-btn[data-farbe="grün-metallic"].aktiv { border-color: #3a8c4a; box-shadow: 0 0 0 3px rgba(58,140,74,0.28); }
+	.praegung-farbe-btn[data-farbe="rot-metallic"]:hover,
+	.praegung-farbe-btn[data-farbe="rot-metallic"].aktiv { border-color: #c0392b; box-shadow: 0 0 0 3px rgba(192,57,43,0.28); }
+	.praegung-farbe-btn[data-farbe="rosé-metallic"]:hover,
+	.praegung-farbe-btn[data-farbe="rosé-metallic"].aktiv { border-color: #d4708a; box-shadow: 0 0 0 3px rgba(212,112,138,0.28); }
+	.praegung-farbe-btn[data-farbe="holo-jungleselect"]:hover,
+	.praegung-farbe-btn[data-farbe="holo-jungleselect"].aktiv { border-color: #7c3b9e; box-shadow: 0 0 0 3px rgba(124,59,158,0.28); }
+	/* Check-Badge Akzentfarbe je Folie */
+	.praegung-farbe-btn[data-farbe="silber"].aktiv .praegung-farbe-check { background: #888; }
+	.praegung-farbe-btn[data-farbe="kupfer"].aktiv .praegung-farbe-check { background: #b87333; }
+	.praegung-farbe-btn[data-farbe="blau-metallic"].aktiv .praegung-farbe-check { background: #2e6db4; }
+	.praegung-farbe-btn[data-farbe="grün-metallic"].aktiv .praegung-farbe-check { background: #3a8c4a; }
+	.praegung-farbe-btn[data-farbe="rot-metallic"].aktiv .praegung-farbe-check { background: #c0392b; }
+	.praegung-farbe-btn[data-farbe="rosé-metallic"].aktiv .praegung-farbe-check { background: #d4708a; }
+	.praegung-farbe-btn[data-farbe="holo-jungleselect"].aktiv .praegung-farbe-check { background: #7c3b9e; }
 
 	.praegung-howto-wrap {
 		margin-top: 1.25rem;

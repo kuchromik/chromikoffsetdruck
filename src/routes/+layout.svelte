@@ -1,8 +1,13 @@
 <script>
+	import { afterNavigate } from '$app/navigation';
 	import favicon from '$lib/assets/logo-favicon.png';
 	import '../app.css';
 
 	let { children } = $props();
+
+	afterNavigate(() => {
+		window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+	});
 </script>
 
 <svelte:head>
