@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import Header from '$lib/components/Header.svelte';
@@ -35,18 +35,20 @@
 		produktKonfiguration,
 		kalkulation,
 		auflagenSegmente,
-		praegefarben = ['Gold', 'Silber', 'Kupfer', 'Blau-Metallic', 'Grün-Metallic', 'Rot-Metallic', 'Rosé-Metallic', 'Holo-JungleSelect']
+		praegefarben = ['Gold', 'Silber', 'Silber matt', 'Kupfer', 'Blau-Metallic', 'Grün-Metallic', 'Rot-Metallic', 'Rosé-Metallic', 'Holo-JungleSelect', 'noch mehr Auswahl']
 	} = data?.config || {};
 
 	const folieImgMap = {
 		'Gold':            'FolieGold.webp',
 		'Silber':          'FolieSilber.webp',
+		'Silber matt':     'FolieSilberMatt.webp',
 		'Kupfer':          'FolieKupfer.webp',
 		'Blau-Metallic':   'FolieBlau.webp',
 		'Grün-Metallic':   'FolieGruen.webp',
 		'Rot-Metallic':    'FolieRot.webp',
 		'Rosé-Metallic':   'FolieRose.webp',
 		'Holo-JungleSelect': 'FolieHolo.webp',
+		'noch mehr Auswahl': 'FolieGoldenDots.webp',
 	};
 
 	// Kostenvariablen aus extraladen.json → kalkulation
@@ -306,6 +308,7 @@
 	let praegeHoehe       = $state('');
 	let praegefarbe       = $state('');
 	let zeigeHowToImg     = $state(false);
+	let zeigeMehrAuswahl  = $state(false);
 
 	// Bestellprozess
 	let zeigeBestellformular = $state(false);
@@ -1513,30 +1516,72 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 									<span class="praegung-farben-label">Folienfarbe</span>
 									<div class="praegung-farben">
 										{#each praegefarben as farbe}
-											<button
-												type="button"
-												class="praegung-farbe-btn"
-												class:aktiv={praegefarbe === farbe}
-												data-farbe={farbe.toLowerCase()}
-												onclick={() => praegefarbe = farbe}
-												title={farbe}
-											>
-												<img
-													src="/{folieImgMap[farbe] ?? 'FolieGold.webp'}"
-													alt={farbe}
-													class="praegung-farbe-img"
-													width="72"
-													height="72"
-													loading="lazy"
-													decoding="async"
-												/>
-												<span class="praegung-farbe-name">{farbe}</span>
-												{#if praegefarbe === farbe}
-													<span class="praegung-farbe-check" aria-hidden="true">✓</span>
-												{/if}
-											</button>
+											{#if farbe === 'noch mehr Auswahl'}
+												<button
+													type="button"
+													class="praegung-farbe-btn praegung-farbe-mehr"
+													data-farbe="mehr-auswahl"
+													onclick={() => zeigeMehrAuswahl = !zeigeMehrAuswahl}
+													title="Weitere Folienfarben auf Anfrage"
+													aria-expanded={zeigeMehrAuswahl}
+												>
+													<img
+														src="/FolieGoldenDots.webp"
+														alt="Weitere Folienfarben"
+														class="praegung-farbe-img"
+														width="72"
+														height="72"
+														loading="lazy"
+														decoding="async"
+													/>
+													<span class="praegung-farbe-name">noch mehr Auswahl</span>
+													<span class="praegung-farbe-mehr-icon" aria-hidden="true">✦</span>
+												</button>
+											{:else}
+												<button
+													type="button"
+													class="praegung-farbe-btn"
+													class:aktiv={praegefarbe === farbe}
+													data-farbe={farbe.toLowerCase()}
+													onclick={() => praegefarbe = farbe}
+													title={farbe}
+												>
+													<img
+														src="/{folieImgMap[farbe] ?? 'FolieGold.webp'}"
+														alt={farbe}
+														class="praegung-farbe-img"
+														width="72"
+														height="72"
+														loading="lazy"
+														decoding="async"
+													/>
+													<span class="praegung-farbe-name">{farbe}</span>
+													{#if praegefarbe === farbe}
+														<span class="praegung-farbe-check" aria-hidden="true">✓</span>
+													{/if}
+												</button>
+											{/if}
 										{/each}
 									</div>
+									{#if zeigeMehrAuswahl}
+										<div class="mehr-auswahl-hinweis" role="status">
+											<button
+												type="button"
+												class="mehr-auswahl-close"
+												onclick={() => zeigeMehrAuswahl = false}
+												aria-label="Hinweis schließen"
+											>×</button>
+											<div class="mehr-auswahl-icon">✦</div>
+											<h4 class="mehr-auswahl-titel">Noch mehr Folienfarben auf Anfrage</h4>
+											<p class="mehr-auswahl-text">
+												Neben den gezeigten Standardfarben stehen viele weitere faszinierende Folienfarben und -strukturen zur Verfügung &ndash; von edlen Pastell- und Mattfolien über lebhafte Neonfarben bis hin zu außergewöhnlichen Holo- und Strukturfolien.
+											</p>
+											<p class="mehr-auswahl-cta">
+												Sprechen Sie uns einfach an &ndash; wir beraten Sie gerne und finden die perfekte Folie für Ihr Projekt.
+											</p>
+											<a href="mailto:kai.chromik@online.de" class="mehr-auswahl-btn">Jetzt anfragen</a>
+										</div>
+									{/if}
 								</div>
 								<div class="praegung-howto-wrap">
 									<button
@@ -2863,6 +2908,97 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 	.praegung-farbe-btn[data-farbe="rot-metallic"].aktiv .praegung-farbe-check { background: #c0392b; }
 	.praegung-farbe-btn[data-farbe="rosé-metallic"].aktiv .praegung-farbe-check { background: #d4708a; }
 	.praegung-farbe-btn[data-farbe="holo-jungleselect"].aktiv .praegung-farbe-check { background: #7c3b9e; }
+
+	/* ── „Noch mehr Auswahl"-Button ──────────────────────────────── */
+	.praegung-farbe-mehr {
+		border-style: dashed;
+		border-color: #c0a860;
+		background: linear-gradient(135deg, #fffdf5, #fdf3d0);
+		cursor: pointer;
+	}
+	.praegung-farbe-mehr:hover {
+		border-color: #d4af37;
+		box-shadow: 0 2px 10px rgba(212, 175, 55, 0.35);
+		transform: translateY(-2px);
+	}
+	.praegung-farbe-mehr .praegung-farbe-name {
+		color: #7a5a00;
+		font-style: italic;
+	}
+	.praegung-farbe-mehr-icon {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		font-size: 0.8rem;
+		color: #d4af37;
+		line-height: 1;
+	}
+
+	/* ── Mehr-Auswahl-Hinweis-Box ────────────────────────────────── */
+	.mehr-auswahl-hinweis {
+		position: relative;
+		margin-top: 1rem;
+		padding: 1.5rem 1.5rem 1.25rem;
+		background: linear-gradient(135deg, #fffdf5 0%, #fdf8e1 100%);
+		border: 2px solid #d4af37;
+		border-radius: 12px;
+		box-shadow: 0 4px 16px rgba(212, 175, 55, 0.18);
+		text-align: center;
+	}
+	.mehr-auswahl-close {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.75rem;
+		background: none;
+		border: none;
+		font-size: 1.25rem;
+		color: #b8860b;
+		cursor: pointer;
+		line-height: 1;
+		padding: 0.1rem 0.25rem;
+		border-radius: 4px;
+		transition: color 0.15s;
+	}
+	.mehr-auswahl-close:hover { color: #7a5a00; }
+	.mehr-auswahl-icon {
+		font-size: 1.75rem;
+		color: #d4af37;
+		margin-bottom: 0.5rem;
+		display: block;
+	}
+	.mehr-auswahl-titel {
+		margin: 0 0 0.75rem;
+		font-size: 1.05rem;
+		color: #7a5a00;
+	}
+	.mehr-auswahl-text {
+		font-size: 0.9rem;
+		color: #4a3c00;
+		margin: 0 0 0.75rem;
+		line-height: 1.55;
+	}
+	.mehr-auswahl-cta {
+		font-size: 0.9rem;
+		color: #666;
+		margin: 0 0 1.1rem;
+		line-height: 1.5;
+	}
+	.mehr-auswahl-btn {
+		display: inline-block;
+		padding: 0.55rem 1.5rem;
+		background: linear-gradient(135deg, #d4af37, #c09b26);
+		color: #fff;
+		font-weight: 600;
+		font-size: 0.95rem;
+		border-radius: 24px;
+		text-decoration: none;
+		transition: filter 0.15s, transform 0.12s;
+		box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);
+	}
+	.mehr-auswahl-btn:hover {
+		filter: brightness(1.08);
+		transform: translateY(-1px);
+	}
 
 	.praegung-howto-wrap {
 		margin-top: 1.25rem;

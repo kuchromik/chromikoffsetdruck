@@ -4,7 +4,7 @@
     { "maxQcm": 20, "grundpreis": 35, "kostenJeStueck": 0.20 },
     { "maxQcm": 30, "grundpreis": 45, "kostenJeStueck": 0.25 }
   ],
-  "praegefarben": ["Gold", "Silber"],
+  "praegefarben": ["Gold", "Silber", "Silber matt", "Kupfer", "Blau-Metallic", "Grün-Metallic", "Rot-Metallic", "Rosé-Metallic", "Holo-JungleSelect", "noch mehr Auswahl"],
   "kalkulation": {
     "klickkosten": 0.02,
     "kostenJeSchnitt": 0.5,

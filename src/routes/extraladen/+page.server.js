@@ -23,7 +23,7 @@ export async function load() {
 
       // Fallback für Prägungsfarben falls noch nicht in Firebase
       if (!Array.isArray(sanitized.praegefarben) || sanitized.praegefarben.length === 0) {
-        sanitized.praegefarben = ['Gold', 'Silber', 'Kupfer', 'Blau-Metallic', 'Grün-Metallic', 'Rot-Metallic', 'Rosé-Metallic', 'Holo-JungleSelect'];
+        sanitized.praegefarben = ['Gold', 'Silber', 'Silber matt', 'Kupfer', 'Blau-Metallic', 'Grün-Metallic', 'Rot-Metallic', 'Rosé-Metallic', 'Holo-JungleSelect', 'noch mehr Auswahl'];
       }
 
       return { config: sanitized, source: 'firebase' };
