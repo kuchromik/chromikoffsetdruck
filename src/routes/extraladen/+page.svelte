@@ -1136,7 +1136,7 @@
 	<main id="main-content" class="container">
 		<section class="form-section">
 			<h1>Extraladen</h1>
-			<p class="intro">Exklusive Druckprodukte im Sonderfarben-Offsetdruck in HKS und Pantone mit optionaler Heißfolienprägung in diversen Folienfarben:</p>
+			<p class="intro">Exklusive Druckprodukte im Sonderfarben-Offsetdruck in HKS und Pantone mit optionaler Heißfolienprägung in diversen Folienfarben. Die Lieferzeit beträgt je nach Aufwand 7-10 Werktage. </p>
 
 			{#if emailVerifikationStatus === 'verified-close-tab'}
 				<div class="email-verification-box" style="margin-top: 2rem; padding: 2rem; background-color: #f0fdfa; border-radius: 8px;">

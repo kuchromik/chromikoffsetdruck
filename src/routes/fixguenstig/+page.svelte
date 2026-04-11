@@ -296,7 +296,7 @@ const {
 			}
 		}
 		
-		return verfuegbar;
+		return verfuegbar.sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
 	});
 
 	// Prüfen ob Umfang-Feld angezeigt werden soll
@@ -990,7 +990,7 @@ const {
 	<main id="main-content" class="container">
 		<section class="form-section">
 			<h1>Fix&günstig</h1>
-			<p class="intro">Schnelle und preiswerte Lösungen im 4-farbigen Digitaldruck:</p>
+			<p class="intro">Schnelle und preiswerte Lösungen im 4-farbigen Digitaldruck. In der Regel kurzfristig verfügbar.</p>
 
 			{#if emailVerifikationStatus === 'verified-close-tab'}
 				<!-- E-Mail verifiziert - Hinweis zum Tab schließen (oberste Priorität) -->
