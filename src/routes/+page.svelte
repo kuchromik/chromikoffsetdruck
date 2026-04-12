@@ -7,7 +7,7 @@
 	const sections = [
 		{
 			id: 'thema1',
-			title: 'Tradition und Moderne vereint',
+			title: 'Tradition und Moderne',
 			description: 'Jeder Auftrag ist einzigartig und wird sorgfältig bearbeitet. Wir lieben die besonderen Dinge, den außergewöhnlichen Glanz und Gold für alle! Oder Silber. Oder Bronze.<br><br>Gern kümmern wir uns um das, was sonst das fünfte Rad am Wagen ist: Papiere und Kartons mit spannender Haptik, Nummerierungen, Personalisierungen, Stanzungen, Heißfolien- oder Blindprägungen.',
 			reverse: false,
 			useSlider: true,
