@@ -13,7 +13,7 @@
 			useSlider: true,
 			sliderFolder: 'heroSlider',
 			buttons: [
-			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', hint: 'Wenn´s schnell gehen soll', tooltip: 'Standardprodukte im Digitaldruck online kalkulieren & direkt bestellen' },
+			{ text: 'Zu Fix&günstig', link: '/fixguenstig', variant: 'gray', hint: 'Wenn´s schnell und günstig sein soll', tooltip: 'Standardprodukte im Digitaldruck online kalkulieren & direkt bestellen' },
 			{ text: 'Zum Extraladen', link: '/extraladen', hint: 'HKS, Pantone und ECHTE Heißfolie', tooltip: 'Produkte im Offsetdruck mit Sonderfarben und Heißfolienprägung online kalkulieren & direkt bestellen' }
 			]
 		},

@@ -1075,6 +1075,7 @@ const {
 								<option value={fmt.name}>{fmt.name}</option>
 								{/each}
 							</select>
+							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">Geringfügig abweichende Maße sind möglich – das Dateiformat ist relevant.</p>
 						</div>
 					{:else}
 						<div class="form-group">
@@ -1210,6 +1211,7 @@ const {
 			{#if zeigErgebnis}
 				<div class="result-box">
 					{@html ergebnis}
+					<!--
 					{#if preisBerechnung}
 						<div style="margin-top: 1.25rem;">
 							<button
@@ -1290,6 +1292,7 @@ const {
 							{/if}
 						</div>
 					{/if}
+					-->
 					<div style="margin-top: 1.5rem; text-align: center;">
 						<button class="btn btn-primary" onclick={startBestellprozess} style="font-size: 1.1em; padding: 0.75rem 2rem;">
 							Weiter zum Bestellformular

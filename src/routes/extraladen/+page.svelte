@@ -1125,6 +1125,30 @@
 					"@type": "Answer",
 					"text": "Bei der Heißfolienprägung wird eine metallische Folie unter Wärme und Druck auf das Papier übertragen. Gold wirkt klassisch und festlich, Silber modern und kühl, Kupfer trendig und warm. Alle drei Varianten veredeln Ihr Druckprodukt mit einem hochwertigen metallischen Glanz."
 				}
+			},
+			{
+				"@type": "Question",
+				"name": "Was sind HKS-Sonderfarben?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "HKS ist ein im deutschsprachigen Raum verbreitetes Farbsystem für den Offsetdruck. HKS-Sonderfarben werden als separate Druckfarbe – nicht aus Cyan, Magenta, Gelb und Schwarz gemischt – direkt aufgedruckt. Sie erzielen besonders leuchtende, konstante Farbtöne, z.\u00a0B. HKS\u00a043 (Blau) oder HKS\u00a057 (Grün), die im Vierfarbdruck nicht reproduzierbar sind."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Was sind Pantone-Sonderfarben?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Pantone ist ein international standardisiertes Farbsystem für die Druckindustrie. Pantone-Sonderfarben garantieren exakte Farbreproduktion und Farbkonstanz unabhängig von Druckmaschine und Substrat. Typische Pantone-Farben im Offsetdruck sind z.\u00a0B. Pantone\u00a0485 (Rot), Pantone\u00a0Warm Red oder Pantone\u00a0Reflex Blue."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Kann ich HKS- oder Pantone-Sonderfarben mit Heißfolienprägung kombinieren?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Ja. Im Extraladen können Visitenkarten, Briefbogen, Karten und Klappkarten im HKS- oder Pantone-Sonderfarbendruck mit einer Heißfolienprägung in Gold, Silber, Kupfer, Rosé-Metallic oder weiteren Metallic-Folienfarben veredelt werden. Preis und Konfiguration berechnen Sie direkt online."
+				}
 			}
 		]
 	})}</script>`}
@@ -1135,7 +1159,7 @@
 
 	<main id="main-content" class="container">
 		<section class="form-section">
-			<h1>Extraladen</h1>
+			<h1>Extraladen – Heißfolienprägung &amp; Sonderfarben-Offsetdruck</h1>
 			<p class="intro">Exklusive Druckprodukte im Sonderfarben-Offsetdruck in HKS und Pantone mit optionaler Heißfolienprägung in diversen Folienfarben. Die Lieferzeit beträgt je nach Aufwand 7-10 Werktage. </p>
 
 			{#if emailVerifikationStatus === 'verified-close-tab'}
@@ -1190,6 +1214,7 @@
 					<h2>{produktName}</h2>
 					<button class="btn-back" onclick={() => {
 						produktId = ''; format = ''; material = ''; umfang = ''; auflage = ''; zeigErgebnis = false;
+						heissfolieAktiv = false; praegeBreite = ''; praegeHoehe = ''; praegefarbe = '';
 					}}>
 						← Anderes Produkt wählen
 					</button>
@@ -1200,6 +1225,7 @@
 						<label for="format">Format</label>
 						{#if produktId === 'briefbogen'}
 							<input type="text" id="format" value="DIN A4" disabled />
+							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">Geringfügig abweichende Maße sind möglich – das Dateiformat ist relevant.</p>
 						{:else if produktId === 'visitenkarten'}
 							<input type="text" id="format" value="8,5 x 5,5 cm" disabled />
 							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">Quer- oder Hochformat, geringfügig abweichende Maße wie z.&nbsp;B. 9,0 × 5,0&nbsp;cm sind möglich – das Dateiformat ist relevant.</p>
@@ -1210,6 +1236,7 @@
 									<option value={fmt.name}>{fmt.name}</option>
 								{/each}
 							</select>
+							<p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">Geringfügig abweichende Maße sind möglich – das Dateiformat ist relevant.</p>
 						{/if}
 					</div>
 
@@ -1630,6 +1657,7 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 				{#if zeigErgebnis}
 					<div class="result-box">
 						{@html ergebnis}
+						<!--
 						{#if preisBerechnung}
 							<div style="margin-top: 1.25rem;">
 								<button
@@ -1764,6 +1792,7 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 								{/if}
 							</div>
 						{/if}
+						-->
 						<div style="margin-top: 1.5rem; text-align: center;">
 							<button class="btn btn-primary" onclick={startBestellprozess} style="font-size: 1.1em; padding: 0.75rem 2rem;">
 								Weiter zum Bestellformular
@@ -2292,7 +2321,9 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 				{/each}
 			</ul>
 			<h3>Farbigkeit: HKS- und Pantone-Sonderfarben</h3>
-			<p>Alle Produkte im Extraladen werden im Sonderfarben-Offsetdruck gefertigt – wahlweise in <strong>HKS-Sonderfarben</strong> (z.&nbsp;B. HKS 43, HKS 57) oder eine <strong>Pantone-Sonderfarben</strong> (z.&nbsp;B. Pantone 485, Pantone Warm Red). Sonderfarben garantieren exakte Farbkonstanz über alle Auflagen hinweg und erzielen Leuchtkraft, die der Vierfarbdruck nicht erreicht.</p>
+			<p>Alle Produkte im Extraladen werden im Sonderfarben-Offsetdruck gefertigt – wahlweise in <strong>HKS-Sonderfarben</strong> (z.&nbsp;B. HKS&nbsp;43, HKS&nbsp;57) oder <strong>Pantone-Sonderfarben</strong> (z.&nbsp;B. Pantone&nbsp;485, Pantone Warm Red). Sonderfarben garantieren exakte Farbkonstanz über alle Auflagen hinweg und erzielen eine Leuchtkraft, die der Vierfarbdruck nicht erreicht.</p>
+			<h3>Heißfolienprägung: Verfügbare Folienfarben</h3>
+			<p>Zur Veredelung Ihrer Druckprodukte bieten wir <strong>Heißfolienprägung</strong> in folgenden Metallic-Folienfarben an: <strong>Gold</strong>, <strong>Silber</strong>, <strong>Silber matt</strong>, <strong>Kupfer</strong>, <strong>Blau-Metallic</strong>, <strong>Grün-Metallic</strong>, <strong>Rot-Metallic</strong> und <strong>Rosé-Metallic</strong>. Bei der Heißfolienprägung wird eine metallische Folie unter Wärme und Druck auf das Papier gepresst und fest mit ihm verbunden. Das Ergebnis ist ein hochwertiger, dauerhaft glänzender Metalliceffekt – anwendbar auf Visitenkarten, Briefbogen, Karten und Klappkarten. Heißfolienprägung lässt sich direkt im Online-Kalkulator des Extraladens konfigurieren und sofort bestellen.</p>
 		</section>
 		{/if}
 	</main>

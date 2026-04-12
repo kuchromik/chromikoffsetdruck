@@ -9,9 +9,10 @@ import { getDb, sanitizeFirestoreData } from '$lib/firebaseService.js';
 export async function load() {
   // Wartungsmodus: Im Production-Build für alle Besucher blockieren ((!dev) => redirect)
   // Nur im lokalen Dev-Mode (npm run dev) ist die Seite erreichbar.
-  if (!dev) {
-    redirect(302, '/extraladen/wartung');
-  }
+  // TEMPORÄR DEAKTIVIERT:
+  // if (!dev) {
+  //   redirect(302, '/extraladen/wartung');
+  // }
 
   try {
     const db = getDb();
