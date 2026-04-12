@@ -189,6 +189,7 @@ const {
 	let falzart = $state('');
 	let ergebnis = $state('');
 	let zeigErgebnis = $state(false);
+	let zeigKostendetails = $state(false);
 
 	// Bestellprozess
 	let zeigeBestellformular = $state(false);
@@ -1209,6 +1210,86 @@ const {
 			{#if zeigErgebnis}
 				<div class="result-box">
 					{@html ergebnis}
+					{#if preisBerechnung}
+						<div style="margin-top: 1.25rem;">
+							<button
+								type="button"
+								class="btn btn-secondary"
+								style="font-size: 0.9rem; padding: 0.4rem 1rem;"
+								onclick={() => zeigKostendetails = !zeigKostendetails}
+							>
+								{zeigKostendetails ? '▲ Kostenaufstellung ausblenden' : '▼ Kostenaufstellung einblenden'}
+							</button>
+
+							{#if zeigKostendetails}
+								{@const pb = preisBerechnung}
+								{@const f = pb.faktoren}
+								<div class="kostendetails">
+									<h4>Berechnungsgrundlagen</h4>
+									<table class="kd-table">
+										<tbody>
+											<tr><td>Auflage</td><td>{f.auflage.toLocaleString('de-DE')} Stück</td></tr>
+											<tr><td>Formatfaktor</td><td>{f.formatfaktor}</td></tr>
+											<tr><td>Flächenfaktor</td><td>{f.flaechenfaktor}</td></tr>
+											<tr><td>Materialfaktor</td><td>{f.materialfaktor.toFixed(4).replace('.', ',')} €/Bogen</td></tr>
+											<tr><td>Schneideaufwandsfaktor</td><td>{f.schneideaufwandsfaktor}</td></tr>
+											<tr><td>Kosten je Schnitt</td><td>{f.kostenJeSchnitt.toFixed(2).replace('.', ',')} €</td></tr>
+											<tr><td>Druckbogen (netto)</td><td>{pb.anzahlDruckbogen.toLocaleString('de-DE')}</td></tr>
+											<tr><td>Klicks</td><td>{pb.klickanzahl.toLocaleString('de-DE')}</td></tr>
+										</tbody>
+									</table>
+
+									<h4 style="margin-top: 1.25rem;">Kostenaufstellung (netto)</h4>
+									<table class="kd-table kd-kosten">
+										<thead>
+											<tr><th>Position</th><th>Formel</th><th style="text-align:right;">Betrag</th></tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>Grundpreis</td>
+												<td class="kd-formel">–</td>
+												<td class="kd-betrag">{pb.grundpreis.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+											<tr>
+												<td>Druckkosten</td>
+												<td class="kd-formel">{pb.klickanzahl.toLocaleString('de-DE')} Klicks × {f.klickkosten.toFixed(3).replace('.', ',')} €</td>
+												<td class="kd-betrag">{pb.druckkosten.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+											<tr>
+												<td>Materialkosten</td>
+												<td class="kd-formel">{pb.anzahlDruckbogen.toLocaleString('de-DE')} Bogen × {f.materialfaktor.toFixed(4).replace('.', ',')} €/Bogen</td>
+												<td class="kd-betrag">{pb.materialkosten.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+											<tr>
+												<td>Schneidekosten</td>
+												<td class="kd-formel">{f.schneideaufwandsfaktor} × {f.kostenJeSchnitt.toFixed(2).replace('.', ',')} €/Schnitt</td>
+												<td class="kd-betrag">{pb.schneidekosten.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+											{#if pb.zusatzkosten > 0}
+											<tr>
+												<td>{pb.zusatzkostenName}</td>
+												<td class="kd-formel">aus Produktkonfiguration</td>
+												<td class="kd-betrag">{pb.zusatzkosten.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+											{/if}
+											<tr class="kd-summe">
+												<td colspan="2">Netto gesamt</td>
+												<td class="kd-betrag">{pb.gesamtpreisNetto.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+											<tr>
+												<td colspan="2">zzgl. MwSt. 19 %</td>
+												<td class="kd-betrag">{pb.mwstBetrag.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+											<tr class="kd-summe kd-brutto">
+												<td colspan="2">Brutto gesamt (Produkt)</td>
+												<td class="kd-betrag">{pb.gesamtpreisBrutto.toFixed(2).replace('.', ',')} €</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							{/if}
+						</div>
+					{/if}
 					<div style="margin-top: 1.5rem; text-align: center;">
 						<button class="btn btn-primary" onclick={startBestellprozess} style="font-size: 1.1em; padding: 0.75rem 2rem;">
 							Weiter zum Bestellformular
@@ -2207,6 +2288,69 @@ const {
 		display: flex;
 		gap: 1rem;
 		margin-top: 1rem;
+	}
+
+	.kostendetails {
+		margin-top: 1rem;
+		padding: 1.25rem 1.5rem;
+		background: #fff;
+		border-radius: 8px;
+		border: 1px solid #d1d5db;
+		font-size: 0.88rem;
+	}
+
+	.kostendetails h4 {
+		margin: 0 0 0.6rem;
+		color: #374151;
+		font-size: 0.92rem;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+	}
+
+	.kd-table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.kd-table td,
+	.kd-table th {
+		padding: 3px 6px;
+		vertical-align: top;
+	}
+
+	.kd-table td:first-child {
+		color: #555;
+		white-space: nowrap;
+		padding-right: 1rem;
+	}
+
+	.kd-table th {
+		font-weight: 600;
+		color: #444;
+		border-bottom: 1px solid #d1d5db;
+		padding-bottom: 4px;
+	}
+
+	.kd-kosten .kd-formel {
+		color: #888;
+		font-size: 0.82em;
+	}
+
+	.kd-betrag {
+		text-align: right;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.kd-summe td {
+		font-weight: 700;
+		border-top: 1px solid #aaa;
+		padding-top: 5px;
+	}
+
+	.kd-brutto td {
+		color: #1f2937;
+		border-top: 2px solid #374151;
 	}
 
 	.spinner {

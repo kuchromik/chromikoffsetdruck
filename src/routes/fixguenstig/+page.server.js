@@ -1,3 +1,5 @@
+import { redirect } from '@sveltejs/kit';
+import { dev } from '$app/environment';
 import { getDb, sanitizeFirestoreData } from '$lib/firebaseService.js';
 
 /**
@@ -5,6 +7,12 @@ import { getDb, sanitizeFirestoreData } from '$lib/firebaseService.js';
  * Fallback: lokal gespeicherte JSON unter src/lib/config/fixguenstig.json
  */
 export async function load() {
+  // Wartungsmodus: Im Production-Build für alle Besucher blockieren ((!dev) => redirect)
+  // Nur im lokalen Dev-Mode (npm run dev) ist die Seite erreichbar.
+  if (!dev) {
+    redirect(302, '/fixguenstig/wartung');
+  }
+
   try {
     const db = getDb();
     const docRef = db.collection('config').doc('fixguenstig');

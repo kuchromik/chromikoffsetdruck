@@ -1630,7 +1630,6 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 				{#if zeigErgebnis}
 					<div class="result-box">
 						{@html ergebnis}
-						<!--
 						{#if preisBerechnung}
 							<div style="margin-top: 1.25rem;">
 								<button
@@ -1765,7 +1764,6 @@ Damit diese Exklusivität ihre volle Wirkung entfalten kann, empfehlen wir, sie 
 								{/if}
 							</div>
 						{/if}
-						-->
 						<div style="margin-top: 1.5rem; text-align: center;">
 							<button class="btn btn-primary" onclick={startBestellprozess} style="font-size: 1.1em; padding: 0.75rem 2rem;">
 								Weiter zum Bestellformular
