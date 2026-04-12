@@ -3,6 +3,11 @@
 	import favicon from '$lib/assets/logo-favicon.png';
 	import '../app.css';
 
+	import { dev } from '$app/environment';
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
+
+injectAnalytics({ mode: dev ? 'development' : 'production' });
+
 	let { children } = $props();
 
 	afterNavigate(() => {
